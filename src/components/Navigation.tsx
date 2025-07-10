@@ -3,13 +3,10 @@ import { Link, useLocation } from "react-router-dom";
 import { Wallet, Menu } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useToast } from "@/hooks/use-toast";
 
 export const Navigation = () => {
   const location = useLocation();
   const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string>("");
-  const { toast } = useToast();
 
   const navItems = [
     { label: "Explore", href: "/quests" },
@@ -23,72 +20,9 @@ export const Navigation = () => {
     return false;
   };
 
-  const connectToMonadTestnet = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        // Request account access
-        const accounts = await window.ethereum.request({ 
-          method: 'eth_requestAccounts' 
-        });
-        
-        // Add Monad testnet to MetaMask
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: '0xa1fe', // 41454 in hex
-            chainName: 'Monad Testnet',
-            nativeCurrency: {
-              name: 'MON',
-              symbol: 'MON',
-              decimals: 18,
-            },
-            rpcUrls: ['https://testnet1.monad.xyz'],
-            blockExplorerUrls: ['https://testnet1.monad.xyz'],
-          }],
-        });
-        
-        setIsConnected(true);
-        setWalletAddress(accounts[0]);
-        toast({
-          title: "Wallet Connected",
-          description: "Successfully connected to Monad Testnet",
-        });
-      } catch (error) {
-        console.error('Failed to connect wallet:', error);
-        toast({
-          title: "Connection Failed",
-          description: "Please install MetaMask or check your wallet connection",
-          variant: "destructive",
-        });
-      }
-    } else {
-      toast({
-        title: "Wallet Not Found",
-        description: "Please install MetaMask to connect your wallet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const disconnectWallet = () => {
-    setIsConnected(false);
-    setWalletAddress("");
-    toast({
-      title: "Wallet Disconnected",
-      description: "Your wallet has been disconnected",
-    });
-  };
-
-  const handleWalletAction = () => {
-    if (isConnected) {
-      disconnectWallet();
-    } else {
-      connectToMonadTestnet();
-    }
-  };
-
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  const connectWallet = () => {
+    // Mock wallet connection
+    setIsConnected(!isConnected);
   };
 
   return (
@@ -122,13 +56,13 @@ export const Navigation = () => {
         {/* Wallet Connection */}
         <div className="flex items-center space-x-4">
           <Button
-            onClick={handleWalletAction}
+            onClick={connectWallet}
             variant={isConnected ? "outline" : "default"}
             size="sm"
             className="hidden sm:flex"
           >
             <Wallet className="mr-2 h-4 w-4" />
-            {isConnected && walletAddress ? formatAddress(walletAddress) : "Connect Wallet"}
+            {isConnected ? "0x1234...5678" : "Connect Wallet"}
           </Button>
 
           {/* Mobile Menu */}
@@ -141,12 +75,12 @@ export const Navigation = () => {
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col space-y-4 mt-6">
                 <Button
-                  onClick={handleWalletAction}
+                  onClick={connectWallet}
                   variant={isConnected ? "outline" : "default"}
                   className="w-full"
                 >
                   <Wallet className="mr-2 h-4 w-4" />
-                  {isConnected && walletAddress ? formatAddress(walletAddress) : "Connect Wallet"}
+                  {isConnected ? "0x1234...5678" : "Connect Wallet"}
                 </Button>
                 
                 <div className="border-t pt-4">
