@@ -7,6 +7,7 @@ import { Navigation } from "@/components/Navigation";
 import Index from "./pages/Index";
 import QuestList from "./pages/QuestList";
 import QuestDetail from "./pages/QuestDetail";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 
@@ -30,6 +31,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/quests" element={<QuestList />} />
               <Route path="/quest/:id" element={<QuestDetail />} />
+              <Route path="/profile" element={<Profile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
