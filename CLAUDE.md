@@ -27,6 +27,7 @@ ProofQuest is a Web3 quest platform that allows users to complete Web2 tasks and
 - **React Router DOM** for client-side routing
 - **TanStack React Query** for server state management
 - **Tailwind CSS** for styling with custom CSS variables for theming
+- **RainbowKit + Wagmi** for Web3 wallet connection (Monad testnet only)
 
 ### UI Framework
 - **shadcn/ui** component library built on Radix UI primitives
@@ -107,6 +108,20 @@ src/
 ### Testing
 - No test framework currently configured
 - When adding tests, check for existing patterns first
+
+## Web3 Integration
+
+### RainbowKit Configuration
+- **Monad Testnet Only**: Configured to support Monad testnet (Chain ID: 41454)
+- **Wallet Connection**: Uses RainbowKit's ConnectButton in Navigation component
+- **Configuration**: Located in `src/lib/wagmi.ts`
+- **Environment**: Set `VITE_WALLETCONNECT_PROJECT_ID` for WalletConnect integration
+
+### Monad Testnet Details
+- **Chain ID**: 41454
+- **RPC URL**: https://testnet1.monad.xyz
+- **Explorer**: https://explorer-testnet.monad.xyz
+- **Native Token**: MON
 
 ## Platform Integration
 

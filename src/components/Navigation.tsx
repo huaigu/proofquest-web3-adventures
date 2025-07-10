@@ -1,12 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Wallet, Menu } from "lucide-react";
-import { useState } from "react";
+import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export const Navigation = () => {
   const location = useLocation();
-  const [isConnected, setIsConnected] = useState(false);
 
   const navItems = [
     { label: "Explore", href: "/quests" },
@@ -18,11 +17,6 @@ export const Navigation = () => {
     if (path === "/" && location.pathname === "/") return true;
     if (path !== "/" && location.pathname.startsWith(path)) return true;
     return false;
-  };
-
-  const connectWallet = () => {
-    // Mock wallet connection
-    setIsConnected(!isConnected);
   };
 
   return (
@@ -55,15 +49,9 @@ export const Navigation = () => {
 
         {/* Wallet Connection */}
         <div className="flex items-center space-x-4">
-          <Button
-            onClick={connectWallet}
-            variant={isConnected ? "outline" : "default"}
-            size="sm"
-            className="hidden sm:flex"
-          >
-            <Wallet className="mr-2 h-4 w-4" />
-            {isConnected ? "0x1234...5678" : "Connect Wallet"}
-          </Button>
+          <div className="hidden sm:flex">
+            <ConnectButton />
+          </div>
 
           {/* Mobile Menu */}
           <Sheet>
@@ -74,14 +62,9 @@ export const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col space-y-4 mt-6">
-                <Button
-                  onClick={connectWallet}
-                  variant={isConnected ? "outline" : "default"}
-                  className="w-full"
-                >
-                  <Wallet className="mr-2 h-4 w-4" />
-                  {isConnected ? "0x1234...5678" : "Connect Wallet"}
-                </Button>
+                <div className="w-full">
+                  <ConnectButton />
+                </div>
                 
                 <div className="border-t pt-4">
                   {navItems.map((item) => (
