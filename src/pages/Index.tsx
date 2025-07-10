@@ -83,7 +83,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Features Cards - Enhanced with descriptive SVG graphics */}
+          {/* Features Cards - Enhanced with full-space SVG graphics */}
           <div className="col-span-12 md:col-span-4 grid grid-cols-2 gap-3">
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))] rounded-xl p-3 text-white shadow-lg relative overflow-hidden">
               <svg className="absolute top-0 right-0 w-16 h-16 text-white/10 transform translate-x-4 -translate-y-4" fill="currentColor" viewBox="0 0 100 100">
@@ -91,18 +91,20 @@ const Index = () => {
                 <circle cx="30" cy="30" r="15"/>
                 <circle cx="70" cy="70" r="10"/>
               </svg>
-              <div className="relative z-10">
+              <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Bot className="h-4 w-4" />
                   <span className="text-xs font-semibold">Auto Rewards</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Smart contract verification</p>
-                {/* Smart Contract SVG */}
-                <svg className="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  <circle cx="15" cy="15" r="3" strokeWidth={1}/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13.5 16.5l1 1 3-3"/>
-                </svg>
+                {/* Smart Contract SVG - Full remaining space */}
+                <div className="flex-1 flex items-end">
+                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    <circle cx="15" cy="15" r="3" strokeWidth={1}/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13.5 16.5l1 1 3-3"/>
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -111,22 +113,24 @@ const Index = () => {
                 <polygon points="50,10 90,90 10,90"/>
                 <polygon points="30,20 70,20 50,60"/>
               </svg>
-              <div className="relative z-10">
+              <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Activity className="h-4 w-4" />
                   <span className="text-xs font-semibold">Transparent</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Blockchain verifiable</p>
-                {/* Blockchain SVG */}
-                <svg className="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <rect x="3" y="3" width="6" height="6" rx="1" strokeWidth={1.5}/>
-                  <rect x="15" y="3" width="6" height="6" rx="1" strokeWidth={1.5}/>
-                  <rect x="9" y="15" width="6" height="6" rx="1" strokeWidth={1.5}/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 6h6M12 9v6"/>
-                  <circle cx="6" cy="6" r="1" fill="currentColor"/>
-                  <circle cx="18" cy="6" r="1" fill="currentColor"/>
-                  <circle cx="12" cy="18" r="1" fill="currentColor"/>
-                </svg>
+                {/* Blockchain SVG - Full remaining space */}
+                <div className="flex-1 flex items-end">
+                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    <rect x="15" y="3" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    <rect x="9" y="15" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 6h6M12 9v6"/>
+                    <circle cx="6" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="18" cy="6" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="18" r="1" fill="currentColor"/>
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -136,18 +140,20 @@ const Index = () => {
                 <rect x="35" y="35" width="30" height="30" rx="4"/>
                 <circle cx="50" cy="50" r="8"/>
               </svg>
-              <div className="relative z-10">
+              <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Shield className="h-4 w-4" />
                   <span className="text-xs font-semibold">Private</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Zero-knowledge proofs</p>
-                {/* Privacy Shield SVG */}
-                <svg className="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                  <circle cx="12" cy="12" r="2" strokeWidth={1} fill="currentColor"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 11h8"/>
-                </svg>
+                {/* Privacy Shield SVG - Full remaining space */}
+                <div className="flex-1 flex items-end">
+                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    <circle cx="12" cy="12" r="2" strokeWidth={1} fill="currentColor"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 11h8"/>
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -157,21 +163,23 @@ const Index = () => {
                 <rect x="40" y="20" width="25" height="50" rx="3"/>
                 <rect x="70" y="25" width="25" height="45" rx="3"/>
               </svg>
-              <div className="relative z-10">
+              <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Layers className="h-4 w-4" />
                   <span className="text-xs font-semibold">Multi-Task</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Web2 integrations</p>
-                {/* Multi-Platform SVG */}
-                <svg className="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <rect x="2" y="4" width="20" height="16" rx="2" strokeWidth={1.5}/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 8h8M8 12h6M8 16h4"/>
-                  <circle cx="5" cy="8" r="1" fill="currentColor"/>
-                  <circle cx="5" cy="12" r="1" fill="currentColor"/>
-                  <circle cx="5" cy="16" r="1" fill="currentColor"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 14l2 2 2-2"/>
-                </svg>
+                {/* Multi-Platform SVG - Full remaining space */}
+                <div className="flex-1 flex items-end">
+                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="2" y="4" width="20" height="16" rx="2" strokeWidth={1.5}/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 8h8M8 12h6M8 16h4"/>
+                    <circle cx="5" cy="8" r="1" fill="currentColor"/>
+                    <circle cx="5" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="5" cy="16" r="1" fill="currentColor"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 14l2 2 2-2"/>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
