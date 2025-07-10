@@ -83,55 +83,82 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Features Cards - More Compact */}
+          {/* Features Cards - Enhanced with SVG graphics */}
           <div className="col-span-12 md:col-span-4 grid grid-cols-2 gap-3">
-            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))] rounded-xl p-3 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Bot className="h-4 w-4" />
-                <span className="text-xs font-semibold">Auto Rewards</span>
+            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))] rounded-xl p-3 text-white shadow-lg relative overflow-hidden">
+              <svg className="absolute top-0 right-0 w-16 h-16 text-white/10 transform translate-x-4 -translate-y-4" fill="currentColor" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40"/>
+                <circle cx="30" cy="30" r="15"/>
+                <circle cx="70" cy="70" r="10"/>
+              </svg>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Bot className="h-4 w-4" />
+                  <span className="text-xs font-semibold">Auto Rewards</span>
+                </div>
+                <p className="text-xs text-white/90">Smart contract verification</p>
               </div>
-              <p className="text-xs text-white/90">Smart contract verification</p>
             </div>
 
-            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] rounded-xl p-3 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Activity className="h-4 w-4" />
-                <span className="text-xs font-semibold">Transparent</span>
+            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] rounded-xl p-3 text-white shadow-lg relative overflow-hidden">
+              <svg className="absolute top-0 right-0 w-16 h-16 text-white/10 transform translate-x-4 -translate-y-4" fill="currentColor" viewBox="0 0 100 100">
+                <polygon points="50,10 90,90 10,90"/>
+                <polygon points="30,20 70,20 50,60"/>
+              </svg>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="h-4 w-4" />
+                  <span className="text-xs font-semibold">Transparent</span>
+                </div>
+                <p className="text-xs text-white/90">Blockchain verifiable</p>
               </div>
-              <p className="text-xs text-white/90">Blockchain verifiable</p>
             </div>
 
-            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))] rounded-xl p-3 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Shield className="h-4 w-4" />
-                <span className="text-xs font-semibold">Private</span>
+            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))] rounded-xl p-3 text-white shadow-lg relative overflow-hidden">
+              <svg className="absolute top-0 right-0 w-16 h-16 text-white/10 transform translate-x-4 -translate-y-4" fill="currentColor" viewBox="0 0 100 100">
+                <rect x="20" y="20" width="60" height="60" rx="8"/>
+                <rect x="35" y="35" width="30" height="30" rx="4"/>
+                <circle cx="50" cy="50" r="8"/>
+              </svg>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Shield className="h-4 w-4" />
+                  <span className="text-xs font-semibold">Private</span>
+                </div>
+                <p className="text-xs text-white/90">Zero-knowledge proofs</p>
               </div>
-              <p className="text-xs text-white/90">Zero-knowledge proofs</p>
             </div>
 
-            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))] rounded-xl p-3 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Layers className="h-4 w-4" />
-                <span className="text-xs font-semibold">Multi-Task</span>
+            <div className="bg-gradient-to-br from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))] rounded-xl p-3 text-white shadow-lg relative overflow-hidden">
+              <svg className="absolute top-0 right-0 w-16 h-16 text-white/10 transform translate-x-4 -translate-y-4" fill="currentColor" viewBox="0 0 100 100">
+                <rect x="10" y="30" width="25" height="40" rx="3"/>
+                <rect x="40" y="20" width="25" height="50" rx="3"/>
+                <rect x="70" y="25" width="25" height="45" rx="3"/>
+              </svg>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <Layers className="h-4 w-4" />
+                  <span className="text-xs font-semibold">Multi-Task</span>
+                </div>
+                <p className="text-xs text-white/90">Web2 integrations</p>
               </div>
-              <p className="text-xs text-white/90">Web2 integrations</p>
             </div>
           </div>
 
-          {/* Trending Quests - Enhanced with better contrast */}
-          <div className="col-span-12 md:col-span-5 bg-white rounded-xl p-5 shadow-lg border border-border/20">
+          {/* Trending Quests - Better integrated background */}
+          <div className="col-span-12 md:col-span-5 bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 shadow-lg border border-gray-200/50">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-[hsl(var(--vibrant-yellow))]" />
-                <h3 className="font-semibold text-gray-900">Trending Quests</h3>
+                <h3 className="font-semibold text-gray-800">Trending Quests</h3>
               </div>
-              <Button size="sm" variant="ghost" className="text-xs text-gray-600 hover:text-gray-900">
+              <Button size="sm" variant="ghost" className="text-xs text-gray-600 hover:text-gray-800">
                 View All <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/5 to-[hsl(var(--vibrant-purple))]/5 rounded-xl border border-[hsl(var(--vibrant-blue))]/20 hover:border-[hsl(var(--vibrant-blue))]/40 transition-colors">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/8 to-[hsl(var(--vibrant-purple))]/8 rounded-xl border border-[hsl(var(--vibrant-blue))]/25 hover:border-[hsl(var(--vibrant-blue))]/40 transition-colors">
                 <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-blue))]/20">
                   <AvatarImage src="" />
                   <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white text-xs font-bold">
@@ -140,8 +167,8 @@ const Index = () => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-gray-900">DeFi Protocol Quest</h4>
-                    <Badge className="bg-[hsl(var(--vibrant-blue))]/10 text-[hsl(var(--vibrant-blue))] text-xs font-medium border-[hsl(var(--vibrant-blue))]/20">
+                    <h4 className="text-sm font-semibold text-gray-800">DeFi Protocol Quest</h4>
+                    <Badge className="bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))] text-xs font-medium border-[hsl(var(--vibrant-blue))]/25">
                       Active
                     </Badge>
                   </div>
@@ -152,13 +179,13 @@ const Index = () => {
                     <span className="text-sm text-[hsl(var(--vibrant-blue))] font-bold">0.1 ETH</span>
                     <span className="text-xs text-gray-500">245/500 participants</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="w-full bg-gray-200/70 rounded-full h-1.5">
                     <div className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-1.5 rounded-full" style={{ width: "49%" }}></div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-green))]/5 to-[hsl(var(--vibrant-yellow))]/5 rounded-xl border border-[hsl(var(--vibrant-green))]/20 hover:border-[hsl(var(--vibrant-green))]/40 transition-colors">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-green))]/8 to-[hsl(var(--vibrant-yellow))]/8 rounded-xl border border-[hsl(var(--vibrant-green))]/25 hover:border-[hsl(var(--vibrant-green))]/40 transition-colors">
                 <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-green))]/20">
                   <AvatarImage src="" />
                   <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-yellow))] text-white text-xs font-bold">
@@ -167,8 +194,8 @@ const Index = () => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-gray-900">ZK Education Thread</h4>
-                    <Badge className="bg-[hsl(var(--vibrant-green))]/10 text-[hsl(var(--vibrant-green))] text-xs font-medium border-[hsl(var(--vibrant-green))]/20">
+                    <h4 className="text-sm font-semibold text-gray-800">ZK Education Thread</h4>
+                    <Badge className="bg-[hsl(var(--vibrant-green))]/15 text-[hsl(var(--vibrant-green))] text-xs font-medium border-[hsl(var(--vibrant-green))]/25">
                       Active
                     </Badge>
                   </div>
@@ -179,13 +206,13 @@ const Index = () => {
                     <span className="text-sm text-[hsl(var(--vibrant-green))] font-bold">50 USDC</span>
                     <span className="text-xs text-gray-500">89/100 participants</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="w-full bg-gray-200/70 rounded-full h-1.5">
                     <div className="bg-gradient-to-r from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-yellow))] h-1.5 rounded-full" style={{ width: "89%" }}></div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-red))]/5 to-[hsl(var(--vibrant-pink))]/5 rounded-xl border border-[hsl(var(--vibrant-red))]/20">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-red))]/8 to-[hsl(var(--vibrant-pink))]/8 rounded-xl border border-[hsl(var(--vibrant-red))]/25">
                 <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-red))]/20">
                   <AvatarImage src="" />
                   <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] text-white text-xs font-bold">
@@ -194,8 +221,8 @@ const Index = () => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-gray-900">Discord Community</h4>
-                    <Badge className="bg-gray-100 text-gray-600 text-xs border border-gray-300">
+                    <h4 className="text-sm font-semibold text-gray-800">Discord Community</h4>
+                    <Badge className="bg-gray-100/80 text-gray-600 text-xs border border-gray-300/50">
                       Completed
                     </Badge>
                   </div>
@@ -206,7 +233,7 @@ const Index = () => {
                     <span className="text-sm text-[hsl(var(--vibrant-red))] font-bold">NFT Badge</span>
                     <span className="text-xs text-gray-500">1,000/1,000 completed</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="w-full bg-gray-200/70 rounded-full h-1.5">
                     <div className="bg-gradient-to-r from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] h-1.5 rounded-full" style={{ width: "100%" }}></div>
                   </div>
                 </div>
