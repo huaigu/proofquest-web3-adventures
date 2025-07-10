@@ -8,28 +8,28 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 250 250% 99%;
-    --foreground: 224 71% 4%;
+    --background: 225 25% 97%;
+    --foreground: 225 39% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 225 39% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
+    --popover-foreground: 225 39% 15%;
 
-    --primary: 220 100% 60%;
+    --primary: 220 91% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 8% 46%;
+    --secondary: 225 25% 94%;
+    --secondary-foreground: 225 25% 25%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8% 46%;
+    --muted: 225 25% 94%;
+    --muted-foreground: 225 15% 45%;
 
-    --accent: 33 100% 60%;
+    --accent: 33 95% 53%;
     --accent-foreground: 0 0% 100%;
 
-    /* Vibrant Bento Colors - Optimized for white background */
+    /* Vibrant Bento Colors - Optimized for premium gray background */
     --vibrant-orange: 25 95% 53%;
     --vibrant-blue: 220 91% 54%;
     --vibrant-red: 0 84% 60%;
@@ -38,9 +38,10 @@ All colors MUST be HSL.
     --vibrant-purple: 262 83% 58%;
     --vibrant-yellow: 45 93% 58%;
 
-    /* Subtle background tints */
-    --bg-tint: 220 60% 99%;
-    --section-bg: 220 20% 98%;
+    /* Premium background system */
+    --bg-subtle: 225 25% 95%;
+    --section-bg: 225 25% 93%;
+    --surface-elevated: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;

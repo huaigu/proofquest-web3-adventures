@@ -38,8 +38,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section - Bento Style with improved contrast */}
-      <section className="relative overflow-hidden px-6 py-16 bg-gradient-to-br from-[hsl(var(--bg-tint))] to-background">
+      {/* Hero Section - Premium gray background with vibrant cards */}
+      <section className="relative overflow-hidden px-6 py-16 bg-gradient-to-br from-[hsl(var(--bg-subtle))] to-background">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(220,220,220,0.3)_0%,transparent_70%)]" />
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-16">
             {/* Main Title Card */}
@@ -55,12 +56,12 @@ const Index = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/quests">
-                    <Button size="lg" className="bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90 px-8 shadow-lg">
+                    <Button size="lg" className="bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90 px-8 shadow-lg font-semibold">
                       Explore Quests
                     </Button>
                   </Link>
                   <Link to="/create">
-                    <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 px-8">
+                    <Button size="lg" className="bg-[hsl(var(--vibrant-orange))] text-white hover:bg-[hsl(var(--vibrant-orange))]/90 px-8 shadow-lg font-semibold">
                       Create Quest
                     </Button>
                   </Link>
@@ -190,7 +191,7 @@ const Index = () => {
                   <div className="h-2 rounded-full bg-white shadow-sm" style={{ width: "49%" }} />
                 </div>
                 
-                <Button variant="outline" className="w-full border-white text-white hover:bg-white/10 backdrop-blur-sm">
+                <Button className="w-full bg-white/10 text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm">
                   View Quest
                 </Button>
               </div>
@@ -216,7 +217,7 @@ const Index = () => {
                   <div className="h-2 rounded-full bg-white shadow-sm" style={{ width: "89%" }} />
                 </div>
                 
-                <Button variant="outline" className="w-full border-white text-white hover:bg-white/10 backdrop-blur-sm">
+                <Button className="w-full bg-white/10 text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm">
                   View Quest
                 </Button>
               </div>
@@ -242,7 +243,7 @@ const Index = () => {
                   <div className="h-2 rounded-full bg-white shadow-sm" style={{ width: "100%" }} />
                 </div>
                 
-                <Button variant="outline" className="w-full border-white/50 text-white/70 backdrop-blur-sm" disabled>
+                <Button className="w-full bg-white/5 text-white/70 border border-white/20 backdrop-blur-sm" disabled>
                   Completed
                 </Button>
               </div>
@@ -251,7 +252,7 @@ const Index = () => {
           
           <div className="mt-12 text-center">
             <Link to="/quests">
-              <Button size="lg" className="bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90 px-8 shadow-lg shadow-[hsl(var(--vibrant-blue))]/20">
+              <Button size="lg" className="bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90 px-8 shadow-lg shadow-[hsl(var(--vibrant-blue))]/20 text-white font-semibold">
                 View All Quests
               </Button>
             </Link>
