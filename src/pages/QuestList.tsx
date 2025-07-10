@@ -278,109 +278,110 @@ const QuestList = () => {
   };
 
   const LoadingSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <Card key={i} className="overflow-hidden">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-24" />
-              </div>
+        <div key={i} className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 border border-gray-200/50">
+          <div className="flex items-center gap-3 mb-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-5 w-full mb-4" />
-            <div className="flex justify-between items-center mb-4">
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-5 w-16" />
-            </div>
-            <Skeleton className="h-2 w-full mb-2" />
-            <div className="flex justify-between">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          <Skeleton className="h-5 w-full mb-4" />
+          <div className="flex justify-between items-center mb-4">
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-5 w-16" />
+          </div>
+          <Skeleton className="h-2 w-full mb-2" />
+          <div className="flex justify-between">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+        </div>
       ))}
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Explore Quests</h1>
-              <p className="text-muted-foreground mt-1">
+    <div className="min-h-screen bg-background p-4 md:p-6">
+      <div className="mx-auto max-w-7xl">
+        {/* Page Header - Bento Style */}
+        <div className="grid grid-cols-12 gap-4 mb-8">
+          {/* Main Title Card */}
+          <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] rounded-2xl p-6 text-white relative overflow-hidden shadow-xl">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
+            <div className="relative z-10">
+              <h1 className="text-3xl font-bold tracking-tight mb-2">Explore Quests</h1>
+              <p className="text-white/90 mb-4 text-sm">
                 Discover and participate in exciting Web3 quests
               </p>
-            </div>
-            
-            {/* Mobile filter toggle */}
-            <Button 
-              variant="outline" 
-              onClick={() => setShowSidebar(!showSidebar)}
-              className="lg:hidden"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-          </div>
-
-          {/* Search and Quick Filters */}
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search quests or creators..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[120px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="claiming">Claiming</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[140px]">
-                  <SortDesc className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="highest-reward">Highest Reward</SelectItem>
-                  <SelectItem value="ending-soon">Ending Soon</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-white/60 rounded-full"></div>
+                  <span className="text-white/80">{filteredQuests.length} Active Quests</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[hsl(var(--vibrant-yellow))] rounded-full"></div>
+                  <span className="text-white/80">Total Rewards: 12.5 ETH</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Active Filters */}
-          {activeFilters.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              <span className="text-sm text-muted-foreground">Active filters:</span>
+          {/* Search Card */}
+          <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-200/50">
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search quests or creators..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 border-0 bg-gray-100/70 focus:bg-white transition-colors"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="flex-1 border-0 bg-gray-100/70 focus:bg-white">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="claiming">Claiming</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="flex-1 border-0 bg-gray-100/70 focus:bg-white">
+                    <SortDesc className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest</SelectItem>
+                    <SelectItem value="highest-reward">Highest Reward</SelectItem>
+                    <SelectItem value="ending-soon">Ending Soon</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Active Filters - Bento Style */}
+        {activeFilters.length > 0 && (
+          <div className="bg-gradient-to-r from-[hsl(var(--vibrant-orange))]/10 to-[hsl(var(--vibrant-yellow))]/10 rounded-xl p-4 mb-6 border border-[hsl(var(--vibrant-orange))]/20">
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-sm font-medium text-gray-700">Active filters:</span>
               {activeFilters.map((filter, index) => (
                 <Badge
                   key={index}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                  className="bg-white/80 text-gray-700 border border-gray-300/50 cursor-pointer hover:bg-[hsl(var(--vibrant-red))]/15 hover:text-[hsl(var(--vibrant-red))] hover:border-[hsl(var(--vibrant-red))]/30 transition-colors"
                   onClick={() => removeFilter(filter.key)}
                 >
                   {filter.value}
@@ -391,28 +392,26 @@ const QuestList = () => {
                 variant="ghost"
                 size="sm"
                 onClick={clearAllFilters}
-                className="h-6 px-2 text-xs"
+                className="h-6 px-2 text-xs text-gray-600 hover:text-[hsl(var(--vibrant-red))]"
               >
                 Clear all
               </Button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="flex gap-8">
-          {/* Sidebar */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Sidebar - Bento Style */}
           {showSidebar && (
-            <aside className="w-80 shrink-0 lg:block hidden">
-              <Card className="sticky top-24">
-                <CardHeader>
-                  <h3 className="font-semibold">Filters</h3>
-                </CardHeader>
-                <CardContent className="space-y-6">
+            <aside className="col-span-12 lg:col-span-3">
+              <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-200/50 sticky top-24">
+                <h3 className="font-bold text-lg mb-6 text-gray-800">Filters</h3>
+                <div className="space-y-6">
                   {/* Categories */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Category</label>
+                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))]/8 to-[hsl(var(--vibrant-pink))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-purple))]/20">
+                    <label className="text-sm font-semibold mb-3 block text-gray-700">Category</label>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-0 bg-white/70 focus:bg-white">
                         <SelectValue placeholder="All Categories" />
                       </SelectTrigger>
                       <SelectContent>
@@ -427,10 +426,10 @@ const QuestList = () => {
                   </div>
 
                   {/* Reward Type */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Reward Type</label>
+                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))]/8 to-[hsl(var(--vibrant-blue))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-green))]/20">
+                    <label className="text-sm font-semibold mb-3 block text-gray-700">Reward Type</label>
                     <Select value={rewardTypeFilter} onValueChange={setRewardTypeFilter}>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-0 bg-white/70 focus:bg-white">
                         <SelectValue placeholder="All Types" />
                       </SelectTrigger>
                       <SelectContent>
@@ -443,10 +442,10 @@ const QuestList = () => {
                   </div>
 
                   {/* Quest Type */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">Quest Type</label>
+                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))]/8 to-[hsl(var(--vibrant-yellow))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-orange))]/20">
+                    <label className="text-sm font-semibold mb-3 block text-gray-700">Quest Type</label>
                     <Select value={questTypeFilter} onValueChange={setQuestTypeFilter}>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-0 bg-white/70 focus:bg-white">
                         <SelectValue placeholder="All Types" />
                       </SelectTrigger>
                       <SelectContent>
@@ -459,8 +458,8 @@ const QuestList = () => {
                   </div>
 
                   {/* Reward Range */}
-                  <div>
-                    <label className="text-sm font-medium mb-3 block">
+                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-yellow))]/8 to-[hsl(var(--vibrant-orange))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-yellow))]/20">
+                    <label className="text-sm font-semibold mb-3 block text-gray-700">
                       Reward Range (ETH): {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)}
                     </label>
                     <Slider
@@ -472,111 +471,134 @@ const QuestList = () => {
                       className="w-full"
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </aside>
           )}
 
           {/* Main Content */}
-          <main className="flex-1">
+          <main className={`${showSidebar ? 'col-span-12 lg:col-span-9' : 'col-span-12'}`}>
             {loading ? (
               <LoadingSkeleton />
             ) : (
               <>
-                {/* Results Summary */}
-                <div className="mb-6">
-                  <p className="text-sm text-muted-foreground">
+                {/* Results Summary - Bento Style */}
+                <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-4 mb-6 border border-gray-200/50">
+                  <p className="text-sm text-gray-600 font-medium">
                     Showing {paginatedQuests.length} of {filteredQuests.length} quests
                   </p>
                 </div>
 
-                {/* Quest Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                  {paginatedQuests.map((quest) => (
-                    <Link key={quest.id} to={`/quest/${quest.id}`}>
-                      <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] cursor-pointer group">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <Avatar className="h-10 w-10 shrink-0">
-                                <AvatarImage src={quest.creator.avatar} />
-                                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-xs font-bold">
-                                  {quest.creator.name.slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="min-w-0">
-                                <p className="font-medium text-sm truncate">{quest.creator.name}</p>
-                                <p className="text-xs text-muted-foreground truncate">{quest.creator.handle}</p>
-                              </div>
-                            </div>
-                            <Badge className={`shrink-0 text-xs ${getStatusBadgeColor(quest.status)}`}>
-                              {quest.status}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        
-                        <CardContent className="pb-3">
-                          <h3 className="font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-                            {quest.title}
-                          </h3>
+                {/* Quest Grid - Enhanced Bento Style */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                  {paginatedQuests.map((quest, index) => {
+                    const gradients = [
+                      'from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]',
+                      'from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]',
+                      'from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))]',
+                      'from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))]',
+                      'from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))]'
+                    ];
+                    const gradient = gradients[index % gradients.length];
+                    
+                    return (
+                      <Link key={quest.id} to={`/quest/${quest.id}`}>
+                        <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] cursor-pointer group bg-gradient-to-br from-gray-50 to-white border border-gray-200/50 overflow-hidden">
+                          {/* Header with gradient accent */}
+                          <div className={`h-2 bg-gradient-to-r ${gradient}`}></div>
                           
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                              {getTaskIcon(quest.taskType)}
-                              <span className="text-sm font-bold text-primary">
-                                {formatReward(quest.reward)}
-                              </span>
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <Avatar className="h-12 w-12 shrink-0 ring-2 ring-gray-200/50">
+                                  <AvatarImage src={quest.creator.avatar} />
+                                  <AvatarFallback className={`bg-gradient-to-br ${gradient} text-white text-sm font-bold`}>
+                                    {quest.creator.name.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-sm truncate text-gray-800">{quest.creator.name}</p>
+                                  <p className="text-xs text-gray-500 truncate">{quest.creator.handle}</p>
+                                </div>
+                              </div>
+                              <Badge className={`shrink-0 text-xs font-medium ${getStatusBadgeColor(quest.status)}`}>
+                                {quest.status}
+                              </Badge>
                             </div>
-                            <Badge variant="outline" className="text-xs">
-                              {quest.category}
-                            </Badge>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>{quest.participants.current}/{quest.participants.max} participants</span>
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {quest.timeRemaining}
+                          </CardHeader>
+                          
+                          <CardContent className="pb-4">
+                            <h3 className="font-bold mb-4 line-clamp-2 group-hover:text-[hsl(var(--vibrant-blue))] transition-colors text-gray-800 leading-tight">
+                              {quest.title}
+                            </h3>
+                            
+                            <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-gray-100/80 to-gray-50/80 rounded-xl">
+                              <div className="flex items-center gap-2">
+                                <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} text-white`}>
+                                  {getTaskIcon(quest.taskType)}
+                                </div>
+                                <div>
+                                  <span className="text-sm font-bold text-gray-800">
+                                    {formatReward(quest.reward)}
+                                  </span>
+                                  <p className="text-xs text-gray-500">{quest.category}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                                  <Clock className="h-3 w-3" />
+                                  {quest.timeRemaining}
+                                </div>
                               </div>
                             </div>
-                            <div className="w-full bg-muted rounded-full h-2">
-                              <div 
-                                className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-300"
-                                style={{ 
-                                  width: `${(quest.participants.current / quest.participants.max) * 100}%` 
-                                }}
-                              />
+
+                            <div className="space-y-3">
+                              <div className="flex justify-between text-xs text-gray-600">
+                                <span className="font-medium">{quest.participants.current}/{quest.participants.max} participants</span>
+                                <span className="font-bold">{Math.round((quest.participants.current / quest.participants.max) * 100)}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden">
+                                <div 
+                                  className={`bg-gradient-to-r ${gradient} h-2 rounded-full transition-all duration-500 ease-out`}
+                                  style={{ 
+                                    width: `${(quest.participants.current / quest.participants.max) * 100}%` 
+                                  }}
+                                />
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    );
+                  })}
                 </div>
 
-                {/* Empty State */}
+                {/* Empty State - Bento Style */}
                 {filteredQuests.length === 0 && (
-                  <div className="text-center py-12">
-                    <div className="text-muted-foreground mb-4">
-                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-lg font-medium mb-2">No quests found</h3>
-                      <p>Try adjusting your filters or search terms</p>
+                  <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200/50">
+                    <div className="text-gray-400 mb-6">
+                      <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-xl font-bold mb-2 text-gray-600">No quests found</h3>
+                      <p className="text-gray-500">Try adjusting your filters or search terms</p>
                     </div>
-                    <Button onClick={clearAllFilters} variant="outline">
+                    <Button 
+                      onClick={clearAllFilters} 
+                      className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white border-0 hover:shadow-lg"
+                    >
                       Clear all filters
                     </Button>
                   </div>
                 )}
 
-                {/* Pagination */}
+                {/* Pagination - Bento Style */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2">
+                  <div className="flex justify-center items-center gap-2 bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 border border-gray-200/50">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
+                      className="border-gray-300 hover:bg-[hsl(var(--vibrant-blue))]/10"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Previous
@@ -589,7 +611,10 @@ const QuestList = () => {
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className="w-10"
+                          className={`w-10 ${currentPage === page 
+                            ? 'bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white border-0' 
+                            : 'border-gray-300 hover:bg-[hsl(var(--vibrant-blue))]/10'
+                          }`}
                         >
                           {page}
                         </Button>
@@ -601,6 +626,7 @@ const QuestList = () => {
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
+                      className="border-gray-300 hover:bg-[hsl(var(--vibrant-blue))]/10"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />
