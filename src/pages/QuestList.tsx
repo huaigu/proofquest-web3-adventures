@@ -313,7 +313,7 @@ const QuestList = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
             <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
             <div className="relative z-10">
-              <h1 className="text-3xl font-bold tracking-tight mb-2">Explore Quests</h1>
+              <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Explore Quests</h1>
               <p className="text-white/90 mb-4 text-sm">
                 Discover and participate in exciting Web3 quests
               </p>
@@ -331,23 +331,24 @@ const QuestList = () => {
           </div>
 
           {/* Search Card */}
-          <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-200/50">
-            <div className="space-y-4">
+          <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] rounded-2xl p-6 shadow-lg relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
+            <div className="relative z-10 space-y-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 h-4 w-4" />
                 <Input
                   placeholder="Search quests or creators..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-0 bg-gray-100/70 focus:bg-white transition-colors"
+                  className="pl-10 border-0 bg-white/20 placeholder:text-white/60 text-white focus:bg-white/30 transition-colors backdrop-blur-sm"
                 />
               </div>
               
               <div className="flex gap-2">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="flex-1 border-0 bg-gray-100/70 focus:bg-white">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Status" />
+                  <SelectTrigger className="flex-1 border-0 bg-white/20 text-white focus:bg-white/30 [&>svg]:text-white/70">
+                    <Filter className="h-4 w-4 mr-2 text-white/70" />
+                    <SelectValue placeholder="Status" className="text-white" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
@@ -358,9 +359,9 @@ const QuestList = () => {
                 </Select>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="flex-1 border-0 bg-gray-100/70 focus:bg-white">
-                    <SortDesc className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Sort" />
+                  <SelectTrigger className="flex-1 border-0 bg-white/20 text-white focus:bg-white/30 [&>svg]:text-white/70">
+                    <SortDesc className="h-4 w-4 mr-2 text-white/70" />
+                    <SelectValue placeholder="Sort" className="text-white" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="newest">Newest</SelectItem>
@@ -375,13 +376,14 @@ const QuestList = () => {
 
         {/* Active Filters - Bento Style */}
         {activeFilters.length > 0 && (
-          <div className="bg-gradient-to-r from-[hsl(var(--vibrant-orange))]/10 to-[hsl(var(--vibrant-yellow))]/10 rounded-xl p-4 mb-6 border border-[hsl(var(--vibrant-orange))]/20">
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-sm font-medium text-gray-700">Active filters:</span>
+          <div className="bg-gradient-to-r from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] rounded-xl p-4 mb-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-white/10" />
+            <div className="relative z-10 flex flex-wrap gap-2 items-center">
+              <span className="text-sm font-medium text-white">Active filters:</span>
               {activeFilters.map((filter, index) => (
                 <Badge
                   key={index}
-                  className="bg-white/80 text-gray-700 border border-gray-300/50 cursor-pointer hover:bg-[hsl(var(--vibrant-red))]/15 hover:text-[hsl(var(--vibrant-red))] hover:border-[hsl(var(--vibrant-red))]/30 transition-colors"
+                  className="bg-white/90 text-gray-700 border-0 cursor-pointer hover:bg-white hover:text-[hsl(var(--vibrant-red))] transition-colors"
                   onClick={() => removeFilter(filter.key)}
                 >
                   {filter.value}
@@ -392,7 +394,7 @@ const QuestList = () => {
                 variant="ghost"
                 size="sm"
                 onClick={clearAllFilters}
-                className="h-6 px-2 text-xs text-gray-600 hover:text-[hsl(var(--vibrant-red))]"
+                className="h-6 px-2 text-xs text-white/90 hover:text-white hover:bg-white/20"
               >
                 Clear all
               </Button>
@@ -404,72 +406,75 @@ const QuestList = () => {
           {/* Sidebar - Bento Style */}
           {showSidebar && (
             <aside className="col-span-12 lg:col-span-3">
-              <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-200/50 sticky top-24">
-                <h3 className="font-bold text-lg mb-6 text-gray-800">Filters</h3>
-                <div className="space-y-6">
-                  {/* Categories */}
-                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))]/8 to-[hsl(var(--vibrant-pink))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-purple))]/20">
-                    <label className="text-sm font-semibold mb-3 block text-gray-700">Category</label>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                      <SelectTrigger className="border-0 bg-white/70 focus:bg-white">
-                        <SelectValue placeholder="All Categories" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="social">Social</SelectItem>
-                        <SelectItem value="content">Content</SelectItem>
-                        <SelectItem value="defi">DeFi</SelectItem>
-                        <SelectItem value="gaming">Gaming</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))] rounded-2xl p-6 shadow-lg sticky top-24 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/5" />
+                <div className="relative z-10">
+                  <h3 className="font-bold text-lg mb-6 text-white">Filters</h3>
+                  <div className="space-y-6">
+                    {/* Categories */}
+                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <label className="text-sm font-semibold mb-3 block text-white">Category</label>
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="border-0 bg-white/20 text-white focus:bg-white/30 [&>svg]:text-white/70">
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          <SelectItem value="social">Social</SelectItem>
+                          <SelectItem value="content">Content</SelectItem>
+                          <SelectItem value="defi">DeFi</SelectItem>
+                          <SelectItem value="gaming">Gaming</SelectItem>
+                          <SelectItem value="education">Education</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Reward Type */}
-                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))]/8 to-[hsl(var(--vibrant-blue))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-green))]/20">
-                    <label className="text-sm font-semibold mb-3 block text-gray-700">Reward Type</label>
-                    <Select value={rewardTypeFilter} onValueChange={setRewardTypeFilter}>
-                      <SelectTrigger className="border-0 bg-white/70 focus:bg-white">
-                        <SelectValue placeholder="All Types" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="eth">ETH</SelectItem>
-                        <SelectItem value="usdc">USDC</SelectItem>
-                        <SelectItem value="nft">NFT</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    {/* Reward Type */}
+                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <label className="text-sm font-semibold mb-3 block text-white">Reward Type</label>
+                      <Select value={rewardTypeFilter} onValueChange={setRewardTypeFilter}>
+                        <SelectTrigger className="border-0 bg-white/20 text-white focus:bg-white/30 [&>svg]:text-white/70">
+                          <SelectValue placeholder="All Types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          <SelectItem value="eth">ETH</SelectItem>
+                          <SelectItem value="usdc">USDC</SelectItem>
+                          <SelectItem value="nft">NFT</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Quest Type */}
-                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))]/8 to-[hsl(var(--vibrant-yellow))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-orange))]/20">
-                    <label className="text-sm font-semibold mb-3 block text-gray-700">Quest Type</label>
-                    <Select value={questTypeFilter} onValueChange={setQuestTypeFilter}>
-                      <SelectTrigger className="border-0 bg-white/70 focus:bg-white">
-                        <SelectValue placeholder="All Types" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="twitter">Twitter</SelectItem>
-                        <SelectItem value="discord">Discord</SelectItem>
-                        <SelectItem value="content">Content</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    {/* Quest Type */}
+                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <label className="text-sm font-semibold mb-3 block text-white">Quest Type</label>
+                      <Select value={questTypeFilter} onValueChange={setQuestTypeFilter}>
+                        <SelectTrigger className="border-0 bg-white/20 text-white focus:bg-white/30 [&>svg]:text-white/70">
+                          <SelectValue placeholder="All Types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          <SelectItem value="twitter">Twitter</SelectItem>
+                          <SelectItem value="discord">Discord</SelectItem>
+                          <SelectItem value="content">Content</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Reward Range */}
-                  <div className="bg-gradient-to-br from-[hsl(var(--vibrant-yellow))]/8 to-[hsl(var(--vibrant-orange))]/8 rounded-xl p-4 border border-[hsl(var(--vibrant-yellow))]/20">
-                    <label className="text-sm font-semibold mb-3 block text-gray-700">
-                      Reward Range (ETH): {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)}
-                    </label>
-                    <Slider
-                      value={rewardRange}
-                      onValueChange={setRewardRange}
-                      max={1}
-                      min={0}
-                      step={0.01}
-                      className="w-full"
-                    />
+                    {/* Reward Range */}
+                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <label className="text-sm font-semibold mb-3 block text-white">
+                        Reward Range (ETH): {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)}
+                      </label>
+                      <Slider
+                        value={rewardRange}
+                        onValueChange={setRewardRange}
+                        max={1}
+                        min={0}
+                        step={0.01}
+                        className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -483,8 +488,8 @@ const QuestList = () => {
             ) : (
               <>
                 {/* Results Summary - Bento Style */}
-                <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-4 mb-6 border border-gray-200/50">
-                  <p className="text-sm text-gray-600 font-medium">
+                <div className="bg-gradient-to-r from-[hsl(var(--vibrant-green))]/20 to-[hsl(var(--vibrant-blue))]/20 rounded-xl p-4 mb-6 border border-[hsl(var(--vibrant-green))]/30 backdrop-blur-sm">
+                  <p className="text-sm font-medium text-foreground">
                     Showing {paginatedQuests.length} of {filteredQuests.length} quests
                   </p>
                 </div>
@@ -503,49 +508,50 @@ const QuestList = () => {
                     
                     return (
                       <Link key={quest.id} to={`/quest/${quest.id}`}>
-                        <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] cursor-pointer group bg-gradient-to-br from-gray-50 to-white border border-gray-200/50 overflow-hidden">
-                          {/* Header with gradient accent */}
-                          <div className={`h-2 bg-gradient-to-r ${gradient}`}></div>
+                        <Card className={`h-full transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] cursor-pointer group bg-gradient-to-br ${gradient} border-0 overflow-hidden text-white relative`}>
+                          {/* Background Pattern */}
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
                           
-                          <CardHeader className="pb-3">
+                          <CardHeader className="pb-3 relative z-10">
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-center gap-3 min-w-0 flex-1">
-                                <Avatar className="h-12 w-12 shrink-0 ring-2 ring-gray-200/50">
+                                <Avatar className="h-12 w-12 shrink-0 ring-2 ring-white/30">
                                   <AvatarImage src={quest.creator.avatar} />
-                                  <AvatarFallback className={`bg-gradient-to-br ${gradient} text-white text-sm font-bold`}>
+                                  <AvatarFallback className="bg-white/20 backdrop-blur-sm text-white text-sm font-bold border border-white/30">
                                     {quest.creator.name.slice(0, 2).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="min-w-0">
-                                  <p className="font-semibold text-sm truncate text-gray-800">{quest.creator.name}</p>
-                                  <p className="text-xs text-gray-500 truncate">{quest.creator.handle}</p>
+                                  <p className="font-semibold text-sm truncate text-white">{quest.creator.name}</p>
+                                  <p className="text-xs text-white/70 truncate">{quest.creator.handle}</p>
                                 </div>
                               </div>
-                              <Badge className={`shrink-0 text-xs font-medium ${getStatusBadgeColor(quest.status)}`}>
+                              <Badge className={`shrink-0 text-xs font-medium bg-white/20 border border-white/30 text-white backdrop-blur-sm`}>
                                 {quest.status}
                               </Badge>
                             </div>
                           </CardHeader>
                           
-                          <CardContent className="pb-4">
-                            <h3 className="font-bold mb-4 line-clamp-2 group-hover:text-[hsl(var(--vibrant-blue))] transition-colors text-gray-800 leading-tight">
+                          <CardContent className="pb-4 relative z-10">
+                            <h3 className="font-bold mb-4 line-clamp-2 group-hover:text-white/90 transition-colors text-white leading-tight">
                               {quest.title}
                             </h3>
                             
-                            <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-gray-100/80 to-gray-50/80 rounded-xl">
+                            <div className="flex items-center justify-between mb-4 p-3 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20">
                               <div className="flex items-center gap-2">
-                                <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} text-white`}>
+                                <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm text-white border border-white/30">
                                   {getTaskIcon(quest.taskType)}
                                 </div>
                                 <div>
-                                  <span className="text-sm font-bold text-gray-800">
+                                  <span className="text-sm font-bold text-white">
                                     {formatReward(quest.reward)}
                                   </span>
-                                  <p className="text-xs text-gray-500">{quest.category}</p>
+                                  <p className="text-xs text-white/70">{quest.category}</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                                <div className="flex items-center gap-1 text-xs text-white/70 mb-1">
                                   <Clock className="h-3 w-3" />
                                   {quest.timeRemaining}
                                 </div>
@@ -553,13 +559,13 @@ const QuestList = () => {
                             </div>
 
                             <div className="space-y-3">
-                              <div className="flex justify-between text-xs text-gray-600">
+                              <div className="flex justify-between text-xs text-white/80">
                                 <span className="font-medium">{quest.participants.current}/{quest.participants.max} participants</span>
                                 <span className="font-bold">{Math.round((quest.participants.current / quest.participants.max) * 100)}%</span>
                               </div>
-                              <div className="w-full bg-gray-200/70 rounded-full h-2 overflow-hidden">
+                              <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
                                 <div 
-                                  className={`bg-gradient-to-r ${gradient} h-2 rounded-full transition-all duration-500 ease-out`}
+                                  className="bg-white h-2 rounded-full transition-all duration-500 ease-out"
                                   style={{ 
                                     width: `${(quest.participants.current / quest.participants.max) * 100}%` 
                                   }}
@@ -575,11 +581,11 @@ const QuestList = () => {
 
                 {/* Empty State - Bento Style */}
                 {filteredQuests.length === 0 && (
-                  <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200/50">
-                    <div className="text-gray-400 mb-6">
-                      <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-xl font-bold mb-2 text-gray-600">No quests found</h3>
-                      <p className="text-gray-500">Try adjusting your filters or search terms</p>
+                  <div className="text-center py-16 bg-gradient-to-br from-[hsl(var(--vibrant-purple))]/10 to-[hsl(var(--vibrant-pink))]/10 rounded-2xl border border-[hsl(var(--vibrant-purple))]/20 backdrop-blur-sm">
+                    <div className="mb-6">
+                      <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                      <h3 className="text-xl font-bold mb-2 text-foreground">No quests found</h3>
+                      <p className="text-muted-foreground">Try adjusting your filters or search terms</p>
                     </div>
                     <Button 
                       onClick={clearAllFilters} 
@@ -592,13 +598,13 @@ const QuestList = () => {
 
                 {/* Pagination - Bento Style */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 border border-gray-200/50">
+                  <div className="flex justify-center items-center gap-2 bg-gradient-to-r from-[hsl(var(--vibrant-yellow))]/10 to-[hsl(var(--vibrant-orange))]/10 rounded-xl p-6 border border-[hsl(var(--vibrant-yellow))]/20 backdrop-blur-sm">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="border-gray-300 hover:bg-[hsl(var(--vibrant-blue))]/10"
+                      className="border-[hsl(var(--vibrant-blue))]/30 hover:bg-[hsl(var(--vibrant-blue))]/10 hover:border-[hsl(var(--vibrant-blue))]/50"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Previous
@@ -613,7 +619,7 @@ const QuestList = () => {
                           onClick={() => setCurrentPage(page)}
                           className={`w-10 ${currentPage === page 
                             ? 'bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white border-0' 
-                            : 'border-gray-300 hover:bg-[hsl(var(--vibrant-blue))]/10'
+                            : 'border-[hsl(var(--vibrant-blue))]/30 hover:bg-[hsl(var(--vibrant-blue))]/10 hover:border-[hsl(var(--vibrant-blue))]/50'
                           }`}
                         >
                           {page}
@@ -626,7 +632,7 @@ const QuestList = () => {
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="border-gray-300 hover:bg-[hsl(var(--vibrant-blue))]/10"
+                      className="border-[hsl(var(--vibrant-blue))]/30 hover:bg-[hsl(var(--vibrant-blue))]/10 hover:border-[hsl(var(--vibrant-blue))]/50"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />
