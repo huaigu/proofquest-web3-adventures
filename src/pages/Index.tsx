@@ -101,12 +101,29 @@ const Index = () => {
                   <span className="text-xs font-semibold">Auto Rewards</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Smart contract verification</p>
-                {/* Smart Contract SVG - Full remaining space */}
-                <div className="flex-1 flex items-end">
-                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    <circle cx="15" cy="15" r="3" strokeWidth={1}/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13.5 16.5l1 1 3-3"/>
+                {/* Auto Rewards SVG - Robot/Automation theme */}
+                <div className="flex-1 p-3">
+                  <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* Robot head */}
+                    <rect x="8" y="4" width="8" height="8" rx="2" strokeWidth={1.5}/>
+                    {/* Robot eyes */}
+                    <circle cx="10" cy="7" r="0.5" fill="currentColor"/>
+                    <circle cx="14" cy="7" r="0.5" fill="currentColor"/>
+                    {/* Robot mouth */}
+                    <path d="M10 10h4" strokeWidth={1.5} strokeLinecap="round"/>
+                    {/* Robot body */}
+                    <rect x="7" y="12" width="10" height="8" rx="1" strokeWidth={1.5}/>
+                    {/* Control panel */}
+                    <rect x="9" y="14" width="6" height="4" rx="0.5" strokeWidth={1}/>
+                    {/* Buttons */}
+                    <circle cx="11" cy="16" r="0.5" fill="currentColor"/>
+                    <circle cx="13" cy="16" r="0.5" fill="currentColor"/>
+                    {/* Arms */}
+                    <path d="M7 14h-2v4" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M17 14h2v4" strokeWidth={1.5} strokeLinecap="round"/>
+                    {/* Legs */}
+                    <path d="M9 20v2" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M15 20v2" strokeWidth={1.5} strokeLinecap="round"/>
                   </svg>
                 </div>
               </div>
@@ -123,16 +140,30 @@ const Index = () => {
                   <span className="text-xs font-semibold">Transparent</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Blockchain verifiable</p>
-                {/* Blockchain SVG - Full remaining space */}
-                <div className="flex-1 flex items-end">
-                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="3" y="3" width="6" height="6" rx="1" strokeWidth={1.5}/>
-                    <rect x="15" y="3" width="6" height="6" rx="1" strokeWidth={1.5}/>
-                    <rect x="9" y="15" width="6" height="6" rx="1" strokeWidth={1.5}/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 6h6M12 9v6"/>
-                    <circle cx="6" cy="6" r="1" fill="currentColor"/>
-                    <circle cx="18" cy="6" r="1" fill="currentColor"/>
-                    <circle cx="12" cy="18" r="1" fill="currentColor"/>
+                {/* Transparency SVG - Blockchain/transparency theme */}
+                <div className="flex-1 p-3">
+                  <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* Blockchain blocks */}
+                    <rect x="2" y="2" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    <rect x="16" y="2" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    <rect x="2" y="16" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    <rect x="16" y="16" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    <rect x="9" y="9" width="6" height="6" rx="1" strokeWidth={1.5}/>
+                    {/* Connecting lines */}
+                    <path d="M8 5h8" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M8 19h8" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M5 8v8" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M19 8v8" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M8 12h1" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M15 12h1" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M12 9v1" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M12 14v1" strokeWidth={1.5} strokeLinecap="round"/>
+                    {/* Block content indicators */}
+                    <circle cx="5" cy="5" r="0.5" fill="currentColor"/>
+                    <circle cx="19" cy="5" r="0.5" fill="currentColor"/>
+                    <circle cx="5" cy="19" r="0.5" fill="currentColor"/>
+                    <circle cx="19" cy="19" r="0.5" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="0.5" fill="currentColor"/>
                   </svg>
                 </div>
               </div>
@@ -150,12 +181,24 @@ const Index = () => {
                   <span className="text-xs font-semibold">Private</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Zero-knowledge proofs</p>
-                {/* Privacy Shield SVG - Full remaining space */}
-                <div className="flex-1 flex items-end">
-                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    <circle cx="12" cy="12" r="2" strokeWidth={1} fill="currentColor"/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 11h8"/>
+                {/* Privacy SVG - Zero-knowledge/privacy theme */}
+                <div className="flex-1 p-3">
+                  <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* Main shield */}
+                    <path d="M12 2l8 3v6c0 5.5-3.5 10.5-8 12-4.5-1.5-8-6.5-8-12V5l8-3z" strokeWidth={1.5}/>
+                    {/* ZK symbol - question mark representing unknown/private */}
+                    <path d="M9 8a3 3 0 0 1 6 0c0 2-3 3-3 3" strokeWidth={1.5} strokeLinecap="round"/>
+                    <circle cx="12" cy="14" r="0.5" fill="currentColor"/>
+                    {/* Privacy dots pattern */}
+                    <circle cx="8" cy="6" r="0.5" fill="currentColor" opacity="0.6"/>
+                    <circle cx="16" cy="6" r="0.5" fill="currentColor" opacity="0.6"/>
+                    <circle cx="7" cy="11" r="0.5" fill="currentColor" opacity="0.4"/>
+                    <circle cx="17" cy="11" r="0.5" fill="currentColor" opacity="0.4"/>
+                    <circle cx="8" cy="15" r="0.5" fill="currentColor" opacity="0.3"/>
+                    <circle cx="16" cy="15" r="0.5" fill="currentColor" opacity="0.3"/>
+                    {/* Lock indicator - moved to bottom */}
+                    <rect x="10" y="18" width="4" height="2" rx="0.5" strokeWidth={1}/>
+                    <path d="M11 18v-1a1 1 0 0 1 2 0v1" strokeWidth={1}/>
                   </svg>
                 </div>
               </div>
@@ -173,63 +216,80 @@ const Index = () => {
                   <span className="text-xs font-semibold">Multi-Task</span>
                 </div>
                 <p className="text-xs text-white/90 mb-2">Web2 integrations</p>
-                {/* Multi-Platform SVG - Full remaining space */}
-                <div className="flex-1 flex items-end">
-                  <svg className="w-full h-full max-h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="2" y="4" width="20" height="16" rx="2" strokeWidth={1.5}/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 8h8M8 12h6M8 16h4"/>
-                    <circle cx="5" cy="8" r="1" fill="currentColor"/>
-                    <circle cx="5" cy="12" r="1" fill="currentColor"/>
-                    <circle cx="5" cy="16" r="1" fill="currentColor"/>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 14l2 2 2-2"/>
+                {/* Multi-Task SVG - Web2 integrations theme */}
+                <div className="flex-1 p-3">
+                  <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* Central hub */}
+                    <circle cx="12" cy="12" r="3" strokeWidth={1.5}/>
+                    <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                    {/* Connected platforms */}
+                    <rect x="2" y="2" width="5" height="4" rx="1" strokeWidth={1.5}/>
+                    <rect x="17" y="2" width="5" height="4" rx="1" strokeWidth={1.5}/>
+                    <rect x="2" y="18" width="5" height="4" rx="1" strokeWidth={1.5}/>
+                    <rect x="17" y="18" width="5" height="4" rx="1" strokeWidth={1.5}/>
+                    {/* Platform icons */}
+                    <path d="M3 3h3v2H3z" fill="currentColor" opacity="0.5"/>
+                    <path d="M18 3h3v2h-3z" fill="currentColor" opacity="0.5"/>
+                    <path d="M3 19h3v2H3z" fill="currentColor" opacity="0.5"/>
+                    <path d="M18 19h3v2h-3z" fill="currentColor" opacity="0.5"/>
+                    {/* Connection lines */}
+                    <path d="M7 4l4 4" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M17 4l-4 4" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M7 20l4-4" strokeWidth={1.5} strokeLinecap="round"/>
+                    <path d="M17 20l-4-4" strokeWidth={1.5} strokeLinecap="round"/>
+                    {/* Data flow indicators */}
+                    <circle cx="8" cy="6" r="0.5" fill="currentColor" opacity="0.7"/>
+                    <circle cx="16" cy="6" r="0.5" fill="currentColor" opacity="0.7"/>
+                    <circle cx="8" cy="18" r="0.5" fill="currentColor" opacity="0.7"/>
+                    <circle cx="16" cy="18" r="0.5" fill="currentColor" opacity="0.7"/>
                   </svg>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Trending Quests - Better integrated background */}
-          <div className="col-span-12 md:col-span-5 bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 shadow-lg border border-gray-200/50">
+          {/* Trending Quests - Bright background with vibrant contrast */}
+          <div className="col-span-12 md:col-span-5 bg-gradient-to-br from-[hsl(var(--vibrant-pink))]/15 to-[hsl(var(--vibrant-red))]/10 rounded-xl p-5 shadow-lg border border-[hsl(var(--vibrant-pink))]/25">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-[hsl(var(--vibrant-yellow))]" />
-                <h3 className="font-semibold text-gray-800">Trending Quests</h3>
+                <h3 className="font-semibold tex-white-600">Trending Quests</h3>
               </div>
-              <Button size="sm" variant="ghost" className="text-xs text-gray-600 hover:text-gray-800">
+              <Button size="sm" variant="ghost" className="text-xs text-gray-600 hover:text-white-500">
                 View All <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/8 to-[hsl(var(--vibrant-purple))]/8 rounded-xl border border-[hsl(var(--vibrant-blue))]/25 hover:border-[hsl(var(--vibrant-blue))]/40 transition-colors">
-                <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-blue))]/20">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-orange))]/90 to-[hsl(var(--vibrant-yellow))]/90 rounded-xl border border-[hsl(var(--vibrant-orange))]/60 hover:border-[hsl(var(--vibrant-orange))]/80 transition-colors text-white">
+                <Avatar className="h-10 w-10 border-2 border-white/30">
                   <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white text-xs font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] text-white text-xs font-bold">
                     DF
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-gray-800">DeFi Protocol Quest</h4>
-                    <Badge className="bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))] text-xs font-medium border-[hsl(var(--vibrant-blue))]/25">
+                    <h4 className="text-sm font-semibold text-white">DeFi Protocol Quest</h4>
+                    <Badge className="bg-white/20 text-white text-xs font-medium border-white/30">
                       Active
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-600 mb-2 leading-relaxed">
+                  <p className="text-xs text-white/90 mb-2 leading-relaxed">
                     Follow @DeFiProtocol and retweet their latest announcement about governance updates
                   </p>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[hsl(var(--vibrant-blue))] font-bold">0.1 ETH</span>
-                    <span className="text-xs text-gray-500">245/500 participants</span>
+                    <span className="text-sm text-white font-bold">0.1 ETH</span>
+                    <span className="text-xs text-white/80">245/500 participants</span>
                   </div>
-                  <div className="w-full bg-gray-200/70 rounded-full h-1.5">
-                    <div className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-1.5 rounded-full" style={{ width: "49%" }}></div>
+                  <div className="w-full bg-white/30 rounded-full h-1.5">
+                    <div className="bg-white h-1.5 rounded-full" style={{ width: "49%" }}></div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-green))]/8 to-[hsl(var(--vibrant-yellow))]/8 rounded-xl border border-[hsl(var(--vibrant-green))]/25 hover:border-[hsl(var(--vibrant-green))]/40 transition-colors">
-                <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-green))]/20">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-purple))]/90 to-[hsl(var(--vibrant-blue))]/90 rounded-xl border border-[hsl(var(--vibrant-purple))]/60 hover:border-[hsl(var(--vibrant-purple))]/80 transition-colors text-white">
+                <Avatar className="h-10 w-10 border-2 border-white/30">
                   <AvatarImage src="" />
                   <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-yellow))] text-white text-xs font-bold">
                     ZK
@@ -237,47 +297,47 @@ const Index = () => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-gray-800">ZK Education Thread</h4>
-                    <Badge className="bg-[hsl(var(--vibrant-green))]/15 text-[hsl(var(--vibrant-green))] text-xs font-medium border-[hsl(var(--vibrant-green))]/25">
+                    <h4 className="text-sm font-semibold text-white">ZK Education Thread</h4>
+                    <Badge className="bg-white/20 text-white text-xs font-medium border-white/30">
                       Active
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-600 mb-2 leading-relaxed">
+                  <p className="text-xs text-white/90 mb-2 leading-relaxed">
                     Create an educational Twitter thread explaining zero-knowledge proofs in simple terms
                   </p>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[hsl(var(--vibrant-green))] font-bold">50 USDC</span>
-                    <span className="text-xs text-gray-500">89/100 participants</span>
+                    <span className="text-sm text-white font-bold">50 USDC</span>
+                    <span className="text-xs text-white/80">89/100 participants</span>
                   </div>
-                  <div className="w-full bg-gray-200/70 rounded-full h-1.5">
-                    <div className="bg-gradient-to-r from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-yellow))] h-1.5 rounded-full" style={{ width: "89%" }}></div>
+                  <div className="w-full bg-white/30 rounded-full h-1.5">
+                    <div className="bg-white h-1.5 rounded-full" style={{ width: "89%" }}></div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-red))]/8 to-[hsl(var(--vibrant-pink))]/8 rounded-xl border border-[hsl(var(--vibrant-red))]/25">
-                <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-red))]/20">
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-green))]/90 to-[hsl(var(--vibrant-blue))]/90 rounded-xl border border-[hsl(var(--vibrant-green))]/60 text-white">
+                <Avatar className="h-10 w-10 border-2 border-white/30">
                   <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] text-white text-xs font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] text-white text-xs font-bold">
                     DC
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-gray-800">Discord Community</h4>
-                    <Badge className="bg-gray-100/80 text-gray-600 text-xs border border-gray-300/50">
+                    <h4 className="text-sm font-semibold text-white">Discord Community</h4>
+                    <Badge className="bg-white/20 text-white text-xs border border-white/30">
                       Completed
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-600 mb-2 leading-relaxed">
+                  <p className="text-xs text-white/90 mb-2 leading-relaxed">
                     Join the official Discord server and complete the verification process
                   </p>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[hsl(var(--vibrant-red))] font-bold">NFT Badge</span>
-                    <span className="text-xs text-gray-500">1,000/1,000 completed</span>
+                    <span className="text-sm text-white font-bold">NFT Badge</span>
+                    <span className="text-xs text-white/80">1,000/1,000 completed</span>
                   </div>
-                  <div className="w-full bg-gray-200/70 rounded-full h-1.5">
-                    <div className="bg-gradient-to-r from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] h-1.5 rounded-full" style={{ width: "100%" }}></div>
+                  <div className="w-full bg-white/30 rounded-full h-1.5">
+                    <div className="bg-white h-1.5 rounded-full" style={{ width: "100%" }}></div>
                   </div>
                 </div>
               </div>

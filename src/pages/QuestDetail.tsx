@@ -278,57 +278,59 @@ const QuestDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
-        <div className="container mx-auto px-4 py-8 relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/quests')}
-              className="text-white hover:bg-white/20 border border-white/20"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Quests
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={handleShare}
-              className="text-white hover:bg-white/20 border border-white/20"
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-8">
-              <h1 className="text-4xl font-bold text-white mb-4">{quest.title}</h1>
-              <p className="text-white/90 text-lg mb-6">{quest.description}</p>
-              
-              <div className="flex items-center gap-4 mb-4">
-                <Avatar className="h-12 w-12 border-2 border-white/20">
-                  <AvatarImage src={quest.creator.avatar} />
-                  <AvatarFallback className="bg-white/20 text-white">
-                    {quest.creator.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="text-white font-semibold">{quest.creator.name}</div>
-                  <div className="text-white/70 text-sm">{quest.creator.handle}</div>
-                </div>
-              </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] relative overflow-hidden rounded-xl">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
+          <div className="px-6 py-8 relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/quests')}
+                className="text-white hover:bg-white/20 border border-white/20"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Quests
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleShare}
+                className="text-white hover:bg-white/20 border border-white/20"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
             </div>
 
-            <div className="lg:col-span-4">
-              <Badge className={`text-sm ${getStatusBadgeColor(quest.status)} mb-4`}>
-                {quest.status}
-              </Badge>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div className="lg:col-span-8">
+                <h1 className="text-4xl font-bold text-white mb-4">{quest.title}</h1>
+                <p className="text-white/90 text-lg mb-6">{quest.description}</p>
+                
+                <div className="flex items-center gap-4 mb-4">
+                  <Avatar className="h-12 w-12 border-2 border-white/20">
+                    <AvatarImage src={quest.creator.avatar} />
+                    <AvatarFallback className="bg-white/20 text-white">
+                      {quest.creator.name.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="text-white font-semibold">{quest.creator.name}</div>
+                    <div className="text-white/70 text-sm">{quest.creator.handle}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-4">
+                <Badge className={`text-sm ${getStatusBadgeColor(quest.status)} mb-4`}>
+                  {quest.status}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 -mt-8 relative z-20">
+      <div className="container mx-auto px-4 mt-8">
         {/* Overview Cards - Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Reward Card */}
