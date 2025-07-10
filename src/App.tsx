@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import Index from "./pages/Index";
+import QuestList from "./pages/QuestList";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 
@@ -26,6 +27,7 @@ const App = () => {
             <Navigation />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/quests" element={<QuestList />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

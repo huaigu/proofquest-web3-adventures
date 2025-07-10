@@ -28,12 +28,16 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button size="sm" className="bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90 text-xs font-medium">
-                  Explore Quests
-                </Button>
-                <Button size="sm" className="bg-white/10 text-white hover:bg-white/20 border border-white/30 text-xs font-medium">
-                  Create Quest
-                </Button>
+                <Link to="/quests">
+                  <Button size="sm" className="bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90 text-xs font-medium">
+                    Explore Quests
+                  </Button>
+                </Link>
+                <Link to="/create">
+                  <Button size="sm" className="bg-white/10 text-white hover:bg-white/20 border border-white/30 text-xs font-medium">
+                    Create Quest
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
