@@ -478,70 +478,46 @@ const CreateQuest = () => {
                         </>
                       )}
 
-                      {/* Content Creation Configuration */}
-                      {formData.questType === "content-creation" && (
+                      {/* Quote Tweet Configuration */}
+                      {formData.questType === "quote-tweet" && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="contentTopic">Content Topic/Theme *</Label>
+                            <Label htmlFor="quoteTweetUrl">Original Tweet URL *</Label>
                             <Controller
-                              name="contentTopic"
+                              name="quoteTweetUrl"
                               control={control}
                               render={({ field }) => (
                                 <Input
                                   {...field}
-                                  placeholder="e.g., DeFi, NFTs, Web3"
+                                  placeholder="https://twitter.com/..."
                                   value={field.value || ""}
                                 />
                               )}
                             />
+                            <p className="text-sm text-muted-foreground">
+                              Enter the URL of the tweet you want participants to quote
+                            </p>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="minWordCount">Minimum Word Count</Label>
+                            <Label htmlFor="quoteRequirements">Required Hashtag</Label>
                             <Controller
-                              name="minWordCount"
-                              control={control}
-                              render={({ field }) => (
-                                <Input
-                                  type="number"
-                                  {...field}
-                                  placeholder="500"
-                                  value={field.value || ""}
-                                  onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
-                                />
-                              )}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="requiredKeywords">Required Keywords (comma-separated)</Label>
-                            <Controller
-                              name="requiredKeywords"
+                              name="quoteRequirements"
                               control={control}
                               render={({ field }) => (
                                 <Input
                                   {...field}
-                                  placeholder="blockchain, cryptocurrency, DeFi"
+                                  placeholder="Enter hashtag (e.g., #Web3, #DeFi, #ProofQuest)"
                                   value={field.value || ""}
                                 />
                               )}
                             />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="aiCriteria">AI Judgment Criteria</Label>
-                            <Controller
-                              name="aiCriteria"
-                              control={control}
-                              render={({ field }) => (
-                                <Textarea
-                                  {...field}
-                                  placeholder="Describe how AI should evaluate the content quality"
-                                  rows={3}
-                                  value={field.value || ""}
-                                />
-                              )}
-                            />
+                            <p className="text-sm text-muted-foreground">
+                              Optional: Enter one hashtag that must be included in the quote tweet
+                            </p>
                           </div>
                         </>
                       )}
+
                   </CardContent>
                 </Card>
               )}
