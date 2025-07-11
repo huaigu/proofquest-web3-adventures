@@ -589,59 +589,60 @@ const CreateQuest = () => {
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Reward Type */}
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         <Label>Reward Type *</Label>
                         <Controller
                           name="rewardType"
                           control={control}
                           render={({ field }) => (
-                            <Select value={field.value} onValueChange={field.onChange}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select reward type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="ETH">ETH</SelectItem>
-                                <SelectItem value="ERC20">ERC20 Token</SelectItem>
-                                <SelectItem value="NFT">NFT</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <RadioGroup value={field.value} onValueChange={field.onChange}>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* ETH Option - Enabled */}
+                                <Label className="cursor-pointer">
+                                  <RadioGroupItem value="ETH" className="sr-only" />
+                                  <div className={cn(
+                                    "border rounded-lg p-4 transition-all hover:border-[hsl(var(--vibrant-blue))]/50 h-full min-h-[80px] flex flex-col",
+                                    field.value === "ETH" 
+                                      ? "border-[hsl(var(--vibrant-blue))] bg-[hsl(var(--vibrant-blue))]/5" 
+                                      : "border-border"
+                                  )}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <Coins className="h-5 w-5 text-[hsl(var(--vibrant-blue))]" />
+                                      <h4 className="font-medium">ETH</h4>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground flex-1">Native Ethereum token</p>
+                                  </div>
+                                </Label>
+
+                                {/* ERC20 Option - Disabled */}
+                                <div className="opacity-50 cursor-not-allowed">
+                                  <div className="border rounded-lg p-4 border-border bg-muted/30 h-full min-h-[80px] flex flex-col">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <Coins className="h-5 w-5 text-muted-foreground" />
+                                      <h4 className="font-medium text-muted-foreground">ERC20 Token</h4>
+                                      <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground flex-1">Custom ERC20 tokens</p>
+                                  </div>
+                                </div>
+
+                                {/* NFT Option - Disabled */}
+                                <div className="opacity-50 cursor-not-allowed">
+                                  <div className="border rounded-lg p-4 border-border bg-muted/30 h-full min-h-[80px] flex flex-col">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <FileText className="h-5 w-5 text-muted-foreground" />
+                                      <h4 className="font-medium text-muted-foreground">NFT</h4>
+                                      <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground flex-1">Non-fungible token rewards</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </RadioGroup>
                           )}
                         />
                       </div>
 
-                      {/* ERC20 Token Details */}
-                      {formData.rewardType === "ERC20" && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="tokenAddress">Token Contract Address *</Label>
-                            <Controller
-                              name="tokenAddress"
-                              control={control}
-                              render={({ field }) => (
-                                <Input
-                                  {...field}
-                                  placeholder="0x..."
-                                  value={field.value || ""}
-                                />
-                              )}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="tokenSymbol">Token Symbol *</Label>
-                            <Controller
-                              name="tokenSymbol"
-                              control={control}
-                              render={({ field }) => (
-                                <Input
-                                  {...field}
-                                  placeholder="USDC"
-                                  value={field.value || ""}
-                                />
-                              )}
-                            />
-                          </div>
-                        </div>
-                      )}
 
                       {/* Reward Amounts */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
