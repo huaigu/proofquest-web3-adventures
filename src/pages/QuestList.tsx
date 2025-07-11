@@ -18,7 +18,10 @@ import {
   Users,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Heart,
+  Repeat2,
+  Coins
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -33,7 +36,7 @@ interface Quest {
   };
   reward: {
     amount: number;
-    type: 'ETH' | 'USDC' | 'NFT';
+    type: 'ETH' | 'ERC20' | 'NFT';
   };
   status: 'Active' | 'Claiming' | 'Cancelled' | 'Paused' | 'Completed';
   participants: {
@@ -41,9 +44,10 @@ interface Quest {
     max: number;
   };
   timeRemaining: string;
-  taskType: 'twitter' | 'discord' | 'content';
+  questType: 'twitter-interaction' | 'quote-tweet' | 'send-tweet';
   category: 'Social' | 'Content' | 'DeFi' | 'Gaming' | 'Education';
   createdAt: Date;
+  endDate: Date;
 }
 
 // Mock data
@@ -75,9 +79,9 @@ const generateMockQuests = (): Quest[] => {
   ];
 
   const statuses: Quest['status'][] = ['Active', 'Claiming', 'Cancelled', 'Paused', 'Completed'];
-  const taskTypes: Quest['taskType'][] = ['twitter', 'discord', 'content'];
+  const questTypes: Quest['questType'][] = ['twitter-interaction', 'quote-tweet', 'send-tweet'];
   const categories: Quest['category'][] = ['Social', 'Content', 'DeFi', 'Gaming', 'Education'];
-  const rewardTypes: Quest['reward']['type'][] = ['ETH', 'USDC', 'NFT'];
+  const rewardTypes: Quest['reward']['type'][] = ['ETH', 'ERC20', 'NFT'];
 
   return Array.from({ length: 15 }, (_, i) => {
     const creator = creators[i % creators.length];
@@ -86,6 +90,13 @@ const generateMockQuests = (): Quest[] => {
     const currentParticipants = status === 'Completed' 
       ? maxParticipants 
       : Math.floor(Math.random() * maxParticipants);
+
+    const createdAt = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+    const endDate = new Date(createdAt.getTime() + (Math.random() * 14 + 1) * 24 * 60 * 60 * 1000);
+    
+    // Only use supported types: ETH is fully supported, others coming soon
+    const rewardType = i % 4 === 0 ? 'ETH' : (i % 4 === 1 ? 'ERC20' : 'NFT');
+    const questType = questTypes[i % 2]; // Only twitter-interaction and quote-tweet are supported
 
     return {
       id: `quest-${i + 1}`,
@@ -97,17 +108,18 @@ const generateMockQuests = (): Quest[] => {
       },
       reward: {
         amount: Math.random() * 0.99 + 0.01,
-        type: rewardTypes[Math.floor(Math.random() * rewardTypes.length)],
+        type: rewardType,
       },
       status,
       participants: {
         current: currentParticipants,
         max: maxParticipants,
       },
-      timeRemaining: status === 'Completed' ? 'Ended' : `${Math.floor(Math.random() * 30) + 1}d`,
-      taskType: taskTypes[Math.floor(Math.random() * taskTypes.length)],
+      timeRemaining: status === 'Completed' ? 'Ended' : `${Math.floor((endDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))}d`,
+      questType,
       category: categories[Math.floor(Math.random() * categories.length)],
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+      createdAt,
+      endDate,
     };
   });
 };
@@ -120,7 +132,7 @@ const QuestList = () => {
   const [rewardTypeFilter, setRewardTypeFilter] = useState<string>("all");
   const [questTypeFilter, setQuestTypeFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("newest");
+  const [sortBy, setSortBy] = useState<string>("created-newest");
   const [rewardRange, setRewardRange] = useState<number[]>([0, 1]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showSidebar, setShowSidebar] = useState(true);
@@ -160,7 +172,7 @@ const QuestList = () => {
       }
 
       // Quest type filter
-      if (questTypeFilter !== "all" && quest.taskType !== questTypeFilter) {
+      if (questTypeFilter !== "all" && quest.questType !== questTypeFilter) {
         return false;
       }
 
@@ -171,7 +183,7 @@ const QuestList = () => {
 
       // Reward range filter (convert to ETH equivalent for comparison)
       const questRewardInETH = quest.reward.type === 'ETH' ? quest.reward.amount :
-                               quest.reward.type === 'USDC' ? quest.reward.amount / 2000 : 0.05; // Assume NFT = 0.05 ETH
+                               quest.reward.type === 'ERC20' ? quest.reward.amount / 2000 : 0.05; // Assume NFT = 0.05 ETH
       if (questRewardInETH < rewardRange[0] || questRewardInETH > rewardRange[1]) {
         return false;
       }
@@ -184,9 +196,9 @@ const QuestList = () => {
       case "highest-reward":
         filtered.sort((a, b) => {
           const aReward = a.reward.type === 'ETH' ? a.reward.amount :
-                         a.reward.type === 'USDC' ? a.reward.amount / 2000 : 0.05;
+                         a.reward.type === 'ERC20' ? a.reward.amount / 2000 : 0.05;
           const bReward = b.reward.type === 'ETH' ? b.reward.amount :
-                         b.reward.type === 'USDC' ? b.reward.amount / 2000 : 0.05;
+                         b.reward.type === 'ERC20' ? b.reward.amount / 2000 : 0.05;
           return bReward - aReward;
         });
         break;
@@ -194,10 +206,20 @@ const QuestList = () => {
         filtered.sort((a, b) => {
           if (a.timeRemaining === 'Ended') return 1;
           if (b.timeRemaining === 'Ended') return -1;
-          return parseInt(a.timeRemaining) - parseInt(b.timeRemaining);
+          return a.endDate.getTime() - b.endDate.getTime();
         });
         break;
-      default: // newest
+      case "ending-latest":
+        filtered.sort((a, b) => {
+          if (a.timeRemaining === 'Ended') return 1;
+          if (b.timeRemaining === 'Ended') return -1;
+          return b.endDate.getTime() - a.endDate.getTime();
+        });
+        break;
+      case "created-oldest":
+        filtered.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        break;
+      default: // created-newest
         filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
@@ -259,16 +281,29 @@ const QuestList = () => {
     }
   };
 
-  const getTaskIcon = (taskType: Quest['taskType']) => {
-    switch (taskType) {
-      case 'twitter':
-        return <Twitter className="h-4 w-4" />;
-      case 'discord':
+  const getQuestTypeIcon = (questType: Quest['questType']) => {
+    switch (questType) {
+      case 'twitter-interaction':
+        return <Heart className="h-4 w-4" />;
+      case 'quote-tweet':
         return <MessageSquare className="h-4 w-4" />;
-      case 'content':
+      case 'send-tweet':
         return <FileText className="h-4 w-4" />;
       default:
-        return <FileText className="h-4 w-4" />;
+        return <Twitter className="h-4 w-4" />;
+    }
+  };
+
+  const getQuestTypeLabel = (questType: Quest['questType']) => {
+    switch (questType) {
+      case 'twitter-interaction':
+        return 'Twitter Interaction';
+      case 'quote-tweet':
+        return 'Quote Tweet';
+      case 'send-tweet':
+        return 'Send Tweet';
+      default:
+        return 'Twitter';
     }
   };
 
@@ -364,9 +399,11 @@ const QuestList = () => {
                     <SelectValue placeholder="Sort" className="text-white" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="newest">Newest</SelectItem>
-                    <SelectItem value="highest-reward">Highest Reward</SelectItem>
+                    <SelectItem value="created-newest">Newest Created</SelectItem>
+                    <SelectItem value="created-oldest">Oldest Created</SelectItem>
                     <SelectItem value="ending-soon">Ending Soon</SelectItem>
+                    <SelectItem value="ending-latest">Ending Latest</SelectItem>
+                    <SelectItem value="highest-reward">Highest Reward</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -438,9 +475,27 @@ const QuestList = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="eth">ETH</SelectItem>
-                          <SelectItem value="usdc">USDC</SelectItem>
-                          <SelectItem value="nft">NFT</SelectItem>
+                          <SelectItem value="eth">
+                            <div className="flex items-center gap-2">
+                              <Coins className="h-4 w-4" />
+                              <span>ETH</span>
+                              <span className="text-xs text-green-500">(Supported)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="erc20" disabled>
+                            <div className="flex items-center gap-2 opacity-50">
+                              <Coins className="h-4 w-4" />
+                              <span>ERC20</span>
+                              <span className="text-xs text-gray-500">(Coming Soon)</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="nft" disabled>
+                            <div className="flex items-center gap-2 opacity-50">
+                              <FileText className="h-4 w-4" />
+                              <span>NFT</span>
+                              <span className="text-xs text-gray-500">(Coming Soon)</span>
+                            </div>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -454,9 +509,25 @@ const QuestList = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="twitter">Twitter</SelectItem>
-                          <SelectItem value="discord">Discord</SelectItem>
-                          <SelectItem value="content">Content</SelectItem>
+                          <SelectItem value="twitter-interaction">
+                            <div className="flex items-center gap-2">
+                              <Heart className="h-4 w-4" />
+                              <span>Twitter Interaction</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="quote-tweet">
+                            <div className="flex items-center gap-2">
+                              <MessageSquare className="h-4 w-4" />
+                              <span>Quote Tweet</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="send-tweet" disabled>
+                            <div className="flex items-center gap-2 opacity-50">
+                              <FileText className="h-4 w-4" />
+                              <span>Send Tweet</span>
+                              <span className="text-xs text-gray-500">(Coming Soon)</span>
+                            </div>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -541,13 +612,13 @@ const QuestList = () => {
                             <div className="flex items-center justify-between mb-4 p-3 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20">
                               <div className="flex items-center gap-2">
                                 <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                                  {getTaskIcon(quest.taskType)}
+                                  {getQuestTypeIcon(quest.questType)}
                                 </div>
                                 <div>
                                   <span className="text-sm font-bold text-white">
                                     {formatReward(quest.reward)}
                                   </span>
-                                  <p className="text-xs text-white/70">{quest.category}</p>
+                                  <p className="text-xs text-white/70">{getQuestTypeLabel(quest.questType)}</p>
                                 </div>
                               </div>
                               <div className="text-right">
