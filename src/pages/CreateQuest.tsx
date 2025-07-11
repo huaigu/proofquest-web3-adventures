@@ -712,7 +712,7 @@ const CreateQuest = () => {
                                 <Label className="cursor-pointer">
                                   <RadioGroupItem value="immediate" className="sr-only" />
                                   <div className={cn(
-                                    "border rounded-lg p-3 transition-all",
+                                    "border rounded-lg p-3 transition-all h-full min-h-[90px] flex flex-col justify-center",
                                     field.value === "immediate" 
                                       ? "border-[hsl(var(--vibrant-blue))] bg-[hsl(var(--vibrant-blue))]/5" 
                                       : "border-border"
@@ -731,7 +731,7 @@ const CreateQuest = () => {
                                 <Label className="cursor-pointer">
                                   <RadioGroupItem value="linear" className="sr-only" />
                                   <div className={cn(
-                                    "border rounded-lg p-3 transition-all",
+                                    "border rounded-lg p-3 transition-all h-full min-h-[90px] flex flex-col justify-center",
                                     field.value === "linear" 
                                       ? "border-[hsl(var(--vibrant-blue))] bg-[hsl(var(--vibrant-blue))]/5" 
                                       : "border-border"
