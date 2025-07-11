@@ -233,7 +233,8 @@ const CreateQuest = () => {
 
         {/* Step Indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6 relative">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-between mb-6 relative">
             {[
               { num: 1, title: "Basic Info", color: "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]" },
               { num: 2, title: "Task Type", color: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]" },
@@ -276,15 +277,16 @@ const CreateQuest = () => {
             ))}
           </div>
           
-          {/* Enhanced Progress Bar */}
-          <div className="relative">
-            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))] via-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-pink))] transition-all duration-500 ease-out"
-                style={{ width: `${(currentStep / 5) * 100}%` }}
-              />
+            {/* Enhanced Progress Bar */}
+            <div className="relative">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))] via-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-pink))] transition-all duration-500 ease-out"
+                  style={{ width: `${(currentStep / 5) * 100}%` }}
+                />
+              </div>
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 via-[hsl(var(--vibrant-orange))]/10 to-[hsl(var(--vibrant-pink))]/10 rounded-full" />
             </div>
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 via-[hsl(var(--vibrant-orange))]/10 to-[hsl(var(--vibrant-pink))]/10 rounded-full" />
           </div>
         </div>
 
