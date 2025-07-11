@@ -289,9 +289,7 @@ const CreateQuest = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-12 gap-6">
-            {/* Main Content */}
-            <div className="col-span-12 lg:col-span-8">
+          <div className="max-w-4xl mx-auto">
               {/* Step 1: Basic Information */}
               {currentStep === 1 && (
                 <Card>
@@ -1199,82 +1197,7 @@ const CreateQuest = () => {
                   </Card>
                 </div>
               )}
-            </div>
 
-            {/* Preview Panel - Hide on Review step */}
-            {currentStep < 5 && (
-              <div className="col-span-12 lg:col-span-4">
-                <div className="sticky top-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Eye className="h-4 w-4" />
-                        Quick Preview
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {formData.title && (
-                        <div>
-                          <h3 className="font-semibold">{formData.title}</h3>
-                          <Badge className="mt-1 bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))]">
-                            {questTypeOptions.find(opt => opt.value === formData.questType)?.title}
-                          </Badge>
-                        </div>
-                      )}
-
-                      {formData.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-3">
-                          {formData.description}
-                        </p>
-                      )}
-
-                      {formData.totalRewardPool && formData.rewardPerParticipant && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Reward Pool:</span>
-                            <span className="font-medium text-[hsl(var(--vibrant-green))]">
-                              {formData.totalRewardPool} {formData.rewardType}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Per Participant:</span>
-                            <span className="font-medium">
-                              {formData.rewardPerParticipant} {formData.rewardType}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Max Participants:</span>
-                            <span className="font-medium">{maxParticipants}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {formData.startDate && formData.endDate && (
-                        <div className="text-sm">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <CalendarIcon className="h-3 w-3" />
-                            <span>
-                              {format(formData.startDate, "MMM d")} - {format(formData.endDate, "MMM d, yyyy")}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {formData.rewardClaimDeadline && (
-                        <div className="text-sm">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>
-                              Claim by {format(formData.rewardClaimDeadline, "MMM d, yyyy")}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Navigation */}
