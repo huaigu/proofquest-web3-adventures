@@ -26,7 +26,7 @@ export const monadTestnet = defineChain({
 
 export const config = getDefaultConfig({
   appName: 'ProofQuest',
-  projectId: process.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo-project-id',
+  projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo-project-id',
   chains: [monadTestnet],
   ssr: false, // If your dApp uses server side rendering (SSR)
 });

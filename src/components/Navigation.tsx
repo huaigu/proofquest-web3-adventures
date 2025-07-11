@@ -20,31 +20,49 @@ export const Navigation = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+        <Link to="/" className="flex items-center space-x-3 group">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white font-bold text-lg shadow-lg group-hover:scale-105 transition-transform duration-200">
             P
           </div>
-          <span className="font-bold text-xl">ProofQuest</span>
+          <span className="font-bold text-xl bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] bg-clip-text text-transparent">
+            ProofQuest
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive(item.href)
-                  ? "text-primary"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex items-center space-x-3">
+          {navItems.map((item, index) => {
+            const gradients = [
+              "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]", // Explore
+              "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]", // Create
+              "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]", // Profile
+            ];
+            
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`relative px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                  isActive(item.href)
+                    ? `bg-gradient-to-r ${gradients[index]} text-white shadow-lg`
+                    : "bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/15 to-[hsl(var(--vibrant-purple))]/15 text-foreground border border-[hsl(var(--vibrant-blue))]/20 hover:from-[hsl(var(--vibrant-blue))]/25 hover:to-[hsl(var(--vibrant-purple))]/25 hover:border-[hsl(var(--vibrant-blue))]/40 shadow-sm"
+                }`}
+              >
+                <div className="relative z-10 flex items-center gap-2">
+                  {item.label}
+                  {isActive(item.href) && (
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                  )}
+                </div>
+                {!isActive(item.href) && (
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Wallet Connection */}
@@ -66,20 +84,33 @@ export const Navigation = () => {
                   <ConnectButton />
                 </div>
                 
-                <div className="border-t pt-4">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      className={`block py-2 text-lg font-medium transition-colors hover:text-primary ${
-                        isActive(item.href)
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                <div className="border-t pt-4 space-y-3">
+                  {navItems.map((item, index) => {
+                    const gradients = [
+                      "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]", // Explore
+                      "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]", // Create
+                      "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]", // Profile
+                    ];
+                    
+                    return (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        className={`block px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                          isActive(item.href)
+                            ? `bg-gradient-to-r ${gradients[index]} text-white shadow-lg`
+                            : "bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/15 to-[hsl(var(--vibrant-purple))]/15 text-foreground border border-[hsl(var(--vibrant-blue))]/20 hover:from-[hsl(var(--vibrant-blue))]/25 hover:to-[hsl(var(--vibrant-purple))]/25 hover:border-[hsl(var(--vibrant-blue))]/40 shadow-sm"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {item.label}
+                          {isActive(item.href) && (
+                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             </SheetContent>

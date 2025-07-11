@@ -41,27 +41,31 @@ import { Progress } from "@/components/ui/progress";
 const questSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  questType: z.enum(["twitter-follow", "twitter-interaction", "content-creation"]),
-  startDate: z.date(),
-  endDate: z.date(),
-  // Step 2 fields - conditional validation
+  questType: z.enum(["twitter-interaction", "quote-tweet", "send-tweet"]),
+  // Twitter interaction specific
+  interactionType: z.enum(["like", "retweet", "comment", "follow"]).optional(),
   targetAccount: z.string().optional(),
-  followerThreshold: z.number().optional(),
   tweetUrl: z.string().optional(),
-  requiredActions: z.array(z.string()).optional(),
-  quoteContent: z.string().optional(),
-  contentTopic: z.string().optional(),
-  minWordCount: z.number().optional(),
-  requiredKeywords: z.string().optional(),
-  aiCriteria: z.string().optional(),
+  // Quote tweet specific
+  quoteTweetUrl: z.string().optional(),
+  quoteRequirements: z.string().optional(),
+  // Send tweet specific
+  contentRequirements: z.string().optional(),
+  // Step 2 - Threshold configuration
+  participantThreshold: z.number().min(1, "Participant threshold must be at least 1").optional(),
+  // Step 2 - Reward configuration
   rewardType: z.enum(["ETH", "ERC20", "NFT"]),
   tokenAddress: z.string().optional(),
   tokenSymbol: z.string().optional(),
   totalRewardPool: z.number().min(0.001, "Reward pool must be greater than 0"),
   rewardPerParticipant: z.number().min(0.001, "Reward per participant must be greater than 0"),
-  distributionMethod: z.enum(["immediate", "delayed", "linear"]),
-  delayDays: z.number().optional(),
+  distributionMethod: z.enum(["immediate", "linear"]),
   linearPeriod: z.number().optional(),
+  unlockTime: z.date().optional(),
+  // Step 3 - Time configuration
+  startDate: z.date(),
+  endDate: z.date(),
+  rewardClaimDeadline: z.date(),
   agreeToTerms: z.boolean().refine(val => val === true, "You must agree to terms")
 });
 
@@ -75,12 +79,12 @@ const CreateQuest = () => {
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<QuestFormData>({
     resolver: zodResolver(questSchema),
     defaultValues: {
-      questType: "twitter-follow",
+      questType: "twitter-interaction",
       rewardType: "ETH",
       distributionMethod: "immediate",
       startDate: new Date(),
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      requiredActions: [],
+      rewardClaimDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
       agreeToTerms: false
     }
   });
@@ -116,7 +120,7 @@ const CreateQuest = () => {
   }, [setValue]);
 
   const nextStep = () => {
-    if (currentStep < 3) setCurrentStep(currentStep + 1);
+    if (currentStep < 5) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
@@ -136,7 +140,7 @@ const CreateQuest = () => {
     // Clear draft
     localStorage.removeItem('questDraft');
     setIsDeploying(false);
-    setCurrentStep(4); // Success step
+    setCurrentStep(6); // Success step
   };
 
   const saveDraft = () => {
@@ -150,35 +154,44 @@ const CreateQuest = () => {
   const getStepTitle = () => {
     switch (currentStep) {
       case 1: return "Basic Information";
-      case 2: return "Configuration";
-      case 3: return "Review & Deploy";
-      case 4: return "Success!";
+      case 2: return "Task Type & Configuration";
+      case 3: return "Threshold & Reward Configuration";
+      case 4: return "Time Configuration";
+      case 5: return "Review & Deploy";
+      case 6: return "Success!";
       default: return "";
     }
   };
 
   const questTypeOptions = [
     {
-      value: "twitter-follow",
-      title: "Twitter Follow",
-      description: "Users follow a specific Twitter account",
-      icon: Twitter
-    },
-    {
       value: "twitter-interaction",
       title: "Twitter Interaction", 
-      description: "Users interact with a specific tweet",
+      description: "Users interact with tweets (like, retweet, comment, follow)",
       icon: Heart
     },
     {
-      value: "content-creation",
-      title: "Content Creation",
-      description: "Users create original content",
+      value: "quote-tweet",
+      title: "Quote Tweet",
+      description: "Users quote tweet with specific requirements",
+      icon: MessageCircle
+    },
+    {
+      value: "send-tweet",
+      title: "Send Tweet",
+      description: "Users create and send original tweets",
       icon: FileText
     }
   ];
 
-  if (currentStep === 4) {
+  const interactionTypeOptions = [
+    { value: "like", label: "Like", icon: Heart },
+    { value: "retweet", label: "Retweet", icon: Repeat2 },
+    { value: "comment", label: "Comment", icon: MessageCircle },
+    { value: "follow", label: "Follow", icon: Twitter }
+  ];
+
+  if (currentStep === 6) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center">
@@ -220,29 +233,58 @@ const CreateQuest = () => {
 
         {/* Step Indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
+          <div className="flex items-center justify-between mb-6 relative">
+            {[
+              { num: 1, title: "Basic Info", color: "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]" },
+              { num: 2, title: "Task Type", color: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]" },
+              { num: 3, title: "Rewards", color: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]" },
+              { num: 4, title: "Timing", color: "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]" },
+              { num: 5, title: "Review", color: "from-[hsl(var(--vibrant-cyan))] to-[hsl(var(--vibrant-blue))]" }
+            ].map((step, index) => (
+              <div key={step.num} className="flex flex-col items-center flex-1 relative">
                 <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium",
-                  step <= currentStep 
-                    ? "bg-[hsl(var(--vibrant-blue))] text-white" 
-                    : "bg-muted text-muted-foreground"
+                  "w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold mb-3 transition-all duration-200 relative z-10",
+                  step.num <= currentStep 
+                    ? `bg-gradient-to-br ${step.color} text-white shadow-lg scale-105` 
+                    : "bg-muted text-muted-foreground border-2 border-border"
                 )}>
-                  {step < currentStep ? <Check className="h-4 w-4" /> : step}
+                  {step.num < currentStep ? <Check className="h-5 w-5" /> : step.num}
                 </div>
-                {step < 3 && (
+                <div className="text-center">
                   <div className={cn(
-                    "flex-1 h-1 mx-4",
-                    step < currentStep ? "bg-[hsl(var(--vibrant-blue))]" : "bg-muted"
+                    "text-sm font-medium mb-1",
+                    step.num === currentStep ? "text-foreground" : "text-muted-foreground"
+                  )}>
+                    {step.num}. {step.title}
+                  </div>
+                  {step.num === currentStep && (
+                    <div className="text-xs text-[hsl(var(--vibrant-blue))] font-medium">
+                      {getStepTitle()}
+                    </div>
+                  )}
+                </div>
+                {/* Connection Line */}
+                {index < 4 && (
+                  <div className={cn(
+                    "absolute top-6 left-1/2 w-full h-0.5 -translate-y-1/2 z-0",
+                    step.num < currentStep 
+                      ? `bg-gradient-to-r ${step.color}` 
+                      : "bg-border"
                   )} />
                 )}
               </div>
             ))}
           </div>
-          <div className="text-center">
-            <h2 className="text-xl font-semibold">{getStepTitle()}</h2>
-            <Progress value={(currentStep / 3) * 100} className="w-full mt-2" />
+          
+          {/* Enhanced Progress Bar */}
+          <div className="relative">
+            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))] via-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-pink))] transition-all duration-500 ease-out"
+                style={{ width: `${(currentStep / 5) * 100}%` }}
+              />
+            </div>
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 via-[hsl(var(--vibrant-orange))]/10 to-[hsl(var(--vibrant-pink))]/10 rounded-full" />
           </div>
         </div>
 
@@ -297,6 +339,18 @@ const CreateQuest = () => {
                       )}
                     </div>
 
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 2: Task Type & Configuration */}
+              {currentStep === 2 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Task Type & Configuration</CardTitle>
+                    <CardDescription>Choose the type of quest and configure its requirements</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
                     {/* Quest Type */}
                     <div className="space-y-4">
                       <Label>Quest Type *</Label>
@@ -305,8 +359,8 @@ const CreateQuest = () => {
                         control={control}
                         render={({ field }) => (
                           <RadioGroup value={field.value} onValueChange={field.onChange}>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              {questTypeOptions.map((option) => {
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {questTypeOptions.filter(option => option.value !== "send-tweet").map((option) => {
                                 const IconComponent = option.icon;
                                 return (
                                   <Label
@@ -334,129 +388,23 @@ const CreateQuest = () => {
                                   </Label>
                                 );
                               })}
+                              
+                              {/* Disabled Send Tweet Option */}
+                              <div className="opacity-50 cursor-not-allowed">
+                                <div className="border rounded-lg p-4 border-border bg-muted/30">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <FileText className="h-5 w-5 text-muted-foreground" />
+                                    <h4 className="font-medium text-muted-foreground">Send Tweet</h4>
+                                    <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">Users create and send original tweets</p>
+                                </div>
+                              </div>
                             </div>
                           </RadioGroup>
                         )}
                       />
                     </div>
-
-                    {/* Duration */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Start Date *</Label>
-                        <Controller
-                          name="startDate"
-                          control={control}
-                          render={({ field }) => (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  initialFocus
-                                  className="p-3 pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          )}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>End Date *</Label>
-                        <Controller
-                          name="endDate"
-                          control={control}
-                          render={({ field }) => (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  initialFocus
-                                  className="p-3 pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Step 2: Configuration */}
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  {/* Quest-specific Configuration */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Quest Configuration</CardTitle>
-                      <CardDescription>Configure quest-specific requirements</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {/* Twitter Follow Configuration */}
-                      {formData.questType === "twitter-follow" && (
-                        <>
-                          <div className="space-y-2">
-                            <Label htmlFor="targetAccount">Target Account *</Label>
-                            <Controller
-                              name="targetAccount"
-                              control={control}
-                              render={({ field }) => (
-                                <Input
-                                  {...field}
-                                  placeholder="@username"
-                                  value={field.value || ""}
-                                />
-                              )}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="followerThreshold">Minimum Followers (Optional)</Label>
-                            <Controller
-                              name="followerThreshold"
-                              control={control}
-                              render={({ field }) => (
-                                <Input
-                                  type="number"
-                                  {...field}
-                                  placeholder="1000"
-                                  value={field.value || ""}
-                                  onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
-                                />
-                              )}
-                            />
-                          </div>
-                        </>
-                      )}
 
                       {/* Twitter Interaction Configuration */}
                       {formData.questType === "twitter-interaction" && (
@@ -597,6 +545,39 @@ const CreateQuest = () => {
                           </div>
                         </>
                       )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 3: Threshold & Reward Configuration */}
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  {/* Threshold Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Threshold Configuration</CardTitle>
+                      <CardDescription>Set participation limits</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="participantThreshold">Maximum Participants</Label>
+                        <Controller
+                          name="participantThreshold"
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              type="number"
+                              {...field}
+                              placeholder="100"
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
+                            />
+                          )}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          Leave empty for unlimited participants
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -676,7 +657,8 @@ const CreateQuest = () => {
                                 {...field}
                                 placeholder="1.0"
                                 value={field.value || ""}
-                                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                                onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
+                                className={errors.totalRewardPool ? "border-destructive" : ""}
                               />
                             )}
                           />
@@ -696,7 +678,8 @@ const CreateQuest = () => {
                                 {...field}
                                 placeholder="0.01"
                                 value={field.value || ""}
-                                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                                onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
+                                className={errors.rewardPerParticipant ? "border-destructive" : ""}
                               />
                             )}
                           />
@@ -724,7 +707,7 @@ const CreateQuest = () => {
                           control={control}
                           render={({ field }) => (
                             <RadioGroup value={field.value} onValueChange={field.onChange}>
-                              <div className="space-y-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <Label className="cursor-pointer">
                                   <RadioGroupItem value="immediate" className="sr-only" />
                                   <div className={cn(
@@ -738,33 +721,12 @@ const CreateQuest = () => {
                                       <div>
                                         <div className="font-medium">Immediate</div>
                                         <div className="text-sm text-muted-foreground">
-                                          Rewards are distributed immediately after quest completion
+                                          Rewards distributed instantly upon completion
                                         </div>
                                       </div>
                                     </div>
                                   </div>
                                 </Label>
-
-                                <Label className="cursor-pointer">
-                                  <RadioGroupItem value="delayed" className="sr-only" />
-                                  <div className={cn(
-                                    "border rounded-lg p-3 transition-all",
-                                    field.value === "delayed" 
-                                      ? "border-[hsl(var(--vibrant-blue))] bg-[hsl(var(--vibrant-blue))]/5" 
-                                      : "border-border"
-                                  )}>
-                                    <div className="flex items-center gap-3">
-                                      <Clock className="h-4 w-4 text-[hsl(var(--vibrant-orange))]" />
-                                      <div>
-                                        <div className="font-medium">Delayed</div>
-                                        <div className="text-sm text-muted-foreground">
-                                          Rewards are distributed after a delay period
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </Label>
-
                                 <Label className="cursor-pointer">
                                   <RadioGroupItem value="linear" className="sr-only" />
                                   <div className={cn(
@@ -790,26 +752,7 @@ const CreateQuest = () => {
                         />
                       </div>
 
-                      {/* Delay/Vesting Period Inputs */}
-                      {formData.distributionMethod === "delayed" && (
-                        <div className="space-y-2">
-                          <Label htmlFor="delayDays">Delay Period (days)</Label>
-                          <Controller
-                            name="delayDays"
-                            control={control}
-                            render={({ field }) => (
-                              <Input
-                                type="number"
-                                {...field}
-                                placeholder="7"
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
-                              />
-                            )}
-                          />
-                        </div>
-                      )}
-
+                      {/* Linear Vesting Period */}
                       {formData.distributionMethod === "linear" && (
                         <div className="space-y-2">
                           <Label htmlFor="linearPeriod">Vesting Period (days)</Label>
@@ -833,14 +776,171 @@ const CreateQuest = () => {
                 </div>
               )}
 
-              {/* Step 3: Review & Deploy */}
-              {currentStep === 3 && (
+              {/* Step 4: Time Configuration */}
+              {currentStep === 4 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Time Configuration</CardTitle>
+                    <CardDescription>Set up quest timing and deadlines</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Quest Duration */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Quest Start Date *</Label>
+                        <Controller
+                          name="startDate"
+                          control={control}
+                          render={({ field }) => (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  initialFocus
+                                  className="p-3 pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Quest End Date *</Label>
+                        <Controller
+                          name="endDate"
+                          control={control}
+                          render={({ field }) => (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  initialFocus
+                                  className="p-3 pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Reward Claim Deadline */}
+                    <div className="space-y-2">
+                      <Label>Reward Claim Deadline *</Label>
+                      <Controller
+                        name="rewardClaimDeadline"
+                        control={control}
+                        render={({ field }) => (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? format(field.value, "PPP") : "Pick a date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                                className="p-3 pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Participants must claim their rewards before this date
+                      </p>
+                    </div>
+                    
+                    {/* Unlock Time for Linear Vesting */}
+                    {formData.distributionMethod === "linear" && (
+                      <div className="space-y-2">
+                        <Label>Unlock Start Time</Label>
+                        <Controller
+                          name="unlockTime"
+                          control={control}
+                          render={({ field }) => (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  initialFocus
+                                  className="p-3 pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          When linear vesting should begin
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 5: Review & Deploy */}
+              {currentStep === 5 && (
                 <div className="space-y-6">
-                  {/* Quest Summary */}
+
+                  {/* Quest Details */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Quest Summary</CardTitle>
-                      <CardDescription>Review your quest details before deployment</CardDescription>
+                      <CardTitle>Quest Details</CardTitle>
+                      <CardDescription>Basic information and task requirements</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -849,37 +949,180 @@ const CreateQuest = () => {
                           <p className="font-medium">{formData.title}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Type</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">Task Type</Label>
                           <p className="font-medium">
                             {questTypeOptions.find(opt => opt.value === formData.questType)?.title}
                           </p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
-                          <p className="font-medium">
-                            {format(formData.startDate, "PPP")} - {format(formData.endDate, "PPP")}
-                          </p>
+                          <Label className="text-sm font-medium text-muted-foreground">Start Date</Label>
+                          <p className="font-medium">{format(formData.startDate, "PPP")}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Reward Type</Label>
-                          <p className="font-medium">{formData.rewardType}</p>
+                          <Label className="text-sm font-medium text-muted-foreground">End Date</Label>
+                          <p className="font-medium">{format(formData.endDate, "PPP")}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Total Pool</Label>
-                          <p className="font-medium text-[hsl(var(--vibrant-green))]">
-                            {formData.totalRewardPool} {formData.rewardType}
-                          </p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Per Participant</Label>
-                          <p className="font-medium">
-                            {formData.rewardPerParticipant} {formData.rewardType}
-                          </p>
+                          <Label className="text-sm font-medium text-muted-foreground">Claim Deadline</Label>
+                          <p className="font-medium">{format(formData.rewardClaimDeadline, "PPP")}</p>
                         </div>
                       </div>
                       <div>
                         <Label className="text-sm font-medium text-muted-foreground">Description</Label>
                         <p className="text-sm">{formData.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Quest Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Quest Configuration</CardTitle>
+                      <CardDescription>Task-specific requirements and conditions</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Twitter Interaction Configuration */}
+                      {formData.questType === "twitter-interaction" && (
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Interaction Type</Label>
+                            <p className="font-medium capitalize">
+                              {interactionTypeOptions.find(opt => opt.value === formData.interactionType)?.label || formData.interactionType}
+                            </p>
+                          </div>
+                          {formData.interactionType === "follow" && formData.targetAccount && (
+                            <div>
+                              <Label className="text-sm font-medium text-muted-foreground">Target Account</Label>
+                              <p className="font-medium">{formData.targetAccount}</p>
+                            </div>
+                          )}
+                          {formData.interactionType !== "follow" && formData.tweetUrl && (
+                            <div>
+                              <Label className="text-sm font-medium text-muted-foreground">Tweet URL</Label>
+                              <p className="font-medium text-[hsl(var(--vibrant-blue))] break-all">{formData.tweetUrl}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Quote Tweet Configuration */}
+                      {formData.questType === "quote-tweet" && (
+                        <div className="space-y-3">
+                          {formData.quoteTweetUrl && (
+                            <div>
+                              <Label className="text-sm font-medium text-muted-foreground">Original Tweet URL</Label>
+                              <p className="font-medium text-[hsl(var(--vibrant-blue))] break-all">{formData.quoteTweetUrl}</p>
+                            </div>
+                          )}
+                          {formData.quoteRequirements && (
+                            <div>
+                              <Label className="text-sm font-medium text-muted-foreground">Quote Requirements</Label>
+                              <p className="text-sm">{formData.quoteRequirements}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Send Tweet Configuration */}
+                      {formData.questType === "send-tweet" && formData.contentRequirements && (
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Content Requirements</Label>
+                          <p className="text-sm">{formData.contentRequirements}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Threshold Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Threshold Configuration</CardTitle>
+                      <CardDescription>Participant requirements and quest activation conditions</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Minimum Participants</Label>
+                          <p className="font-medium">
+                            {formData.participantThreshold || "No minimum set"}
+                            {formData.participantThreshold && (
+                              <span className="text-sm text-muted-foreground ml-2">
+                                (Quest activates when reached)
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Maximum Participants</Label>
+                          <p className="font-medium">
+                            {maxParticipants > 0 ? maxParticipants : "Unlimited"}
+                            {maxParticipants > 0 && (
+                              <span className="text-sm text-muted-foreground ml-2">
+                                (Based on reward pool)
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Reward Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Reward Configuration</CardTitle>
+                      <CardDescription>Reward details and distribution method</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Reward Type</Label>
+                          <p className="font-medium">{formData.rewardType}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Distribution Method</Label>
+                          <p className="font-medium capitalize">{formData.distributionMethod}</p>
+                        </div>
+                        {formData.rewardType === "ERC20" && (
+                          <>
+                            {formData.tokenAddress && (
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Token Address</Label>
+                                <p className="font-medium text-xs break-all">{formData.tokenAddress}</p>
+                              </div>
+                            )}
+                            {formData.tokenSymbol && (
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Token Symbol</Label>
+                                <p className="font-medium">{formData.tokenSymbol}</p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Total Reward Pool</Label>
+                          <p className="font-medium text-[hsl(var(--vibrant-green))]">
+                            {formData.totalRewardPool} {formData.rewardType}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Reward per Participant</Label>
+                          <p className="font-medium">
+                            {formData.rewardPerParticipant} {formData.rewardType}
+                          </p>
+                        </div>
+                        {formData.distributionMethod === "linear" && formData.linearPeriod && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Vesting Period</Label>
+                            <p className="font-medium">{formData.linearPeriod} days</p>
+                          </div>
+                        )}
+                        {formData.distributionMethod === "linear" && formData.unlockTime && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Unlock Start</Label>
+                            <p className="font-medium">{format(formData.unlockTime, "PPP")}</p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -957,82 +1200,84 @@ const CreateQuest = () => {
               )}
             </div>
 
-            {/* Preview Panel */}
-            <div className="col-span-12 lg:col-span-4">
-              <div className="sticky top-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      Preview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {formData.title && (
-                      <div>
-                        <h3 className="font-semibold">{formData.title}</h3>
-                        <Badge className="mt-1 bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))]">
-                          {questTypeOptions.find(opt => opt.value === formData.questType)?.title}
-                        </Badge>
-                      </div>
-                    )}
-
-                    {formData.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {formData.description}
-                      </p>
-                    )}
-
-                    {formData.totalRewardPool && formData.rewardPerParticipant && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Reward Pool:</span>
-                          <span className="font-medium text-[hsl(var(--vibrant-green))]">
-                            {formData.totalRewardPool} {formData.rewardType}
-                          </span>
+            {/* Preview Panel - Hide on Review step */}
+            {currentStep < 5 && (
+              <div className="col-span-12 lg:col-span-4">
+                <div className="sticky top-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Quick Preview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {formData.title && (
+                        <div>
+                          <h3 className="font-semibold">{formData.title}</h3>
+                          <Badge className="mt-1 bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))]">
+                            {questTypeOptions.find(opt => opt.value === formData.questType)?.title}
+                          </Badge>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Per Participant:</span>
-                          <span className="font-medium">
-                            {formData.rewardPerParticipant} {formData.rewardType}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Max Participants:</span>
-                          <span className="font-medium">{maxParticipants}</span>
-                        </div>
-                      </div>
-                    )}
+                      )}
 
-                    {formData.startDate && formData.endDate && (
-                      <div className="text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <CalendarIcon className="h-3 w-3" />
-                          <span>
-                            {format(formData.startDate, "MMM d")} - {format(formData.endDate, "MMM d, yyyy")}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                      {formData.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {formData.description}
+                        </p>
+                      )}
 
-                    {/* Save Draft Button */}
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={saveDraft}
-                      className="w-full"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Draft
-                    </Button>
-                  </CardContent>
-                </Card>
+                      {formData.totalRewardPool && formData.rewardPerParticipant && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Reward Pool:</span>
+                            <span className="font-medium text-[hsl(var(--vibrant-green))]">
+                              {formData.totalRewardPool} {formData.rewardType}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Per Participant:</span>
+                            <span className="font-medium">
+                              {formData.rewardPerParticipant} {formData.rewardType}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Max Participants:</span>
+                            <span className="font-medium">{maxParticipants}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {formData.startDate && formData.endDate && (
+                        <div className="text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <CalendarIcon className="h-3 w-3" />
+                            <span>
+                              {format(formData.startDate, "MMM d")} - {format(formData.endDate, "MMM d, yyyy")}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {formData.rewardClaimDeadline && (
+                        <div className="text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              Claim by {format(formData.rewardClaimDeadline, "MMM d, yyyy")}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between items-center mt-8">
             <Button
               type="button"
               variant="outline"
@@ -1043,8 +1288,19 @@ const CreateQuest = () => {
               Back
             </Button>
 
+            {/* Save Draft Button - Center */}
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={saveDraft}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Draft
+            </Button>
+
             <div className="flex gap-3">
-              {currentStep < 3 ? (
+              {currentStep < 5 ? (
                 <Button
                   type="button"
                   onClick={nextStep}
