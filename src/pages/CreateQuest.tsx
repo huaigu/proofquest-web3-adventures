@@ -239,7 +239,7 @@ const CreateQuest = () => {
               { num: 2, title: "Task Type", color: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]" },
               { num: 3, title: "Rewards", color: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]" },
               { num: 4, title: "Timing", color: "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]" },
-              { num: 5, title: "Review", color: "from-[hsl(var(--vibrant-cyan))] to-[hsl(var(--vibrant-blue))]" }
+              { num: 5, title: "Review", color: "from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))]" }
             ].map((step, index) => (
               <div key={step.num} className="flex flex-col items-center flex-1 relative">
                 <div className={cn(
