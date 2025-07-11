@@ -233,7 +233,7 @@ const CreateQuest = () => {
 
         {/* Step Indicator */}
         <div className="mb-8">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-6 relative">
             {[
               { num: 1, title: "Basic Info", color: "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]" },
@@ -291,7 +291,7 @@ const CreateQuest = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
               {/* Step 1: Basic Information */}
               {currentStep === 1 && (
                 <Card>
