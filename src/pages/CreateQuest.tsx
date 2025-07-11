@@ -374,7 +374,7 @@ const CreateQuest = () => {
                                       className="sr-only"
                                     />
                                     <div className={cn(
-                                      "border rounded-lg p-4 transition-all hover:border-[hsl(var(--vibrant-blue))]/50",
+                                      "border rounded-lg p-4 transition-all hover:border-[hsl(var(--vibrant-blue))]/50 h-full min-h-[100px] flex flex-col",
                                       field.value === option.value 
                                         ? "border-[hsl(var(--vibrant-blue))] bg-[hsl(var(--vibrant-blue))]/5" 
                                         : "border-border"
@@ -383,7 +383,7 @@ const CreateQuest = () => {
                                         <IconComponent className="h-5 w-5 text-[hsl(var(--vibrant-blue))]" />
                                         <h4 className="font-medium">{option.title}</h4>
                                       </div>
-                                      <p className="text-sm text-muted-foreground">{option.description}</p>
+                                      <p className="text-sm text-muted-foreground flex-1">{option.description}</p>
                                     </div>
                                   </Label>
                                 );
@@ -391,13 +391,13 @@ const CreateQuest = () => {
                               
                               {/* Disabled Send Tweet Option */}
                               <div className="opacity-50 cursor-not-allowed">
-                                <div className="border rounded-lg p-4 border-border bg-muted/30">
+                                <div className="border rounded-lg p-4 border-border bg-muted/30 h-full min-h-[100px] flex flex-col">
                                   <div className="flex items-center gap-3 mb-2">
                                     <FileText className="h-5 w-5 text-muted-foreground" />
                                     <h4 className="font-medium text-muted-foreground">Send Tweet</h4>
                                     <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
                                   </div>
-                                  <p className="text-sm text-muted-foreground">Users create and send original tweets</p>
+                                  <p className="text-sm text-muted-foreground flex-1">Users create and send original tweets</p>
                                 </div>
                               </div>
                             </div>
