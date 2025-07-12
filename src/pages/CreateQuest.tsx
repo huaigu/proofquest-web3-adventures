@@ -46,9 +46,11 @@ const questSchema = z.object({
   interactionType: z.enum(["like", "retweet", "comment", "follow"]).optional(),
   targetAccount: z.string().optional(),
   tweetUrl: z.string().optional(),
+  requiredActions: z.array(z.string()).optional(),
   // Quote tweet specific
   quoteTweetUrl: z.string().optional(),
   quoteRequirements: z.string().optional(),
+  quoteContent: z.string().optional(),
   // Send tweet specific
   contentRequirements: z.string().optional(),
   // Step 2 - Threshold configuration
@@ -438,9 +440,9 @@ const CreateQuest = () => {
                                       <Label className="cursor-pointer">
                                         <div className="flex items-center space-x-2 border rounded-lg p-3">
                                           <Checkbox
-                                            checked={(field.value || []).includes(action.id)}
+                                            checked={Array.isArray(field.value) && field.value.includes(action.id)}
                                             onCheckedChange={(checked) => {
-                                              const currentActions = field.value || [];
+                                              const currentActions = Array.isArray(field.value) ? field.value : [];
                                               if (checked) {
                                                 field.onChange([...currentActions, action.id]);
                                               } else {
@@ -458,7 +460,7 @@ const CreateQuest = () => {
                               })}
                             </div>
                           </div>
-                          {formData.requiredActions?.includes("quote") && (
+                          {Array.isArray(formData.requiredActions) && formData.requiredActions.includes("quote") && (
                             <div className="space-y-2">
                               <Label htmlFor="quoteContent">Quote Content Requirements</Label>
                               <Controller
@@ -469,7 +471,7 @@ const CreateQuest = () => {
                                     {...field}
                                     placeholder="Describe what the quote tweet should contain"
                                     rows={3}
-                                    value={field.value || ""}
+                                    value={typeof field.value === 'string' ? field.value : ""}
                                   />
                                 )}
                               />
