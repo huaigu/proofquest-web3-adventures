@@ -40,6 +40,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@rainbow-me/rainbowkit": "^2.1.7",
+    "@supabase/supabase-js": "^2.50.5",
     "@tanstack/react-query": "^5.56.2",
     "browserslist": "^4.25.1",
     "caniuse-lite": "^1.0.30001727",
