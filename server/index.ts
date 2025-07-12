@@ -1,8 +1,10 @@
 import Fastify from 'fastify'
 import { setupCors } from './middleware/cors.js'
+import authPlugin from './middleware/auth.js'
 import { questRoutes } from './routes/quests.js'
 import { userRoutes } from './routes/users.js'
 import { participationRoutes } from './routes/participations.js'
+import authRoutes from './routes/auth.js'
 
 const fastify = Fastify({
   logger: {
@@ -13,7 +15,11 @@ const fastify = Fastify({
 // Register CORS middleware
 await setupCors(fastify)
 
+// Register authentication plugin
+await fastify.register(authPlugin)
+
 // Register routes
+await fastify.register(authRoutes)
 await fastify.register(questRoutes)
 await fastify.register(userRoutes)
 await fastify.register(participationRoutes)

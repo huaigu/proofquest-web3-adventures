@@ -1,20 +1,31 @@
 import { FastifyInstance } from 'fastify'
 import { supabase } from '../lib/supabase.js'
 import { validateQuestData, transformToDbFormat, transformToApiFormat } from '../lib/validation.js'
+import { authenticate, getAuthenticatedAddress } from '../lib/authMiddleware.js'
 import type { QuestInsert } from '../types/database.js'
 import type { QuestResponse, ErrorResponse, QuestsListResponse } from '../types/quest.js'
 
 export async function questRoutes(fastify: FastifyInstance) {
-  // POST /api/quests - Create a new quest
+  // POST /api/quests - Create a new quest (requires authentication)
   fastify.post<{
-    Body: unknown & { creatorAddress?: string }
+    Body: unknown
     Reply: { success: true; data: QuestResponse } | ErrorResponse
-  }>('/api/quests', async (request, reply) => {
+  }>('/api/quests', {
+    preHandler: [authenticate]
+  }, async (request, reply) => {
     try {
-      const { creatorAddress, ...questData } = request.body as any
-      
+      // Get authenticated user address
+      const creatorAddress = getAuthenticatedAddress(request)
+      if (!creatorAddress) {
+        return reply.status(401).send({
+          error: 'Authentication Required',
+          message: 'Must be authenticated to create a quest',
+          statusCode: 401
+        })
+      }
+
       // Validate request body
-      const validation = validateQuestData(questData)
+      const validation = validateQuestData(request.body)
       
       if (!validation.success) {
         return reply.status(400).send({
@@ -28,19 +39,8 @@ export async function questRoutes(fastify: FastifyInstance) {
       // Transform to database format
       const questDbData = transformToDbFormat(validation.data)
       
-      // Add creator address if provided
-      if (creatorAddress) {
-        // Validate EVM address format
-        const evmAddressRegex = /^0x[a-fA-F0-9]{40}$/
-        if (!evmAddressRegex.test(creatorAddress)) {
-          return reply.status(400).send({
-            error: 'Invalid Creator Address',
-            message: 'Creator address must be a valid EVM address',
-            statusCode: 400
-          })
-        }
-        questDbData.creator_id = creatorAddress.toLowerCase()
-      }
+      // Set creator address from authenticated user
+      questDbData.creator_id = creatorAddress
 
       // Insert into Supabase
       const { data, error } = await supabase
