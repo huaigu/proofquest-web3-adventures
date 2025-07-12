@@ -1,0 +1,26 @@
+{
+  "name": "proofquest-server",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:test": "bun test-setup.ts",
+    "db:init": "bun scripts/init-database.ts",
+    "db:quick-test": "bun scripts/quick-test.ts",
+    "test:api": "bun scripts/test-api.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@supabase/supabase-js": "^2.50.5",
+    "fastify": "^5.4.0",
+    "zod": "^4.0.5"
+  }
+}
