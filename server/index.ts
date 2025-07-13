@@ -1,6 +1,5 @@
 import Fastify from 'fastify'
 import { setupCors } from './middleware/cors.js'
-import authPlugin from './middleware/auth.js'
 import { questRoutes } from './routes/quests.js'
 import { userRoutes } from './routes/users.js'
 import { participationRoutes } from './routes/participations.js'
@@ -15,14 +14,28 @@ const fastify = Fastify({
 // Register CORS middleware
 await setupCors(fastify)
 
-// Register authentication plugin
-await fastify.register(authPlugin)
+// Register all plugins and routes in the correct order
+await fastify.register(async function (fastify) {
+  // Register JWT plugin
+  await fastify.register(import('@fastify/jwt'), {
+    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
+    sign: {
+      expiresIn: '30d',
+      issuer: 'proofquest',
+      audience: 'proofquest-users'
+    },
+    verify: {
+      issuer: 'proofquest',
+      audience: 'proofquest-users'
+    }
+  })
 
-// Register routes
-await fastify.register(authRoutes)
-await fastify.register(questRoutes)
-await fastify.register(userRoutes)
-await fastify.register(participationRoutes)
+  // Register routes that need JWT
+  await fastify.register(authRoutes)
+  await fastify.register(questRoutes)
+  await fastify.register(userRoutes)
+  await fastify.register(participationRoutes)
+})
 
 // Health check endpoint
 fastify.get('/health', async (request, reply) => {

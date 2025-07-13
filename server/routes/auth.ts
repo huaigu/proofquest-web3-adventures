@@ -34,15 +34,26 @@ export default async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/api/auth/nonce', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const body = request.body as any
-      const address = body?.address?.toLowerCase()
+      const rawAddress = body?.address
       const domain = body?.domain || 'localhost:8080'
       const chainId = body?.chainId || 1
 
-      // Validate EVM address
-      if (!address || !/^0x[a-f0-9]{40}$/.test(address)) {
+      // Validate and normalize EVM address
+      if (!rawAddress || typeof rawAddress !== 'string') {
         return reply.code(400).send({
           error: 'Invalid Address',
           message: 'Valid EVM address is required'
+        })
+      }
+
+      let address: string
+      try {
+        // This will validate and return the EIP-55 checksum address
+        address = normalizeAddress(rawAddress)
+      } catch (error) {
+        return reply.code(400).send({
+          error: 'Invalid Address',
+          message: 'Invalid EVM address format'
         })
       }
 

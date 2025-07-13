@@ -32,7 +32,7 @@ export async function verifyEVMSignature(
     if (result.success) {
       return {
         isValid: true,
-        address: siweMessage.address.toLowerCase(),
+        address: normalizeAddress(siweMessage.address),
         parsedMessage: siweMessage
       }
     }
@@ -52,10 +52,15 @@ export function isValidEVMAddress(address: string): boolean {
 }
 
 /**
- * Normalize EVM address to lowercase
+ * Normalize EVM address to EIP-55 checksum format
  */
 export function normalizeAddress(address: string): string {
-  return address.toLowerCase()
+  try {
+    // This validates the address and returns it in EIP-55 checksum format
+    return ethers.getAddress(address.toLowerCase())
+  } catch (error) {
+    throw new Error(`Invalid EVM address: ${address}`)
+  }
 }
 
 /**
@@ -82,9 +87,12 @@ export function createSiweMessage(
     expirationTime
   } = options
 
+  // Ensure address is in proper EIP-55 checksum format
+  const checksumAddress = ethers.getAddress(address.toLowerCase())
+  
   const siweMessage = new SiweMessage({
     domain,
-    address,
+    address: checksumAddress,
     statement: 'Please sign this message to authenticate with ProofQuest.',
     uri: `https://${domain}`,
     version: '1',
