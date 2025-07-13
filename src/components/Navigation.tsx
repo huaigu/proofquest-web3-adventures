@@ -1,11 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, User, LogOut, Shield } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAuthUI } from '@/hooks/useAuth';
 
 export const Navigation = () => {
   const location = useLocation();
+  const { 
+    authButtonState, 
+    userDisplayName, 
+    isAuthenticated, 
+    isLoading,
+    isWalletConnected 
+  } = useAuthUI();
 
   const navItems = [
     { label: "Explore", href: "/quests" },
@@ -65,11 +74,51 @@ export const Navigation = () => {
           })}
         </nav>
 
-        {/* Wallet Connection */}
-        <div className="flex items-center space-x-4">
+        {/* Wallet Connection & Authentication */}
+        <div className="flex items-center space-x-3">
+          {/* Authentication Status Indicator */}
+          {isWalletConnected && (
+            <div className="hidden sm:flex items-center space-x-2">
+              {isAuthenticated ? (
+                <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/50">
+                  <Shield className="w-3 h-3 mr-1" />
+                  Authenticated
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
+                  <User className="w-3 h-3 mr-1" />
+                  Sign In Required
+                </Badge>
+              )}
+            </div>
+          )}
+          
+          {/* Wallet Connect Button */}
           <div className="hidden sm:flex">
             <ConnectButton />
           </div>
+          
+          {/* SIWE Authentication Button */}
+          {isWalletConnected && !isAuthenticated && (
+            <Button
+              variant={authButtonState.variant}
+              size="sm"
+              disabled={authButtonState.disabled}
+              onClick={authButtonState.action}
+              className="hidden sm:flex items-center space-x-2"
+            >
+              <Shield className="w-4 h-4" />
+              <span>{authButtonState.text}</span>
+            </Button>
+          )}
+          
+          {/* User Display */}
+          {isAuthenticated && userDisplayName && (
+            <div className="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-lg bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/15 to-[hsl(var(--vibrant-purple))]/15 border border-[hsl(var(--vibrant-blue))]/20">
+              <User className="w-4 h-4 text-[hsl(var(--vibrant-blue))]" />
+              <span className="text-sm font-medium">{userDisplayName}</span>
+            </div>
+          )}
 
           {/* Mobile Menu */}
           <Sheet>
@@ -80,9 +129,44 @@ export const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col space-y-4 mt-6">
+                {/* Mobile Wallet Connection */}
                 <div className="w-full">
                   <ConnectButton />
                 </div>
+                
+                {/* Mobile Authentication */}
+                {isWalletConnected && (
+                  <div className="flex flex-col space-y-3">
+                    {/* Authentication Status */}
+                    <div className="flex items-center justify-center">
+                      {isAuthenticated ? (
+                        <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/50">
+                          <Shield className="w-3 h-3 mr-1" />
+                          Authenticated as {userDisplayName}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
+                          <User className="w-3 h-3 mr-1" />
+                          Sign In Required
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {/* Mobile Authentication Button */}
+                    {!isAuthenticated && (
+                      <Button
+                        variant={authButtonState.variant}
+                        size="sm"
+                        disabled={authButtonState.disabled}
+                        onClick={authButtonState.action}
+                        className="w-full flex items-center justify-center space-x-2"
+                      >
+                        <Shield className="w-4 h-4" />
+                        <span>{authButtonState.text}</span>
+                      </Button>
+                    )}
+                  </div>
+                )}
                 
                 <div className="border-t pt-4 space-y-3">
                   {navItems.map((item, index) => {

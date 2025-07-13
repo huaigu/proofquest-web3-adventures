@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { config } from '@/lib/wagmi';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { Navigation } from "@/components/Navigation";
 import Index from "./pages/Index";
 import QuestList from "./pages/QuestList";
@@ -29,24 +30,26 @@ const App = () => {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <div className="min-h-screen bg-background">
-                <Navigation />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/quests" element={<QuestList />} />
-                  <Route path="/quest/:id" element={<QuestDetail />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/create" element={<CreateQuest />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
-            </BrowserRouter>
-          </TooltipProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <div className="min-h-screen bg-background">
+                  <Navigation />
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/quests" element={<QuestList />} />
+                    <Route path="/quest/:id" element={<QuestDetail />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/create" element={<CreateQuest />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+              </BrowserRouter>
+            </TooltipProvider>
+          </AuthProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

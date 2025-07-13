@@ -13,6 +13,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { 
   CalendarIcon, 
   ChevronLeft, 
@@ -30,14 +31,19 @@ import {
   Calculator,
   AlertCircle,
   Save,
-  Rocket
+  Rocket,
+  Shield,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useCreateQuest } from "@/hooks/useQuests";
+import { useAuthUI } from "@/hooks/useAuth";
+import type { QuestFormData } from "@/types";
 
-// Form schema for validation
+// Form schema for validation (matching backend API expectations)
 const questSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -48,33 +54,32 @@ const questSchema = z.object({
   tweetUrl: z.string().optional(),
   // Quote tweet specific
   quoteTweetUrl: z.string().optional(),
-  quoteRequirements: z.string().optional(),
   // Send tweet specific
-  contentRequirements: z.string().optional(),
-  // Step 2 - Threshold configuration
-  participantThreshold: z.number().min(1, "Participant threshold must be at least 1").optional(),
+  tweetContent: z.string().optional(),
+  requiredHashtags: z.array(z.string()).optional(),
   // Step 2 - Reward configuration
   rewardType: z.enum(["ETH", "ERC20", "NFT"]),
-  tokenAddress: z.string().optional(),
-  tokenSymbol: z.string().optional(),
   totalRewardPool: z.number().min(0.001, "Reward pool must be greater than 0"),
   rewardPerParticipant: z.number().min(0.001, "Reward per participant must be greater than 0"),
-  distributionMethod: z.enum(["immediate", "linear"]),
-  linearPeriod: z.number().optional(),
-  unlockTime: z.date().optional(),
-  // Step 3 - Time configuration
+  distributionMethod: z.enum(["immediate", "manual", "scheduled"]),
+  // Step 3 - Time and settings configuration
   startDate: z.date(),
   endDate: z.date(),
   rewardClaimDeadline: z.date(),
+  maxParticipants: z.number().min(1, "Must allow at least 1 participant").optional(),
+  requireWhitelist: z.boolean(),
+  autoApproveSubmissions: z.boolean(),
   agreeToTerms: z.boolean().refine(val => val === true, "You must agree to terms")
 });
 
-type QuestFormData = z.infer<typeof questSchema>;
-
 const CreateQuest = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isDeploying, setIsDeploying] = useState(false);
+  
+  // Backend integration
+  const createQuestMutation = useCreateQuest();
+  const { isAuthenticated, handleSignIn } = useAuthUI();
 
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<QuestFormData>({
     resolver: zodResolver(questSchema),
@@ -85,6 +90,8 @@ const CreateQuest = () => {
       startDate: new Date(),
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       rewardClaimDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+      requireWhitelist: false,
+      autoApproveSubmissions: true,
       agreeToTerms: false
     }
   });
@@ -128,19 +135,31 @@ const CreateQuest = () => {
   };
 
   const onSubmit = async (data: QuestFormData) => {
-    setIsDeploying(true);
-    // Simulate deployment
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    toast({
-      title: "Quest deployed successfully!",
-      description: "Your quest is now live and accepting participants.",
-    });
-    
-    // Clear draft
-    localStorage.removeItem('questDraft');
-    setIsDeploying(false);
-    setCurrentStep(6); // Success step
+    // Check authentication first
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in with your wallet to create a quest.",
+        variant: "destructive"
+      });
+      await handleSignIn();
+      return;
+    }
+
+    try {
+      // Create quest via backend API
+      const createdQuest = await createQuestMutation.mutateAsync(data);
+      
+      // Clear draft on success
+      localStorage.removeItem('questDraft');
+      
+      // Navigate to the created quest
+      navigate(`/quest/${createdQuest.id}`);
+      
+    } catch (error: any) {
+      console.error('Quest creation failed:', error);
+      // Error handling is done in the mutation hook
+    }
   };
 
   const saveDraft = () => {
@@ -230,6 +249,33 @@ const CreateQuest = () => {
             </div>
           </div>
         </div>
+
+        {/* Authentication Notice */}
+        {!isAuthenticated && (
+          <div className="mb-6">
+            <Card className="border-yellow-500/50 bg-yellow-500/10">
+              <CardContent className="pt-4">
+                <div className="flex items-center space-x-3">
+                  <Shield className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-yellow-400">Authentication Required</h3>
+                    <p className="text-sm text-muted-foreground">
+                      You need to sign in with your wallet to create quests. You can still preview the form, but authentication is required to deploy.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSignIn}
+                    className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20"
+                  >
+                    Sign In
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Step Indicator */}
         <div className="mb-8">
@@ -1209,13 +1255,18 @@ const CreateQuest = () => {
               ) : (
                 <Button
                   type="submit"
-                  disabled={isDeploying}
+                  disabled={createQuestMutation.isPending}
                   className="bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
                 >
-                  {isDeploying ? (
+                  {createQuestMutation.isPending ? (
                     <>
-                      <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-                      Deploying...
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating Quest...
+                    </>
+                  ) : !isAuthenticated ? (
+                    <>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Sign In to Create
                     </>
                   ) : (
                     <>
