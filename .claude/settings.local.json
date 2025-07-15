@@ -1,13 +1,34 @@
 {
   "permissions": {
     "allow": [
+      "Bash(echo $HOME)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(forge:*)",
-      "Bash(mkdir:*)",
+      "Bash(bun add:*)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql",
+      "Bash(bun run:*)",
+      "Bash(SUPABASE_URL=https://test.supabase.co SUPABASE_ANON_KEY=test_key NODE_ENV=development timeout 5s bun run index.ts)",
+      "Bash(true)",
+      "Bash(timeout:*)",
+      "Bash(rm:*)",
+      "Bash(SUPABASE_URL=https://test.supabase.co SUPABASE_ANON_KEY=test_key NODE_ENV=development timeout 5s bun run start)",
+      "Bash(SUPABASE_URL=https://test.supabase.co SUPABASE_ANON_KEY=test_key NODE_ENV=development PORT=3002 timeout 3s bun run start)",
+      "Bash(bun scripts/quick-test.ts:*)",
+      "Bash(bun test:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
-    ]
+      "Bash(curl:*)",
+      "Bash(git commit:*)",
+      "Bash(mv:*)",
+      "Bash(fuser:*)",
+      "Bash(pkill:*)",
+      "Bash(killall:*)"
+    ],
+    "deny": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [

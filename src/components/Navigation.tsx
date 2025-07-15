@@ -112,13 +112,6 @@ export const Navigation = () => {
             </Button>
           )}
           
-          {/* User Display */}
-          {isAuthenticated && userDisplayName && (
-            <div className="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-lg bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/15 to-[hsl(var(--vibrant-purple))]/15 border border-[hsl(var(--vibrant-blue))]/20">
-              <User className="w-4 h-4 text-[hsl(var(--vibrant-blue))]" />
-              <span className="text-sm font-medium">{userDisplayName}</span>
-            </div>
-          )}
 
           {/* Mobile Menu */}
           <Sheet>

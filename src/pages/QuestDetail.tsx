@@ -347,11 +347,11 @@ const QuestDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4">
         <div className="bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] relative overflow-hidden rounded-xl">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
-          <div className="px-6 py-8 relative z-10">
-            <div className="flex items-center justify-between mb-6">
+          <div className="px-6 py-6 relative z-10">
+            <div className="flex items-center justify-between mb-4">
               <Button
                 variant="ghost"
                 onClick={() => navigate('/quests')}
@@ -372,8 +372,8 @@ const QuestDetail = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
               <div className="lg:col-span-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm">
                     {getQuestTypeIcon()}
                   </div>
                   <div>
@@ -382,8 +382,8 @@ const QuestDetail = () => {
                     </Badge>
                   </div>
                 </div>
-                <h1 className="text-3xl font-bold text-white mb-3">{quest.title}</h1>
-                <p className="text-white/90 mb-4">{quest.description}</p>
+                <h1 className="text-2xl font-bold text-white mb-2">{quest.title}</h1>
+                <p className="text-white/90 mb-3 text-sm">{quest.description}</p>
                 
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10 border-2 border-white/20">
@@ -412,37 +412,37 @@ const QuestDetail = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 mt-8">
+      <div className="container mx-auto px-4 mt-4">
         {/* Overview Cards - Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
           {/* Reward Card */}
           <Card className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] text-white border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Trophy className="h-5 w-5" />
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-white text-sm">
+                <Trophy className="h-4 w-4" />
                 Reward
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold mb-1">{formatReward()}</div>
-              <div className="text-white/80 text-sm">{quest.reward.distribution}</div>
+            <CardContent className="pt-0">
+              <div className="text-xl font-bold mb-1">{formatReward()}</div>
+              <div className="text-white/80 text-xs">{quest.reward.distribution}</div>
             </CardContent>
           </Card>
 
           {/* Progress Card */}
           <Card className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] text-white border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Users className="h-5 w-5" />
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-white text-sm">
+                <Users className="h-4 w-4" />
                 Progress
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold mb-2">
+            <CardContent className="pt-0">
+              <div className="text-xl font-bold mb-1">
                 {quest.participants.current}/{quest.participants.max}
               </div>
-              <Progress value={getProgressPercentage()} className="mb-2 bg-white/20 [&>div]:bg-white" />
-              <div className="text-white/80 text-sm flex items-center gap-1">
+              <Progress value={getProgressPercentage()} className="mb-1 bg-white/20 [&>div]:bg-white h-2" />
+              <div className="text-white/80 text-xs flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {getTimeRemaining()} left
               </div>
@@ -451,15 +451,15 @@ const QuestDetail = () => {
 
           {/* Quest Type Card */}
           <Card className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))] text-white border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-white text-sm">
                 {getQuestTypeIcon()}
                 Type
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold mb-1">{getQuestTypeLabel()}</div>
-              <div className="text-white/80 text-sm">
+            <CardContent className="pt-0">
+              <div className="text-base font-bold mb-1">{getQuestTypeLabel()}</div>
+              <div className="text-white/80 text-xs">
                 {quest.questType === 'twitter-interaction' ? 'Engage with tweet' : 'Share with quote'}
               </div>
             </CardContent>
