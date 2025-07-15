@@ -1,5 +1,6 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { defineChain } from 'viem';
+import { sepolia } from 'viem/chains';
 
 // Define Monad testnet chain
 export const monadTestnet = defineChain({
@@ -27,6 +28,6 @@ export const monadTestnet = defineChain({
 export const config = getDefaultConfig({
   appName: 'ProofQuest',
   projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo-project-id',
-  chains: [monadTestnet],
+  chains: [sepolia, monadTestnet], // Add Sepolia for testing
   ssr: false, // If your dApp uses server side rendering (SSR)
 });

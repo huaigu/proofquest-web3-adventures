@@ -121,7 +121,7 @@ contract QuestSystemViewFunctionsTest is Test {
             id: 0,
             sponsor: address(0),
             questType: QuestSystem.QuestType.LikeAndRetweet,
-            status: QuestSystem.QuestStatus.Pending,
+            status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
             totalRewards: QUEST_REWARD,
             rewardPerUser: REWARD_PER_USER,
@@ -155,7 +155,7 @@ contract QuestSystemViewFunctionsTest is Test {
             id: 0,
             sponsor: address(0),
             questType: QuestSystem.QuestType.QuoteTweet,
-            status: QuestSystem.QuestStatus.Pending,
+            status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
             totalRewards: QUEST_REWARD,
             rewardPerUser: REWARD_PER_USER,

@@ -20,6 +20,7 @@ export const Navigation = () => {
     { label: "Explore", href: "/quests" },
     { label: "Create", href: "/create" },
     { label: "Profile", href: "/profile" },
+    { label: "Test", href: "/test" },
   ];
 
   const isActive = (path: string) => {
@@ -48,6 +49,7 @@ export const Navigation = () => {
               "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]", // Explore
               "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]", // Create
               "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]", // Profile
+              "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]", // Test
             ];
             
             return (
@@ -167,6 +169,7 @@ export const Navigation = () => {
                       "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]", // Explore
                       "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]", // Create
                       "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]", // Profile
+                      "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]", // Test
                     ];
                     
                     return (

@@ -18,10 +18,24 @@
       "parsePath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted"
     }
   ],
-  "data": "{\"favorited\":\"true\",\"retweeted\":\"true\"}",
-  "attConditions": "[{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited\"},{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted\"}]",
+  "data": {
+    "favorited": "true",
+    "retweeted": "true"
+  },
+  "attConditions": [
+    {
+      "op": "REVEAL_STRING",
+      "field": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited"
+    },
+    {
+      "op": "REVEAL_STRING",
+      "field": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted"
+    }
+  ],
   "timestamp": 1752473912632,
-  "additionParams": "{\"algorithmType\":\"proxytls\"}",
+  "additionParams": {
+    "algorithmType": "proxytls"
+  },
   "attestors": [
     {
       "attestorAddr": "0xdb736b13e2f522dbe18b2015d0291e4b193d8ef6",
@@ -31,5 +45,8 @@
   "signatures": [
     "0x2c54ef20a94e5f892341bd47db97e9792eff8a273bdc732e914efd00e9e1356a5d06db1bf11daa8ea1ca0c7ac6917eafdd58db6f8490941236096500fd2a5b471b"
   ],
-  "extendedData": "{\"favorited\":\"true\",\"retweeted\":\"true\"}"
+  "extendedData": {
+    "favorited": "true",
+    "retweeted": "true"
+  }
 }

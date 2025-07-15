@@ -13,6 +13,7 @@ import QuestList from "./pages/QuestList";
 import QuestDetail from "./pages/QuestDetail";
 import Profile from "./pages/Profile";
 import CreateQuest from "./pages/CreateQuest";
+import QuestTest from "./pages/QuestTest";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 
@@ -43,6 +44,7 @@ const App = () => {
                     <Route path="/quest/:id" element={<QuestDetail />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/create" element={<CreateQuest />} />
+                    <Route path="/test" element={<QuestTest />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

@@ -153,30 +153,30 @@ library JsonParser {
      * 
      * Example: hasKey('{"name":"Alice"}', "name") returns true
      */
-    function hasKey(string memory json, string memory key) internal pure returns (bool) {
-        bytes memory jsonBytes = bytes(json);
-        bytes memory keyBytes = bytes(key);
+    // function hasKey(string memory json, string memory key) internal pure returns (bool) {
+    //     bytes memory jsonBytes = bytes(json);
+    //     bytes memory keyBytes = bytes(key);
         
-        if (jsonBytes.length == 0 || keyBytes.length == 0) {
-            return false;
-        }
+    //     if (jsonBytes.length == 0 || keyBytes.length == 0) {
+    //         return false;
+    //     }
 
-        // Look for "key" first
-        string memory keyPattern = string(abi.encodePacked('"', key, '"'));
-        bytes memory keyPatternBytes = bytes(keyPattern);
+    //     // Look for "key" first
+    //     string memory keyPattern = string(abi.encodePacked('"', key, '"'));
+    //     bytes memory keyPatternBytes = bytes(keyPattern);
         
-        uint256 keyStart = _findPattern(jsonBytes, keyPatternBytes);
-        if (keyStart == type(uint256).max) {
-            return false;
-        }
+    //     uint256 keyStart = _findPattern(jsonBytes, keyPatternBytes);
+    //     if (keyStart == type(uint256).max) {
+    //         return false;
+    //     }
         
-        // Move past the key and look for the colon
-        uint256 colonPos = keyStart + keyPatternBytes.length;
-        colonPos = _skipWhitespace(jsonBytes, colonPos);
+    //     // Move past the key and look for the colon
+    //     uint256 colonPos = keyStart + keyPatternBytes.length;
+    //     colonPos = _skipWhitespace(jsonBytes, colonPos);
         
-        // Check for colon to confirm it's a valid key-value pair
-        return colonPos < jsonBytes.length && jsonBytes[colonPos] == ':';
-    }
+    //     // Check for colon to confirm it's a valid key-value pair
+    //     return colonPos < jsonBytes.length && jsonBytes[colonPos] == ':';
+    // }
 
     /**
      * @dev Extract all key-value pairs from a simple JSON object
@@ -187,56 +187,56 @@ library JsonParser {
      * Note: This function has limitations and should be used carefully in production
      * due to dynamic array allocations in memory
      */
-    function extractAllPairs(string memory json) internal pure returns (string[] memory keys, string[] memory values) {
-        bytes memory jsonBytes = bytes(json);
+    // function extractAllPairs(string memory json) internal pure returns (string[] memory keys, string[] memory values) {
+    //     bytes memory jsonBytes = bytes(json);
         
-        // Count the number of key-value pairs first
-        uint256 pairCount = _countPairs(jsonBytes);
+    //     // Count the number of key-value pairs first
+    //     uint256 pairCount = _countPairs(jsonBytes);
         
-        if (pairCount == 0) {
-            return (new string[](0), new string[](0));
-        }
+    //     if (pairCount == 0) {
+    //         return (new string[](0), new string[](0));
+    //     }
         
-        keys = new string[](pairCount);
-        values = new string[](pairCount);
+    //     keys = new string[](pairCount);
+    //     values = new string[](pairCount);
         
-        uint256 currentIndex = 0;
-        uint256 pos = 0;
+    //     uint256 currentIndex = 0;
+    //     uint256 pos = 0;
         
-        while (pos < jsonBytes.length && currentIndex < pairCount) {
-            // Find next key
-            uint256 keyStart = _findNextQuote(jsonBytes, pos);
-            if (keyStart == type(uint256).max) break;
+    //     while (pos < jsonBytes.length && currentIndex < pairCount) {
+    //         // Find next key
+    //         uint256 keyStart = _findNextQuote(jsonBytes, pos);
+    //         if (keyStart == type(uint256).max) break;
             
-            keyStart++; // Skip opening quote
-            uint256 keyEnd = _findClosingQuote(jsonBytes, keyStart);
-            if (keyEnd == type(uint256).max) break;
+    //         keyStart++; // Skip opening quote
+    //         uint256 keyEnd = _findClosingQuote(jsonBytes, keyStart);
+    //         if (keyEnd == type(uint256).max) break;
             
-            keys[currentIndex] = _extractSubstring(jsonBytes, keyStart, keyEnd);
+    //         keys[currentIndex] = _extractSubstring(jsonBytes, keyStart, keyEnd);
             
-            // Find the colon
-            pos = keyEnd + 1;
-            pos = _findChar(jsonBytes, pos, ':');
-            if (pos == type(uint256).max) break;
+    //         // Find the colon
+    //         pos = keyEnd + 1;
+    //         pos = _findChar(jsonBytes, pos, ':');
+    //         if (pos == type(uint256).max) break;
             
-            pos++; // Skip colon
-            pos = _skipWhitespace(jsonBytes, pos);
+    //         pos++; // Skip colon
+    //         pos = _skipWhitespace(jsonBytes, pos);
             
-            // Find value
-            if (pos < jsonBytes.length && jsonBytes[pos] == '"') {
-                pos++; // Skip opening quote
-                uint256 valueEnd = _findClosingQuote(jsonBytes, pos);
-                if (valueEnd == type(uint256).max) break;
+    //         // Find value
+    //         if (pos < jsonBytes.length && jsonBytes[pos] == '"') {
+    //             pos++; // Skip opening quote
+    //             uint256 valueEnd = _findClosingQuote(jsonBytes, pos);
+    //             if (valueEnd == type(uint256).max) break;
                 
-                values[currentIndex] = _extractSubstring(jsonBytes, pos, valueEnd);
-                pos = valueEnd + 1;
-            }
+    //             values[currentIndex] = _extractSubstring(jsonBytes, pos, valueEnd);
+    //             pos = valueEnd + 1;
+    //         }
             
-            currentIndex++;
-        }
+    //         currentIndex++;
+    //     }
         
-        return (keys, values);
-    }
+    //     return (keys, values);
+    // }
 
     // Internal helper functions
 
@@ -352,28 +352,28 @@ library JsonParser {
     /**
      * @dev Count key-value pairs in JSON
      */
-    function _countPairs(bytes memory data) private pure returns (uint256) {
-        uint256 count = 0;
-        uint256 pos = 0;
+    // function _countPairs(bytes memory data) private pure returns (uint256) {
+    //     uint256 count = 0;
+    //     uint256 pos = 0;
         
-        while (pos < data.length) {
-            pos = _findChar(data, pos, '"');
-            if (pos == type(uint256).max) break;
+    //     while (pos < data.length) {
+    //         pos = _findChar(data, pos, '"');
+    //         if (pos == type(uint256).max) break;
             
-            pos++; // Skip quote
-            pos = _findClosingQuote(data, pos);
-            if (pos == type(uint256).max) break;
+    //         pos++; // Skip quote
+    //         pos = _findClosingQuote(data, pos);
+    //         if (pos == type(uint256).max) break;
             
-            pos++; // Skip closing quote
-            pos = _findChar(data, pos, ':');
-            if (pos == type(uint256).max) break;
+    //         pos++; // Skip closing quote
+    //         pos = _findChar(data, pos, ':');
+    //         if (pos == type(uint256).max) break;
             
-            count++;
-            pos++;
-        }
+    //         count++;
+    //         pos++;
+    //     }
         
-        return count;
-    }
+    //     return count;
+    // }
 
     /**
      * @dev Find next occurrence of a character

@@ -47,6 +47,20 @@ $ anvil
 
 ### Deploy
 
+#### Deploy to Sepolia Testnet
+
+```shell
+# Set environment variables
+export SEPOLIA_RPC_URL="https://sepolia.infura.io/v3/YOUR_INFURA_KEY"
+export PRIVATE_KEY="your_private_key"
+export ZKTLS_CONTRACT="0x3760aB354507a29a9F5c65A66C74353fd86393FA"
+
+# Deploy script
+$ forge script script/Counter.s.sol:CounterScript --rpc-url $SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify
+```
+
+#### General Deploy
+
 ```shell
 $ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
 ```

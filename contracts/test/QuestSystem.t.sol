@@ -114,6 +114,7 @@ contract QuestSystemTest is Test {
         assertEq(storedQuest.id, 1);
         assertEq(storedQuest.sponsor, sponsor);
         assertEq(uint(storedQuest.questType), uint(QuestSystem.QuestType.LikeAndRetweet));
+        // Status should be Pending when before startTime
         assertEq(uint(storedQuest.status), uint(QuestSystem.QuestStatus.Pending));
         assertEq(storedQuest.totalRewards, TOTAL_REWARDS);
         assertEq(storedQuest.rewardPerUser, REWARD_PER_USER);
@@ -212,7 +213,7 @@ contract QuestSystemTest is Test {
     function test_QuestStatusProgression() public {
         uint256 questId = _createAndFundQuest();
         
-        // Initially Pending
+        // Initially Pending (based on current time vs startTime)
         QuestSystem.Quest memory quest = questSystem.getQuest(questId);
         assertEq(uint(quest.status), uint(QuestSystem.QuestStatus.Pending));
         
@@ -1165,7 +1166,7 @@ contract QuestSystemTest is Test {
             id: 0, // Will be set by contract
             sponsor: address(0), // Will be set by contract
             questType: QuestSystem.QuestType.LikeAndRetweet,
-            status: QuestSystem.QuestStatus.Pending, // Will be set by contract
+            status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
             totalRewards: TOTAL_REWARDS,
             rewardPerUser: REWARD_PER_USER,
@@ -1199,7 +1200,7 @@ contract QuestSystemTest is Test {
             id: 0,
             sponsor: address(0),
             questType: QuestSystem.QuestType.QuoteTweet,
-            status: QuestSystem.QuestStatus.Pending,
+            status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
             totalRewards: TOTAL_REWARDS,
             rewardPerUser: REWARD_PER_USER,

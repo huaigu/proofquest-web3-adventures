@@ -151,7 +151,7 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         quests[questId] = _quest;
         quests[questId].id = questId;
         quests[questId].sponsor = msg.sender;
-        quests[questId].status = QuestStatus.Pending;
+        // Status is determined by current time, not stored
         quests[questId].maxParticipants = _quest.totalRewards / _quest.rewardPerUser;
         
         _nextQuestId++;
@@ -365,17 +365,13 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     /**
      * @notice Update quest status based on current time
+     * @dev Only updates status if quest is not canceled
      */
     function _updateQuestStatus(uint256 _questId) internal {
         Quest storage q = quests[_questId];
-        if (q.status == QuestStatus.Canceled) return;
-
-        if (block.timestamp > q.claimEndTime) {
-            q.status = QuestStatus.Closed;
-        } else if (block.timestamp > q.endTime) {
-            q.status = QuestStatus.Ended;
-        } else if (block.timestamp >= q.startTime) {
-            q.status = QuestStatus.Active;
+        // Only update status if quest is not canceled
+        if (q.status != QuestStatus.Canceled) {
+            q.status = _getQuestStatusByTime(q.startTime, q.endTime, q.claimEndTime);
         }
     }
     
@@ -420,10 +416,15 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     // --- View Functions ---
 
     /**
-     * @notice Get quest details
+     * @notice Get quest details with current status
      */
     function getQuest(uint256 _questId) external view returns (Quest memory) {
-        return quests[_questId];
+        Quest memory quest = quests[_questId];
+        // Update status based on current time
+        if (quest.status != QuestStatus.Canceled) {
+            quest.status = _getQuestStatusByTime(quest.startTime, quest.endTime, quest.claimEndTime);
+        }
+        return quest;
     }
 
     /**
@@ -489,7 +490,7 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     }
 
     /**
-     * @notice Get multiple quest details at once
+     * @notice Get multiple quest details at once with current status
      * @param _questIds Array of quest IDs to retrieve
      * @return quests Array of quest details
      */
@@ -498,6 +499,14 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         
         for (uint256 i = 0; i < _questIds.length; i++) {
             questArray[i] = quests[_questIds[i]];
+            // Update status based on current time if not canceled
+            if (questArray[i].status != QuestStatus.Canceled) {
+                questArray[i].status = _getQuestStatusByTime(
+                    questArray[i].startTime, 
+                    questArray[i].endTime, 
+                    questArray[i].claimEndTime
+                );
+            }
         }
         
         return questArray;
@@ -724,6 +733,9 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         quest = quests[_questId];
         currentStatus = _getUpdatedQuestStatus(_questId);
         
+        // Update quest status in returned struct
+        quest.status = currentStatus;
+        
         remainingSlots = quest.maxParticipants > quest.participantCount ? 
             quest.maxParticipants - quest.participantCount : 0;
         
@@ -746,22 +758,22 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
      * @param _users Array of user addresses
      * @return vestingInfos Array of vesting information for each user
      */
-    function getMultipleVestingInfo(uint256 _questId, address[] calldata _users) external view returns (
-        VestingInfo[] memory vestingInfos
-    ) {
-        vestingInfos = new VestingInfo[](_users.length);
+    // function getMultipleVestingInfo(uint256 _questId, address[] calldata _users) external view returns (
+    //     VestingInfo[] memory vestingInfos
+    // ) {
+    //     vestingInfos = new VestingInfo[](_users.length);
         
-        for (uint256 i = 0; i < _users.length; i++) {
-            (uint256 vestedAmount, uint256 claimedAmount, uint256 claimableAmount) = this.getVestingInfo(_questId, _users[i]);
-            vestingInfos[i] = VestingInfo({
-                user: _users[i],
-                vestedAmount: vestedAmount,
-                claimedAmount: claimedAmount,
-                claimableAmount: claimableAmount,
-                isQualified: hasQualified[_questId][_users[i]]
-            });
-        }
-    }
+    //     for (uint256 i = 0; i < _users.length; i++) {
+    //         (uint256 vestedAmount, uint256 claimedAmount, uint256 claimableAmount) = this.getVestingInfo(_questId, _users[i]);
+    //         vestingInfos[i] = VestingInfo({
+    //             user: _users[i],
+    //             vestedAmount: vestedAmount,
+    //             claimedAmount: claimedAmount,
+    //             claimableAmount: claimableAmount,
+    //             isQualified: hasQualified[_questId][_users[i]]
+    //         });
+    //     }
+    // }
 
     /**
      * @notice Check if user can claim rewards for a quest
@@ -798,11 +810,22 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         Quest storage q = quests[_questId];
         if (q.status == QuestStatus.Canceled) return QuestStatus.Canceled;
 
-        if (block.timestamp > q.claimEndTime) {
+        return _getQuestStatusByTime(q.startTime, q.endTime, q.claimEndTime);
+    }
+    
+    /**
+     * @notice Get quest status based on time parameters
+     * @param _startTime Quest start time
+     * @param _endTime Quest end time
+     * @param _claimEndTime Quest claim end time
+     * @return QuestStatus based on current time
+     */
+    function _getQuestStatusByTime(uint256 _startTime, uint256 _endTime, uint256 _claimEndTime) internal view returns (QuestStatus) {
+        if (block.timestamp > _claimEndTime) {
             return QuestStatus.Closed;
-        } else if (block.timestamp > q.endTime) {
+        } else if (block.timestamp > _endTime) {
             return QuestStatus.Ended;
-        } else if (block.timestamp >= q.startTime) {
+        } else if (block.timestamp >= _startTime) {
             return QuestStatus.Active;
         } else {
             return QuestStatus.Pending;

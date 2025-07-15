@@ -68,18 +68,18 @@ contract JsonParserExample {
      * @param requiredKeys Array of keys that must be present
      * @return valid True if all required keys exist
      */
-    function validateJsonStructure(string memory jsonData, string[] memory requiredKeys) 
-        external 
-        pure 
-        returns (bool valid) 
-    {
-        for (uint256 i = 0; i < requiredKeys.length; i++) {
-            if (!jsonData.hasKey(requiredKeys[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
+    // function validateJsonStructure(string memory jsonData, string[] memory requiredKeys) 
+    //     external 
+    //     pure 
+    //     returns (bool valid) 
+    // {
+    //     for (uint256 i = 0; i < requiredKeys.length; i++) {
+    //         if (!jsonData.hasKey(requiredKeys[i])) {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
 
     /**
      * @dev Extract and validate Twitter engagement data
@@ -115,26 +115,26 @@ contract JsonParserExample {
      * @return userIdExists True if user_id_str field exists
      * @return tweetIdExists True if id_str field exists
      */
-    function parseTwitterIds(string memory jsonData) 
-        external 
-        pure 
-        returns (bool hasValidIds, bool userIdExists, bool tweetIdExists) 
-    {
-        userIdExists = jsonData.hasKey("user_id_str");
-        tweetIdExists = jsonData.hasKey("id_str");
+    // function parseTwitterIds(string memory jsonData) 
+    //     external 
+    //     pure 
+    //     returns (bool hasValidIds, bool userIdExists, bool tweetIdExists) 
+    // {
+    //     userIdExists = jsonData.hasKey("user_id_str");
+    //     tweetIdExists = jsonData.hasKey("id_str");
         
-        if (userIdExists && tweetIdExists) {
-            string memory userId = jsonData.getString("user_id_str");
-            string memory tweetId = jsonData.getString("id_str");
+    //     if (userIdExists && tweetIdExists) {
+    //         string memory userId = jsonData.getString("user_id_str");
+    //         string memory tweetId = jsonData.getString("id_str");
             
-            // Check if IDs are non-empty (basic validation)
-            hasValidIds = bytes(userId).length > 0 && bytes(tweetId).length > 0;
-        } else {
-            hasValidIds = false;
-        }
+    //         // Check if IDs are non-empty (basic validation)
+    //         hasValidIds = bytes(userId).length > 0 && bytes(tweetId).length > 0;
+    //     } else {
+    //         hasValidIds = false;
+    //     }
         
-        return (hasValidIds, userIdExists, tweetIdExists);
-    }
+    //     return (hasValidIds, userIdExists, tweetIdExists);
+    // }
 
     /**
      * @dev Demonstrate complex JSON parsing with multiple data types
@@ -143,42 +143,42 @@ contract JsonParserExample {
      * @return boolCount Number of boolean fields found
      * @return hasRequiredFields True if contains both strings and booleans
      */
-    function analyzeJsonContent(string memory jsonData) 
-        external 
-        pure 
-        returns (uint256 stringCount, uint256 boolCount, bool hasRequiredFields) 
-    {
-        // Common string fields in Twitter data
-        string[] memory stringFields = new string[](4);
-        stringFields[0] = "user_id_str";
-        stringFields[1] = "id_str";
-        stringFields[2] = "quoted_status_id_str";
-        stringFields[3] = "name";
+    // function analyzeJsonContent(string memory jsonData) 
+    //     external 
+    //     pure 
+    //     returns (uint256 stringCount, uint256 boolCount, bool hasRequiredFields) 
+    // {
+    //     // Common string fields in Twitter data
+    //     string[] memory stringFields = new string[](4);
+    //     stringFields[0] = "user_id_str";
+    //     stringFields[1] = "id_str";
+    //     stringFields[2] = "quoted_status_id_str";
+    //     stringFields[3] = "name";
         
-        // Common boolean fields
-        string[] memory boolFields = new string[](4);
-        boolFields[0] = "favorited";
-        boolFields[1] = "retweeted";
-        boolFields[2] = "verified";
-        boolFields[3] = "protected";
+    //     // Common boolean fields
+    //     string[] memory boolFields = new string[](4);
+    //     boolFields[0] = "favorited";
+    //     boolFields[1] = "retweeted";
+    //     boolFields[2] = "verified";
+    //     boolFields[3] = "protected";
         
-        // Count existing fields
-        for (uint256 i = 0; i < stringFields.length; i++) {
-            if (jsonData.hasKey(stringFields[i])) {
-                stringCount++;
-            }
-        }
+    //     // Count existing fields
+    //     for (uint256 i = 0; i < stringFields.length; i++) {
+    //         if (jsonData.hasKey(stringFields[i])) {
+    //             stringCount++;
+    //         }
+    //     }
         
-        for (uint256 i = 0; i < boolFields.length; i++) {
-            if (jsonData.hasKey(boolFields[i])) {
-                boolCount++;
-            }
-        }
+    //     for (uint256 i = 0; i < boolFields.length; i++) {
+    //         if (jsonData.hasKey(boolFields[i])) {
+    //             boolCount++;
+    //         }
+    //     }
         
-        hasRequiredFields = stringCount > 0 && boolCount > 0;
+    //     hasRequiredFields = stringCount > 0 && boolCount > 0;
         
-        return (stringCount, boolCount, hasRequiredFields);
-    }
+    //     return (stringCount, boolCount, hasRequiredFields);
+    // }
 
     /**
      * @dev Extract all available data from a JSON string (for debugging/inspection)
@@ -188,11 +188,11 @@ contract JsonParserExample {
      * 
      * Note: This function uses dynamic arrays and should be used carefully in production
      */
-    function extractAllData(string memory jsonData) 
-        external 
-        pure 
-        returns (string[] memory keys, string[] memory values) 
-    {
-        return jsonData.extractAllPairs();
-    }
+    // function extractAllData(string memory jsonData) 
+    //     external 
+    //     pure 
+    //     returns (string[] memory keys, string[] memory values) 
+    // {
+    //     return jsonData.extractAllPairs();
+    // }
 }
