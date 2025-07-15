@@ -34,8 +34,13 @@ contract DemoQuestSystemScript is Script {
         address questSystemAddress = vm.envOr("QUEST_SYSTEM_ADDRESS", address(0));
         address primusZKTLSAddress = vm.envOr("PRIMUS_ZKTLS_ADDRESS", address(0));
         
+        // If PRIMUS_ZKTLS_ADDRESS is not set, try MOCK_ZKTLS_ADDRESS
+        if (primusZKTLSAddress == address(0)) {
+            primusZKTLSAddress = vm.envOr("MOCK_ZKTLS_ADDRESS", address(0));
+        }
+        
         require(questSystemAddress != address(0), "QUEST_SYSTEM_ADDRESS not set");
-        require(primusZKTLSAddress != address(0), "PRIMUS_ZKTLS_ADDRESS not set");
+        require(primusZKTLSAddress != address(0), "Neither PRIMUS_ZKTLS_ADDRESS nor MOCK_ZKTLS_ADDRESS set");
         
         questSystem = QuestSystem(payable(questSystemAddress));
         mockZKTLS = MockPrimusZKTLS(primusZKTLSAddress);
