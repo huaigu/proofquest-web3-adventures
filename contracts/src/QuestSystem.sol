@@ -203,7 +203,7 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
      * @param _questId Quest ID
      * @param _attestation zkTLS attestation proof
      */
-    function claimReward(uint256 _questId, Attestation calldata _attestation) external {
+    function claimReward(uint256 _questId, Attestation calldata _attestation) external virtual {
         Quest storage q = quests[_questId];
         _updateQuestStatus(_questId);
         
