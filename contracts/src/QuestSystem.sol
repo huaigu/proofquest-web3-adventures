@@ -47,6 +47,8 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     struct Quest {
         uint256 id;                     // Unique quest ID
         address sponsor;                // Quest creator
+        string title;                   // Quest title
+        string description;             // Quest description
         QuestType questType;            // Quest type
         QuestStatus status;             // Quest status
         VerificationParams verificationParams; // Verification parameters
@@ -76,7 +78,7 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     // --- Events ---
 
-    event QuestCreated(uint256 indexed questId, address indexed sponsor, uint256 totalRewards);
+    event QuestCreated(uint256 indexed questId, address indexed sponsor, uint256 totalRewards, string title, string description);
     event RewardClaimed(uint256 indexed questId, address indexed recipient, uint256 amount);
     event VestingRewardClaimed(uint256 indexed questId, address indexed recipient, uint256 amount);
     event QuestCanceled(uint256 indexed questId);
@@ -134,6 +136,20 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
      * @param _quest Quest parameters
      */
     function createQuest(Quest calldata _quest) external payable {
+        _validateQuestParameters(_quest);
+        
+        uint256 questId = _nextQuestId;
+        _storeQuest(questId, _quest);
+        
+        _nextQuestId++;
+        emit QuestCreated(questId, msg.sender, _quest.totalRewards, _quest.title, _quest.description);
+    }
+    
+    /**
+     * @notice Validate quest parameters
+     * @param _quest Quest parameters to validate
+     */
+    function _validateQuestParameters(Quest calldata _quest) internal view {
         if (_quest.rewardPerUser == 0) {
             revert QuestSystem__InvalidRewardAmount();
         }
@@ -146,16 +162,31 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         if (msg.value != _quest.totalRewards) {
             revert QuestSystem__IncorrectETHAmount();
         }
-
-        uint256 questId = _nextQuestId;
-        quests[questId] = _quest;
-        quests[questId].id = questId;
-        quests[questId].sponsor = msg.sender;
-        // Status is determined by current time, not stored
-        quests[questId].maxParticipants = _quest.totalRewards / _quest.rewardPerUser;
-        
-        _nextQuestId++;
-        emit QuestCreated(questId, msg.sender, _quest.totalRewards);
+    }
+    
+    /**
+     * @notice Store quest in storage
+     * @param questId Quest ID
+     * @param _quest Quest parameters
+     */
+    function _storeQuest(uint256 questId, Quest calldata _quest) internal {
+        Quest storage q = quests[questId];
+        q.id = questId;
+        q.sponsor = msg.sender;
+        q.title = _quest.title;
+        q.description = _quest.description;
+        q.questType = _quest.questType;
+        q.status = _quest.status;
+        q.verificationParams = _quest.verificationParams;
+        q.totalRewards = _quest.totalRewards;
+        q.rewardPerUser = _quest.rewardPerUser;
+        q.maxParticipants = _quest.totalRewards / _quest.rewardPerUser;
+        q.participantCount = 0;
+        q.startTime = _quest.startTime;
+        q.endTime = _quest.endTime;
+        q.claimEndTime = _quest.claimEndTime;
+        q.isVesting = _quest.isVesting;
+        q.vestingDuration = _quest.vestingDuration;
     }
 
     /**

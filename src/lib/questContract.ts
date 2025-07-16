@@ -17,6 +17,8 @@ export const QUEST_SYSTEM_ABI = [
         "components": [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
           { "internalType": "address", "name": "sponsor", "type": "address" },
+          { "internalType": "string", "name": "title", "type": "string" },
+          { "internalType": "string", "name": "description", "type": "string" },
           { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
           { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
           {
@@ -178,6 +180,8 @@ export const QUEST_SYSTEM_ABI = [
         "components": [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
           { "internalType": "address", "name": "sponsor", "type": "address" },
+          { "internalType": "string", "name": "title", "type": "string" },
+          { "internalType": "string", "name": "description", "type": "string" },
           { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
           { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
           {
@@ -245,6 +249,8 @@ export const QUEST_SYSTEM_ABI = [
         "components": [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
           { "internalType": "address", "name": "sponsor", "type": "address" },
+          { "internalType": "string", "name": "title", "type": "string" },
+          { "internalType": "string", "name": "description", "type": "string" },
           { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
           { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
           {
@@ -340,6 +346,8 @@ export function extractTweetIdFromUrl(url: string): string {
 
 // Create LikeAndRetweet quest
 export async function createLikeAndRetweetQuest(params: {
+  title: string; // Quest title
+  description: string; // Quest description
   totalRewards: string; // in ETH
   rewardPerUser: string; // in ETH
   startTime: number; // Unix timestamp
@@ -360,6 +368,8 @@ export async function createLikeAndRetweetQuest(params: {
   const quest = {
     id: 0n, // Will be set by contract
     sponsor: '0x0000000000000000000000000000000000000000', // Will be set by contract
+    title: params.title,
+    description: params.description,
     questType: 0, // LikeAndRetweet
     status: 0, // Pending
     verificationParams: {
@@ -386,6 +396,10 @@ export async function createLikeAndRetweetQuest(params: {
     isVesting: params.isVesting || false,
     vestingDuration: BigInt(params.vestingDuration || 0)
   };
+
+  console.log(JSON.stringify(quest, (key, value) =>
+    typeof value === 'bigint' ? value.toString() : value
+  ));
 
   const hash = await writeContract(config, {
     address: QUEST_SYSTEM_ADDRESS,

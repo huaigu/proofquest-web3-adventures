@@ -220,6 +220,27 @@ function calculateTimeRemaining(now: Date, endDate: Date): string {
 }
 
 /**
+ * Format time remaining from milliseconds
+ */
+function formatTimeRemaining(diffMs: number): string {
+  if (diffMs <= 0) {
+    return 'Ended'
+  }
+  
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+  
+  if (days > 0) {
+    return `${days}d ${hours}h`
+  } else if (hours > 0) {
+    return `${hours}h ${minutes}m`
+  } else {
+    return `${minutes}m`
+  }
+}
+
+/**
  * Merge backend quest data with mock data
  */
 export function mergeQuestData(backendQuests: QuestResponse[], mockQuests: QuestListItem[]): QuestListItem[] {
@@ -287,12 +308,37 @@ export function transformBackendQuestToListItem(backendQuest: any): QuestListIte
   const endTime = backendQuest.endTime
   const timeRemaining = endTime > now ? formatTimeRemaining(endTime - now) : 'Ended'
   
+  // Format address for display (first 6 + last 4 characters)
+  const formatAddress = (address: string): string => {
+    if (!address || address.length < 10) return address
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+  
+  // Get avatar from first 2 characters of address (excluding 0x)
+  const getAddressAvatar = (address: string): string => {
+    if (!address || address.length < 4) return 'UN'
+    const cleanAddress = address.startsWith('0x') ? address.slice(2) : address
+    return cleanAddress.slice(0, 2).toUpperCase()
+  }
+  
+  // Map real quest types to categories
+  const mapQuestTypeToCategory = (questType: string): string => {
+    switch (questType) {
+      case 'likeAndRetweet':
+        return 'Social'
+      case 'Quoted':
+        return 'Content'
+      default:
+        return 'General'
+    }
+  }
+  
   return {
     id: backendQuest.id,
     title: backendQuest.title,
     creator: {
-      name: backendQuest.sponsor,
-      avatar: '',
+      name: formatAddress(backendQuest.sponsor),
+      avatar: getAddressAvatar(backendQuest.sponsor),
       handle: `@${backendQuest.sponsor.slice(0, 8)}...`
     },
     reward: {
@@ -306,7 +352,7 @@ export function transformBackendQuestToListItem(backendQuest: any): QuestListIte
     },
     timeRemaining,
     questType: backendQuest.questType,
-    category: 'General', // Default category since backend doesn't have this field yet
+    category: mapQuestTypeToCategory(backendQuest.questType),
     createdAt: new Date(backendQuest.createdAt),
     endDate: new Date(backendQuest.endTime)
   }

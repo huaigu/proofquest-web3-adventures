@@ -1,12 +1,25 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { 
-  generateZKTLSProof, 
-  validateAttestation, 
-  checkZKTLSHealth, 
-  formatAttestationForContract,
-  ZKTLSProofResult 
-} from '@/lib/zktls';
+
+// Lazy import to avoid initialization issues
+let zktlsModule: any = null;
+
+const loadZKTLSModule = async () => {
+  if (!zktlsModule) {
+    try {
+      zktlsModule = await import('@/lib/zktls');
+    } catch (error) {
+      console.error('Failed to load ZKTLS module:', error);
+      throw error;
+    }
+  }
+  return zktlsModule;
+};
+
+export interface ZKTLSProofResult {
+  attestation: unknown;
+  verificationResult: boolean;
+}
 
 export interface ZKTLSHookResult {
   // State
@@ -14,13 +27,13 @@ export interface ZKTLSHookResult {
   isValidating: boolean;
   attestation: any | null;
   error: string | null;
-  
+
   // Actions
   generateProof: (questId: string, launchPage?: string) => Promise<ZKTLSProofResult | null>;
   validateProof: (attestation: any) => Promise<boolean>;
   clearAttestation: () => void;
   checkHealth: () => Promise<boolean>;
-  
+
   // Utilities
   formatForContract: (attestation: any) => any;
 }
@@ -41,20 +54,21 @@ export function useZKTLS(): ZKTLSHookResult {
   
   // Generate ZKTLS proof
   const generateProof = useCallback(async (
-    questId: string, 
+    questId: string,
     launchPage?: string
   ): Promise<ZKTLSProofResult | null> => {
     if (!address) {
       setError('Wallet not connected');
       return null;
     }
-    
+
     setIsGenerating(true);
     clearError();
-    
+
     try {
-      const result = await generateZKTLSProof(address, questId, launchPage);
-      
+      const module = await loadZKTLSModule();
+      const result = await module.generateZKTLSProof(address, questId, launchPage);
+
       if (result.verificationResult) {
         setAttestation(result.attestation);
         return result;
@@ -62,13 +76,13 @@ export function useZKTLS(): ZKTLSHookResult {
         setError('Proof verification failed');
         return null;
       }
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
       console.error('ZKTLS proof generation failed:', err);
       return null;
-      
+
     } finally {
       setIsGenerating(false);
     }
@@ -78,22 +92,23 @@ export function useZKTLS(): ZKTLSHookResult {
   const validateProof = useCallback(async (attestationToValidate: any): Promise<boolean> => {
     setIsValidating(true);
     clearError();
-    
+
     try {
-      const isValid = await validateAttestation(attestationToValidate);
-      
+      const module = await loadZKTLSModule();
+      const isValid = await module.validateAttestation(attestationToValidate);
+
       if (!isValid) {
         setError('Attestation validation failed');
       }
-      
+
       return isValid;
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
       console.error('ZKTLS validation failed:', err);
       return false;
-      
+
     } finally {
       setIsValidating(false);
     }
@@ -108,14 +123,15 @@ export function useZKTLS(): ZKTLSHookResult {
   // Check ZKTLS service health
   const checkHealth = useCallback(async (): Promise<boolean> => {
     try {
-      const isHealthy = await checkZKTLSHealth();
-      
+      const module = await loadZKTLSModule();
+      const isHealthy = await module.checkZKTLSHealth();
+
       if (!isHealthy) {
         setError('ZKTLS service is not available');
       }
-      
+
       return isHealthy;
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
@@ -123,10 +139,16 @@ export function useZKTLS(): ZKTLSHookResult {
       return false;
     }
   }, []);
-  
+
   // Format attestation for smart contract
-  const formatForContract = useCallback((attestationToFormat: any) => {
-    return formatAttestationForContract(attestationToFormat);
+  const formatForContract = useCallback(async (attestationToFormat: any) => {
+    try {
+      const module = await loadZKTLSModule();
+      return module.formatAttestationForContract(attestationToFormat);
+    } catch (err) {
+      console.error('Failed to format attestation:', err);
+      return attestationToFormat; // Return as-is if formatting fails
+    }
   }, []);
   
   return {

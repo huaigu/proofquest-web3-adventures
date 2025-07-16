@@ -3,18 +3,18 @@ import { database } from './database.js';
 import { QuestStatusCalculator } from './questStatusCalculator.js';
 import type {
   QuestData,
+  QuestStatus,
   ParticipationData,
-  QuestCreatedEventData,
   RewardClaimedEventData,
   QuestCanceledEventData,
   VestingRewardClaimedEventData,
   RemainingRewardsWithdrawnEventData
 } from '../types/database.js';
 
-// Quest contract ABI - only event signatures needed
+// Quest contract ABI - events and view functions needed
 const QUEST_CONTRACT_ABI = [
   // QuestCreated event
-  "event QuestCreated(uint256 indexed questId, address indexed sponsor, string title, string description, uint256 totalRewards, uint256 rewardPerUser, uint256 startTime, uint256 endTime, string metadata)",
+  "event QuestCreated(uint256 indexed questId, address indexed sponsor, uint256 totalRewards, string title, string description)",
   
   // RewardClaimed event
   "event RewardClaimed(uint256 indexed questId, address indexed recipient, uint256 amount)",
@@ -26,7 +26,10 @@ const QUEST_CONTRACT_ABI = [
   "event VestingRewardClaimed(uint256 indexed questId, address indexed recipient, uint256 amount)",
   
   // RemainingRewardsWithdrawn event
-  "event RemainingRewardsWithdrawn(uint256 indexed questId, address indexed sponsor, uint256 amount)"
+  "event RemainingRewardsWithdrawn(uint256 indexed questId, address indexed sponsor, uint256 amount)",
+  
+  // View functions for fetching quest data
+  "function getQuest(uint256 _questId) external view returns (tuple(uint256 id, address sponsor, string title, string description, uint8 questType, uint8 status, tuple(string apiUrlPattern, string apiEndpointHash, uint256 proofValidityPeriod, string targetLikeRetweetId, string favoritedJsonPath, string retweetedJsonPath, bool requireFavorite, bool requireRetweet, string targetQuotedTweetId, string quotedStatusIdJsonPath, string userIdJsonPath, string quoteTweetIdJsonPath) verificationParams, uint256 totalRewards, uint256 rewardPerUser, uint256 maxParticipants, uint256 participantCount, uint256 startTime, uint256 endTime, uint256 claimEndTime, bool isVesting, uint256 vestingDuration) quest)"
 ];
 
 export class EventIndexer {
@@ -35,6 +38,9 @@ export class EventIndexer {
   private contractAddress: string;
   private deploymentBlock: number;
   private isRunning: boolean = false;
+  private isPolling: boolean = false;
+  private pollingInterval: NodeJS.Timeout | null = null;
+  private readonly POLLING_INTERVAL_MS = 5000; // 5 seconds
   
   constructor(
     rpcUrl: string,
@@ -69,7 +75,7 @@ export class EventIndexer {
   }
   
   /**
-   * Start indexing from the last processed block
+   * Start indexing from the last processed block (one-time)
    */
   async startIndexing(): Promise<void> {
     if (this.isRunning) {
@@ -94,6 +100,76 @@ export class EventIndexer {
     } catch (error) {
       console.error('Error during event indexing:', error);
       throw error;
+    } finally {
+      this.isRunning = false;
+    }
+  }
+  
+  /**
+   * Start continuous polling for new events
+   */
+  startPolling(): void {
+    if (this.isPolling) {
+      console.log('Event indexer is already polling');
+      return;
+    }
+    
+    this.isPolling = true;
+    console.log(`Starting event indexer polling every ${this.POLLING_INTERVAL_MS}ms`);
+    
+    // Start the polling loop
+    this.pollingInterval = setInterval(async () => {
+      try {
+        await this.pollForNewEvents();
+      } catch (error) {
+        console.error('Error during polling:', error);
+      }
+    }, this.POLLING_INTERVAL_MS);
+  }
+  
+  /**
+   * Stop continuous polling
+   */
+  stopPolling(): void {
+    if (!this.isPolling) {
+      console.log('Event indexer is not polling');
+      return;
+    }
+    
+    this.isPolling = false;
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
+    console.log('Event indexer polling stopped');
+  }
+  
+  /**
+   * Poll for new events since last processed block
+   */
+  private async pollForNewEvents(): Promise<void> {
+    if (this.isRunning) {
+      // Skip this poll if already indexing
+      return;
+    }
+    
+    this.isRunning = true;
+    
+    try {
+      const lastProcessedBlock = await database.getLastProcessedBlock();
+      const currentBlock = await this.provider.getBlockNumber();
+      const startBlock = lastProcessedBlock > 0 ? lastProcessedBlock + 1 : this.deploymentBlock;
+      
+      if (startBlock <= currentBlock) {
+        console.log(`Polling for events from block ${startBlock} to ${currentBlock}`);
+        await this.indexBlockRange(startBlock, currentBlock);
+        
+        // Update quest statuses after processing new events
+        await this.updateQuestStatuses();
+      }
+    } catch (error) {
+      console.error('Error during event polling:', error);
+      // Continue polling despite errors
     } finally {
       this.isRunning = false;
     }
@@ -154,7 +230,7 @@ export class EventIndexer {
       });
       
       if (!parsedLog) {
-        console.warn('Could not parse log:', log);
+        console.warn('Could not parse log:', log.transactionHash);
         return;
       }
       
@@ -192,67 +268,103 @@ export class EventIndexer {
    * Handle QuestCreated event
    */
   private async handleQuestCreated(args: ethers.Result, log: ethers.Log): Promise<void> {
-    const eventData: QuestCreatedEventData = {
-      questId: args.questId.toString(),
-      sponsor: args.sponsor,
-      title: args.title,
-      description: args.description,
-      totalRewards: args.totalRewards.toString(),
-      rewardPerUser: args.rewardPerUser.toString(),
-      startTime: Number(args.startTime) * 1000, // Convert to milliseconds
-      endTime: Number(args.endTime) * 1000,
-      metadata: args.metadata,
-      transactionHash: log.transactionHash!,
-      blockNumber: log.blockNumber!
-    };
+    const questId = args.questId.toString();
     
-    // Parse metadata if it's JSON
-    let parsedMetadata: any = {};
     try {
-      if (eventData.metadata) {
-        parsedMetadata = JSON.parse(eventData.metadata);
-      }
+      // Get real quest data from smart contract
+      const questData = await this.contract.getQuest(questId);
+      
+      // Map quest type enum to string
+      const getQuestTypeString = (questType: number): string => {
+        switch (questType) {
+          case 0: return 'likeAndRetweet';
+          case 1: return 'Quoted';
+          default: return 'likeAndRetweet';
+        }
+      };
+      
+      // Map status enum to string
+      const getStatusString = (status: number): QuestStatus => {
+        switch (status) {
+          case 0: return 'pending';
+          case 1: return 'active';
+          case 2: return 'ended';
+          case 3: return 'closed';
+          case 4: return 'canceled';
+          default: return 'pending';
+        }
+      };
+      
+      // Convert timestamps from seconds to milliseconds
+      const startTime = Number(questData.startTime) * 1000;
+      const endTime = Number(questData.endTime) * 1000;
+      const claimEndTime = Number(questData.claimEndTime) * 1000;
+      
+      const questDataForDB: QuestData = {
+        id: questId,
+        sponsor: questData.sponsor,
+        title: questData.title,
+        description: questData.description,
+        questType: getQuestTypeString(questData.questType),
+        totalRewards: questData.totalRewards.toString(),
+        rewardPerUser: questData.rewardPerUser.toString(),
+        maxParticipants: Number(questData.maxParticipants),
+        participantCount: Number(questData.participantCount),
+        startTime,
+        endTime,
+        claimEndTime,
+        status: getStatusString(questData.status),
+        isVesting: questData.isVesting,
+        vestingDuration: Number(questData.vestingDuration),
+        metadata: JSON.stringify(questData.verificationParams, (key, value) => {
+          return typeof value === 'bigint' ? value.toString() : value;
+        }), // Store verification params as metadata
+        transactionHash: log.transactionHash!,
+        blockNumber: log.blockNumber!,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      
+      // Update status based on current time
+      const updatedQuest = QuestStatusCalculator.updateQuestStatus(questDataForDB);
+      
+      await database.addQuest(updatedQuest);
+      
+      console.log(`Quest created: ${questDataForDB.id} - ${questDataForDB.title} (${questDataForDB.totalRewards} total rewards)`);
+      console.log(`Real data: maxParticipants=${questDataForDB.maxParticipants}, rewardPerUser=${questDataForDB.rewardPerUser}, startTime=${new Date(startTime).toISOString()}, endTime=${new Date(endTime).toISOString()}`);
+      
     } catch (error) {
-      console.warn('Failed to parse metadata:', eventData.metadata);
+      console.error(`Failed to get quest data from contract for quest ${questId}:`, error);
+      
+      // Fallback to event data only if contract call fails
+      const fallbackQuestData: QuestData = {
+        id: questId,
+        sponsor: args.sponsor,
+        title: args.title || `Quest #${questId}`,
+        description: args.description || 'Quest created on-chain',
+        questType: 'likeAndRetweet', // Default quest type
+        totalRewards: args.totalRewards.toString(),
+        rewardPerUser: '0', // Will need to be calculated or set elsewhere
+        maxParticipants: 100, // Default max participants
+        participantCount: 0,
+        startTime: Date.now(), // Default to current time since not in event
+        endTime: Date.now() + (7 * 24 * 60 * 60 * 1000), // Default 7 days from now
+        claimEndTime: Date.now() + (14 * 24 * 60 * 60 * 1000), // Default 14 days from now
+        status: 'pending',
+        isVesting: false,
+        vestingDuration: 0,
+        metadata: '',
+        transactionHash: log.transactionHash!,
+        blockNumber: log.blockNumber!,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      
+      const updatedQuest = QuestStatusCalculator.updateQuestStatus(fallbackQuestData);
+      await database.addQuest(updatedQuest);
+      
+      console.log(`Quest created (fallback): ${fallbackQuestData.id} - ${fallbackQuestData.title} (fallback data used)`);
     }
-    
-    // Calculate max participants and claim end time
-    const maxParticipants = Math.floor(
-      Number(eventData.totalRewards) / Number(eventData.rewardPerUser)
-    );
-    
-    // Default claim end time to 7 days after quest end
-    const claimEndTime = eventData.endTime + (7 * 24 * 60 * 60 * 1000);
-    
-    const questData: QuestData = {
-      id: eventData.questId,
-      sponsor: eventData.sponsor,
-      title: eventData.title,
-      description: eventData.description,
-      questType: parsedMetadata.questType || 'unknown',
-      totalRewards: eventData.totalRewards,
-      rewardPerUser: eventData.rewardPerUser,
-      maxParticipants,
-      participantCount: 0,
-      startTime: eventData.startTime,
-      endTime: eventData.endTime,
-      claimEndTime,
-      status: 'pending', // Will be updated by status calculator
-      isVesting: parsedMetadata.isVesting || false,
-      vestingDuration: parsedMetadata.vestingDuration || 0,
-      metadata: eventData.metadata,
-      transactionHash: eventData.transactionHash,
-      blockNumber: eventData.blockNumber,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-    
-    // Update status based on current time
-    const updatedQuest = QuestStatusCalculator.updateQuestStatus(questData);
-    
-    await database.addQuest(updatedQuest);
-    
-    console.log(`Quest created: ${questData.id} - ${questData.title}`);
   }
   
   /**
@@ -368,20 +480,24 @@ export class EventIndexer {
    */
   async getStatus(): Promise<{
     isRunning: boolean;
+    isPolling: boolean;
     lastProcessedBlock: number;
     currentBlock: number;
     contractAddress: string;
     deploymentBlock: number;
+    pollingIntervalMs: number;
   }> {
     const currentBlock = await this.provider.getBlockNumber();
     const lastProcessedBlock = await database.getLastProcessedBlock();
     
     return {
       isRunning: this.isRunning,
+      isPolling: this.isPolling,
       lastProcessedBlock,
       currentBlock,
       contractAddress: this.contractAddress,
-      deploymentBlock: this.deploymentBlock
+      deploymentBlock: this.deploymentBlock,
+      pollingIntervalMs: this.POLLING_INTERVAL_MS
     };
   }
   
@@ -419,10 +535,11 @@ export class EventIndexer {
   }
   
   /**
-   * Stop the indexer
+   * Stop the indexer and polling
    */
   stop(): void {
     this.isRunning = false;
+    this.stopPolling();
     console.log('Event indexer stopped');
   }
 }
@@ -450,6 +567,8 @@ export function getEventIndexer(): EventIndexer {
 export const eventIndexer = {
   initialize: () => getEventIndexer().initialize(),
   startIndexing: () => getEventIndexer().startIndexing(),
+  startPolling: () => getEventIndexer().startPolling(),
+  stopPolling: () => getEventIndexer().stopPolling(),
   updateQuestStatuses: () => getEventIndexer().updateQuestStatuses(),
   getStatus: () => getEventIndexer().getStatus(),
   stop: () => getEventIndexer().stop()

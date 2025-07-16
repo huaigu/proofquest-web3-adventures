@@ -1,4 +1,5 @@
-import { PrimusZKTLS } from '@primuslabs/zktls-js-sdk';
+// Dynamic import to avoid initialization issues
+let PrimusZKTLS: any = null;
 
 // ZKTLS Configuration
 export const ZKTLS_CONFIG = {
@@ -25,8 +26,19 @@ export interface ZKTLSError {
 /**
  * Initialize ZKTLS SDK
  */
-export async function initializeZKTLS(): Promise<PrimusZKTLS> {
+export async function initializeZKTLS(): Promise<any> {
   if (!primusZKTLS) {
+    // Dynamic import to avoid initialization issues
+    if (!PrimusZKTLS) {
+      try {
+        const zktlsModule = await import('@primuslabs/zktls-js-sdk');
+        PrimusZKTLS = zktlsModule.PrimusZKTLS;
+      } catch (error) {
+        console.error('Failed to load @primuslabs/zktls-js-sdk:', error);
+        throw new Error('ZKTLS SDK not available');
+      }
+    }
+
     primusZKTLS = new PrimusZKTLS();
     
     // Detect device platform

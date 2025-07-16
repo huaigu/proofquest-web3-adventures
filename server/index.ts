@@ -48,6 +48,30 @@ fastify.get('/health', async (request, reply) => {
   return { status: 'ok', timestamp: new Date().toISOString() }
 })
 
+// Event indexer status endpoint
+fastify.get('/indexer/status', async (request, reply) => {
+  const contractAddress = process.env.QUEST_CONTRACT_ADDRESS
+  if (!contractAddress || contractAddress.trim() === '') {
+    return { 
+      enabled: false, 
+      message: 'Event indexer not configured - no contract address'
+    }
+  }
+  
+  try {
+    const status = await eventIndexer.getStatus()
+    return {
+      enabled: true,
+      ...status
+    }
+  } catch (error) {
+    return {
+      enabled: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
 // Global error handler
 fastify.setErrorHandler(async (error, request, reply) => {
   fastify.log.error(error)
@@ -77,13 +101,17 @@ const initializeServices = async () => {
       fastify.log.info('Initializing event indexer...')
       await eventIndexer.initialize()
       
-      // Start event indexing from last processed block
-      fastify.log.info('Starting event indexing...')
+      // Start event indexing from last processed block (catch up)
+      fastify.log.info('Starting initial event indexing...')
       await eventIndexer.startIndexing()
       
       // Update quest statuses based on current time
       fastify.log.info('Updating quest statuses...')
       await eventIndexer.updateQuestStatuses()
+      
+      // Start continuous polling for new events
+      fastify.log.info('Starting continuous event polling...')
+      eventIndexer.startPolling()
     } else {
       fastify.log.info('Skipping event indexer - no contract address configured')
     }
@@ -116,6 +144,7 @@ const start = async () => {
     // Log available routes
     fastify.log.info('Available routes:')
     fastify.log.info('GET /health - Health check')
+    fastify.log.info('GET /indexer/status - Event indexer status')
     fastify.log.info('Quest routes:')
     fastify.log.info('  GET /api/quests - List quests')
     fastify.log.info('  POST /api/quests - Create quest')
@@ -141,5 +170,34 @@ const start = async () => {
     process.exit(1)
   }
 }
+
+// Graceful shutdown handling
+process.on('SIGINT', async () => {
+  fastify.log.info('Received SIGINT, shutting down gracefully...')
+  
+  // Stop event indexer polling
+  if (process.env.QUEST_CONTRACT_ADDRESS?.trim()) {
+    fastify.log.info('Stopping event indexer...')
+    eventIndexer.stop()
+  }
+  
+  // Close fastify server
+  await fastify.close()
+  process.exit(0)
+})
+
+process.on('SIGTERM', async () => {
+  fastify.log.info('Received SIGTERM, shutting down gracefully...')
+  
+  // Stop event indexer polling
+  if (process.env.QUEST_CONTRACT_ADDRESS?.trim()) {
+    fastify.log.info('Stopping event indexer...')
+    eventIndexer.stop()
+  }
+  
+  // Close fastify server
+  await fastify.close()
+  process.exit(0)
+})
 
 start()

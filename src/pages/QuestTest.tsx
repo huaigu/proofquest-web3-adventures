@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+// Conditional import to avoid initialization issues
 import { useZKTLS } from '@/hooks/useZKTLS';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -40,7 +41,25 @@ const QuestTest = () => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
-  const { 
+
+  // Safe initialization of ZKTLS hook
+  let zktlsHook;
+  try {
+    zktlsHook = useZKTLS();
+  } catch (error) {
+    console.error('Failed to initialize useZKTLS:', error);
+    zktlsHook = {
+      isGenerating: false,
+      attestation: null,
+      error: 'ZKTLS initialization failed',
+      generateProof: async () => null,
+      validateProof: async () => false,
+      clearAttestation: () => {},
+      formatForContract: (att: any) => att
+    };
+  }
+
+  const {
     isGenerating: isGeneratingProof,
     attestation,
     error: zktlsError,
@@ -48,7 +67,7 @@ const QuestTest = () => {
     validateProof,
     clearAttestation,
     formatForContract
-  } = useZKTLS();
+  } = zktlsHook;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -75,7 +94,7 @@ const QuestTest = () => {
   const [userQualificationStatus, setUserQualificationStatus] = useState<{[key: string]: boolean}>({});
   
   // ZKTLS state
-  const [useZKTLS, setUseZKTLS] = useState(false);
+  const [enableZKTLS, setEnableZKTLS] = useState(false);
   const [proofGenerated, setProofGenerated] = useState(false);
 
   // Check if we're on Sepolia
@@ -408,11 +427,11 @@ const QuestTest = () => {
             <CardContent>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="useZKTLS"
-                  checked={useZKTLS}
-                  onCheckedChange={(checked) => setUseZKTLS(checked as boolean)}
+                  id="enableZKTLS"
+                  checked={enableZKTLS}
+                  onCheckedChange={(checked) => setEnableZKTLS(checked as boolean)}
                 />
-                <Label htmlFor="useZKTLS" className="flex items-center gap-2">
+                <Label htmlFor="enableZKTLS" className="flex items-center gap-2">
                   <Zap className="h-4 w-4" />
                   Use ZKTLS Real Proof Generation
                 </Label>
@@ -619,7 +638,7 @@ const QuestTest = () => {
                     </div>
                   </div>
 
-                  {useZKTLS ? (
+                  {enableZKTLS ? (
                     <div className="space-y-2">
                       {!attestation ? (
                         <Button
@@ -801,7 +820,7 @@ const QuestTest = () => {
                     </div>
                   </div>
 
-                  {useZKTLS ? (
+                  {enableZKTLS ? (
                     <div className="space-y-2">
                       {!attestation ? (
                         <Button

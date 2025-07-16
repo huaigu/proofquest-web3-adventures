@@ -173,8 +173,10 @@ const QuestList = () => {
   const getQuestIcon = (questType: string) => {
     switch (questType) {
       case "twitter-interaction":
+      case "likeAndRetweet":
         return <Twitter className="w-4 h-4" />;
       case "quote-tweet":
+      case "Quoted":
         return <MessageSquare className="w-4 h-4" />;
       case "send-tweet":
         return <FileText className="w-4 h-4" />;
@@ -309,7 +311,9 @@ const QuestList = () => {
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
                       <SelectItem value="twitter-interaction">Twitter Interaction</SelectItem>
+                      <SelectItem value="likeAndRetweet">Like & Retweet</SelectItem>
                       <SelectItem value="quote-tweet">Quote Tweet</SelectItem>
+                      <SelectItem value="Quoted">Quoted</SelectItem>
                       <SelectItem value="send-tweet">Send Tweet</SelectItem>
                     </SelectContent>
                   </Select>
@@ -324,11 +328,12 @@ const QuestList = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="social">Social</SelectItem>
-                      <SelectItem value="content">Content</SelectItem>
-                      <SelectItem value="defi">DeFi</SelectItem>
-                      <SelectItem value="gaming">Gaming</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="Social">Social</SelectItem>
+                      <SelectItem value="Content">Content</SelectItem>
+                      <SelectItem value="General">General</SelectItem>
+                      <SelectItem value="DeFi">DeFi</SelectItem>
+                      <SelectItem value="Gaming">Gaming</SelectItem>
+                      <SelectItem value="Education">Education</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -462,90 +467,187 @@ const QuestList = () => {
             {/* Quest Grid */}
             {!isLoading && paginatedQuests.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {paginatedQuests.map((quest) => (
-                  <Link key={quest.id} to={`/quest/${quest.id}`}>
-                    <Card className="h-full transition-all duration-200 hover:scale-[1.02] hover:shadow-xl bg-gradient-to-br from-card/50 to-card/30 border-border/50 backdrop-blur cursor-pointer group">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-2 group-hover:text-[hsl(var(--vibrant-blue))] transition-colors line-clamp-2">
-                              {quest.title}
-                            </h3>
-                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                              <Avatar className="w-6 h-6">
-                                <AvatarImage src={quest.creator.avatar} />
-                                <AvatarFallback className="text-xs bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white">
-                                  {quest.creator.name.slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span>{quest.creator.name}</span>
+                {paginatedQuests.map((quest) => {
+                  const isMock = (quest as any)._source === 'mock';
+                  
+                  if (isMock) {
+                    return (
+                      <div key={quest.id}>
+                        <Card className="h-full transition-all duration-200 bg-gradient-to-br from-card/50 to-card/30 border-border/50 backdrop-blur group opacity-75 cursor-not-allowed">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg mb-2 transition-colors line-clamp-2 text-muted-foreground">
+                                {quest.title}
+                              </h3>
+                              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                <Avatar className="w-6 h-6">
+                                  <AvatarImage src={quest.creator.avatar} />
+                                  <AvatarFallback className="text-xs bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white">
+                                    {quest.creator.name.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{quest.creator.name}</span>
+                                <Badge variant="outline" className="text-xs bg-orange-500/20 text-orange-400 border-orange-500/50">
+                                  Mock
+                                </Badge>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex flex-col items-end space-y-1">
-                            <Badge variant="outline" className={getStatusBadgeStyle(quest.status)}>
-                              {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
-                            </Badge>
-                            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                              {getQuestIcon(quest.questType)}
-                              <span>{quest.category}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="py-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center space-x-2">
-                            {getRewardIcon(quest.reward.type)}
-                            <span className="font-semibold text-[hsl(var(--vibrant-blue))]">
-                              {quest.reward.amount} {quest.reward.type}
-                            </span>
-                            {quest.reward.type !== 'ETH' && (
-                              <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
-                                Coming Soon
+                            <div className="flex flex-col items-end space-y-1">
+                              <Badge variant="outline" className={getStatusBadgeStyle(quest.status)}>
+                                {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
                               </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-sm text-muted-foreground">
-                          <div className="flex items-center space-x-1">
-                            <Users className="w-4 h-4" />
-                            <span>
-                              {quest.participants.current}
-                              {quest.participants.max && `/${quest.participants.max}`}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{quest.timeRemaining}</span>
-                          </div>
-                        </div>
-
-                        {quest.participants.max && (
-                          <div className="mt-3">
-                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                              <span>Progress</span>
-                              <span>{Math.round((quest.participants.current / quest.participants.max) * 100)}%</span>
-                            </div>
-                            <div className="w-full bg-secondary rounded-full h-2">
-                              <div 
-                                className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min((quest.participants.current / quest.participants.max) * 100, 100)}%` }}
-                              />
+                              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                                {getQuestIcon(quest.questType)}
+                                <span>{quest.category}</span>
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </CardContent>
+                        </CardHeader>
 
-                      <CardFooter className="pt-3">
-                        <Button className="w-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] hover:from-[hsl(var(--vibrant-blue))]/90 hover:to-[hsl(var(--vibrant-purple))]/90 text-white">
-                          View Quest
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </Link>
-                ))}
+                        <CardContent className="py-3">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              {getRewardIcon(quest.reward.type)}
+                              <span className="font-semibold text-[hsl(var(--vibrant-blue))]">
+                                {quest.reward.amount} {quest.reward.type}
+                              </span>
+                              {quest.reward.type !== 'ETH' && (
+                                <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
+                                  Coming Soon
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Users className="w-4 h-4" />
+                              <span>
+                                {quest.participants.current}
+                                {quest.participants.max && `/${quest.participants.max}`}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{quest.timeRemaining}</span>
+                            </div>
+                          </div>
+
+                          {quest.participants.max && (
+                            <div className="mt-3">
+                              <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                <span>Progress</span>
+                                <span>{Math.round((quest.participants.current / quest.participants.max) * 100)}%</span>
+                              </div>
+                              <div className="w-full bg-secondary rounded-full h-2">
+                                <div 
+                                  className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${Math.min((quest.participants.current / quest.participants.max) * 100, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+
+                        <CardFooter className="pt-3">
+                          <Button 
+                            className="w-full text-white bg-gray-500 cursor-not-allowed"
+                            disabled={true}
+                          >
+                            Mock Data
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <Link key={quest.id} to={`/quest/${quest.id}`}>
+                      <Card className="h-full transition-all duration-200 bg-gradient-to-br from-card/50 to-card/30 border-border/50 backdrop-blur group hover:scale-[1.02] hover:shadow-xl cursor-pointer">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg mb-2 transition-colors line-clamp-2 group-hover:text-[hsl(var(--vibrant-blue))]">
+                                {quest.title}
+                              </h3>
+                              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                <Avatar className="w-6 h-6">
+                                  <AvatarImage src={quest.creator.avatar} />
+                                  <AvatarFallback className="text-xs bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white">
+                                    {quest.creator.avatar}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{quest.creator.name}</span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end space-y-1">
+                              <Badge variant="outline" className={getStatusBadgeStyle(quest.status)}>
+                                {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
+                              </Badge>
+                              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                                {getQuestIcon(quest.questType)}
+                                <span>{quest.category}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardHeader>
+
+                        <CardContent className="py-3">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              {getRewardIcon(quest.reward.type)}
+                              <span className="font-semibold text-[hsl(var(--vibrant-blue))]">
+                                {quest.reward.amount} {quest.reward.type}
+                              </span>
+                              {quest.reward.type !== 'ETH' && (
+                                <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
+                                  Coming Soon
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Users className="w-4 h-4" />
+                              <span>
+                                {quest.participants.current}
+                                {quest.participants.max && `/${quest.participants.max}`}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{quest.timeRemaining}</span>
+                            </div>
+                          </div>
+
+                          {quest.participants.max && (
+                            <div className="mt-3">
+                              <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                <span>Progress</span>
+                                <span>{Math.round((quest.participants.current / quest.participants.max) * 100)}%</span>
+                              </div>
+                              <div className="w-full bg-secondary rounded-full h-2">
+                                <div 
+                                  className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${Math.min((quest.participants.current / quest.participants.max) * 100, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+
+                        <CardFooter className="pt-3">
+                          <Button className="w-full text-white bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] hover:from-[hsl(var(--vibrant-blue))]/90 hover:to-[hsl(var(--vibrant-purple))]/90">
+                            View Quest
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    </Link>
+                  );
+                }
+              })}
               </div>
             )}
 
