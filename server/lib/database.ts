@@ -13,6 +13,21 @@ import {
   UserStatistics
 } from '../types/database.js';
 
+function convertBigIntToString(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(convertBigIntToString);
+  } else if (obj && typeof obj === 'object') {
+    const res: any = {};
+    for (const key in obj) {
+      res[key] = convertBigIntToString(obj[key]);
+    }
+    return res;
+  } else if (typeof obj === 'bigint') {
+    return obj.toString();
+  }
+  return obj;
+}
+
 export class DatabaseService {
   private db: Low<DatabaseSchema>;
   private dbPath: string;
@@ -53,16 +68,19 @@ export class DatabaseService {
 
   async addQuest(quest: QuestData): Promise<void> {
     await this.db.read();
-    
+
+    // 递归转换
+    const questSafe = convertBigIntToString(quest);
+
     // Check if quest already exists
     const existingIndex = this.db.data.quests.findIndex(q => q.id === quest.id);
     
     if (existingIndex >= 0) {
       // Update existing quest
-      this.db.data.quests[existingIndex] = quest;
+      this.db.data.quests[existingIndex] = questSafe;
     } else {
       // Add new quest
-      this.db.data.quests.push(quest);
+      this.db.data.quests.push(questSafe);
     }
     
     await this.db.write();

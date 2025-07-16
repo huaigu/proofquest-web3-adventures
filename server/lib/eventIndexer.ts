@@ -15,19 +15,19 @@ import type {
 const QUEST_CONTRACT_ABI = [
   // QuestCreated event
   "event QuestCreated(uint256 indexed questId, address indexed sponsor, uint256 totalRewards, string title, string description)",
-  
+
   // RewardClaimed event
   "event RewardClaimed(uint256 indexed questId, address indexed recipient, uint256 amount)",
-  
+
   // QuestCanceled event
   "event QuestCanceled(uint256 indexed questId)",
-  
+
   // VestingRewardClaimed event (if vesting is supported)
   "event VestingRewardClaimed(uint256 indexed questId, address indexed recipient, uint256 amount)",
-  
+
   // RemainingRewardsWithdrawn event
   "event RemainingRewardsWithdrawn(uint256 indexed questId, address indexed sponsor, uint256 amount)",
-  
+
   // View functions for fetching quest data
   "function getQuest(uint256 _questId) external view returns (tuple(uint256 id, address sponsor, string title, string description, uint8 questType, uint8 status, tuple(string apiUrlPattern, string apiEndpointHash, uint256 proofValidityPeriod, string targetLikeRetweetId, string favoritedJsonPath, string retweetedJsonPath, bool requireFavorite, bool requireRetweet, string targetQuotedTweetId, string quotedStatusIdJsonPath, string userIdJsonPath, string quoteTweetIdJsonPath) verificationParams, uint256 totalRewards, uint256 rewardPerUser, uint256 maxParticipants, uint256 participantCount, uint256 startTime, uint256 endTime, uint256 claimEndTime, bool isVesting, uint256 vestingDuration) quest)"
 ];
@@ -41,7 +41,7 @@ export class EventIndexer {
   private isPolling: boolean = false;
   private pollingInterval: NodeJS.Timeout | null = null;
   private readonly POLLING_INTERVAL_MS = 5000; // 5 seconds
-  
+
   constructor(
     rpcUrl: string,
     contractAddress: string,
@@ -52,7 +52,7 @@ export class EventIndexer {
     this.deploymentBlock = deploymentBlock;
     this.contract = new ethers.Contract(contractAddress, QUEST_CONTRACT_ABI, this.provider);
   }
-  
+
   /**
    * Initialize the indexer with contract information
    */
@@ -60,20 +60,20 @@ export class EventIndexer {
     try {
       // Initialize database
       await database.init();
-      
+
       // Update indexer state with contract info
       await database.updateIndexerState({
         contractAddress: this.contractAddress,
         contractDeployBlock: this.deploymentBlock
       });
-      
+
       console.log(`Event indexer initialized for contract: ${this.contractAddress}`);
     } catch (error) {
       console.error('Failed to initialize event indexer:', error);
       throw error;
     }
   }
-  
+
   /**
    * Start indexing from the last processed block (one-time)
    */
@@ -82,20 +82,20 @@ export class EventIndexer {
       console.log('Event indexer is already running');
       return;
     }
-    
+
     this.isRunning = true;
-    
+
     try {
       const lastProcessedBlock = await database.getLastProcessedBlock();
       const startBlock = lastProcessedBlock > 0 ? lastProcessedBlock + 1 : this.deploymentBlock;
       const currentBlock = await this.provider.getBlockNumber();
-      
+
       console.log(`Starting event indexing from block ${startBlock} to ${currentBlock}`);
-      
+
       if (startBlock <= currentBlock) {
         await this.indexBlockRange(startBlock, currentBlock);
       }
-      
+
       console.log('Event indexing completed');
     } catch (error) {
       console.error('Error during event indexing:', error);
@@ -104,7 +104,7 @@ export class EventIndexer {
       this.isRunning = false;
     }
   }
-  
+
   /**
    * Start continuous polling for new events
    */
@@ -113,10 +113,10 @@ export class EventIndexer {
       console.log('Event indexer is already polling');
       return;
     }
-    
+
     this.isPolling = true;
     console.log(`Starting event indexer polling every ${this.POLLING_INTERVAL_MS}ms`);
-    
+
     // Start the polling loop
     this.pollingInterval = setInterval(async () => {
       try {
@@ -126,7 +126,7 @@ export class EventIndexer {
       }
     }, this.POLLING_INTERVAL_MS);
   }
-  
+
   /**
    * Stop continuous polling
    */
@@ -135,7 +135,7 @@ export class EventIndexer {
       console.log('Event indexer is not polling');
       return;
     }
-    
+
     this.isPolling = false;
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
@@ -143,7 +143,7 @@ export class EventIndexer {
     }
     console.log('Event indexer polling stopped');
   }
-  
+
   /**
    * Poll for new events since last processed block
    */
@@ -152,18 +152,18 @@ export class EventIndexer {
       // Skip this poll if already indexing
       return;
     }
-    
+
     this.isRunning = true;
-    
+
     try {
       const lastProcessedBlock = await database.getLastProcessedBlock();
       const currentBlock = await this.provider.getBlockNumber();
       const startBlock = lastProcessedBlock > 0 ? lastProcessedBlock + 1 : this.deploymentBlock;
-      
+
       if (startBlock <= currentBlock) {
         console.log(`Polling for events from block ${startBlock} to ${currentBlock}`);
         await this.indexBlockRange(startBlock, currentBlock);
-        
+
         // Update quest statuses after processing new events
         await this.updateQuestStatuses();
       }
@@ -174,18 +174,18 @@ export class EventIndexer {
       this.isRunning = false;
     }
   }
-  
+
   /**
    * Index events in a specific block range
    */
   private async indexBlockRange(fromBlock: number, toBlock: number): Promise<void> {
     const BATCH_SIZE = 1000; // Process in batches to avoid RPC limits
-    
+
     for (let start = fromBlock; start <= toBlock; start += BATCH_SIZE) {
       const end = Math.min(start + BATCH_SIZE - 1, toBlock);
-      
+
       console.log(`Processing blocks ${start} to ${end}`);
-      
+
       try {
         await this.processBlockBatch(start, end);
         await database.updateLastProcessedBlock(end);
@@ -195,7 +195,7 @@ export class EventIndexer {
       }
     }
   }
-  
+
   /**
    * Process a batch of blocks for events
    */
@@ -206,9 +206,9 @@ export class EventIndexer {
       fromBlock,
       toBlock
     };
-    
+
     const logs = await this.provider.getLogs(filter);
-    
+
     for (const log of logs) {
       try {
         await this.processEvent(log);
@@ -218,7 +218,7 @@ export class EventIndexer {
       }
     }
   }
-  
+
   /**
    * Process a single event log
    */
@@ -228,17 +228,17 @@ export class EventIndexer {
         topics: log.topics,
         data: log.data
       });
-      
+
       if (!parsedLog) {
         console.warn('Could not parse log:', log.transactionHash);
         return;
       }
-      
+
       const eventName = parsedLog.name;
       const args = parsedLog.args;
-      
+
       console.log(`Processing ${eventName} event in block ${log.blockNumber}`);
-      
+
       switch (eventName) {
         case 'QuestCreated':
           await this.handleQuestCreated(args, log);
@@ -263,17 +263,18 @@ export class EventIndexer {
       throw error;
     }
   }
-  
+
   /**
    * Handle QuestCreated event
    */
   private async handleQuestCreated(args: ethers.Result, log: ethers.Log): Promise<void> {
     const questId = args.questId.toString();
-    
+
     try {
       // Get real quest data from smart contract
       const questData = await this.contract.getQuest(questId);
-      
+      console.log(questData)
+
       // Map quest type enum to string
       const getQuestTypeString = (questType: number): string => {
         switch (questType) {
@@ -282,7 +283,7 @@ export class EventIndexer {
           default: return 'likeAndRetweet';
         }
       };
-      
+
       // Map status enum to string
       const getStatusString = (status: number): QuestStatus => {
         switch (status) {
@@ -294,12 +295,12 @@ export class EventIndexer {
           default: return 'pending';
         }
       };
-      
+
       // Convert timestamps from seconds to milliseconds
       const startTime = Number(questData.startTime) * 1000;
       const endTime = Number(questData.endTime) * 1000;
       const claimEndTime = Number(questData.claimEndTime) * 1000;
-      
+
       const questDataForDB: QuestData = {
         id: questId,
         sponsor: questData.sponsor,
@@ -316,26 +317,37 @@ export class EventIndexer {
         status: getStatusString(questData.status),
         isVesting: questData.isVesting,
         vestingDuration: Number(questData.vestingDuration),
-        metadata: JSON.stringify(questData.verificationParams, (key, value) => {
-          return typeof value === 'bigint' ? value.toString() : value;
-        }), // Store verification params as metadata
+        metadata: {
+          apiUrlPattern: questData.verificationParams[0],
+          apiEndpointHash: questData.verificationParams[1],
+          proofValidityPeriod: questData.verificationParams[2],
+          targetLikeRetweetId: questData.verificationParams[3],
+          favoritedJsonPath: questData.verificationParams[4],
+          retweetedJsonPath: questData.verificationParams[5],
+          requireFavorite: questData.verificationParams[6],
+          requireRetweet: questData.verificationParams[7],
+          targetQuotedTweetId: questData.verificationParams[8],
+          quotedStatusIdJsonPath: questData.verificationParams[9],
+          userIdJsonPath: questData.verificationParams[10],
+          quoteTweetIdJsonPath: questData.verificationParams[11],
+        }, // Store verification params as metadata
         transactionHash: log.transactionHash!,
         blockNumber: log.blockNumber!,
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-      
+
       // Update status based on current time
       const updatedQuest = QuestStatusCalculator.updateQuestStatus(questDataForDB);
-      
+
       await database.addQuest(updatedQuest);
-      
+
       console.log(`Quest created: ${questDataForDB.id} - ${questDataForDB.title} (${questDataForDB.totalRewards} total rewards)`);
       console.log(`Real data: maxParticipants=${questDataForDB.maxParticipants}, rewardPerUser=${questDataForDB.rewardPerUser}, startTime=${new Date(startTime).toISOString()}, endTime=${new Date(endTime).toISOString()}`);
-      
+
     } catch (error) {
       console.error(`Failed to get quest data from contract for quest ${questId}:`, error);
-      
+
       // Fallback to event data only if contract call fails
       const fallbackQuestData: QuestData = {
         id: questId,
@@ -359,14 +371,14 @@ export class EventIndexer {
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-      
+
       const updatedQuest = QuestStatusCalculator.updateQuestStatus(fallbackQuestData);
       await database.addQuest(updatedQuest);
-      
+
       console.log(`Quest created (fallback): ${fallbackQuestData.id} - ${fallbackQuestData.title} (fallback data used)`);
     }
   }
-  
+
   /**
    * Handle RewardClaimed event
    */
@@ -378,7 +390,7 @@ export class EventIndexer {
       transactionHash: log.transactionHash!,
       blockNumber: log.blockNumber!
     };
-    
+
     // Create participation record
     const participationData: ParticipationData = {
       id: `${eventData.questId}-${eventData.recipient}`,
@@ -390,29 +402,29 @@ export class EventIndexer {
       blockNumber: eventData.blockNumber,
       createdAt: Date.now()
     };
-    
+
     await database.addParticipation(participationData);
-    
+
     // Update quest participant count
     const quest = await database.getQuestById(eventData.questId);
     if (quest) {
       const newParticipantCount = quest.participantCount + 1;
       await database.updateQuestParticipantCount(eventData.questId, newParticipantCount);
-      
+
       // Update quest status if needed
       const updatedQuest = QuestStatusCalculator.updateQuestStatus({
         ...quest,
         participantCount: newParticipantCount
       });
-      
+
       if (updatedQuest.status !== quest.status) {
         await database.updateQuestStatus(eventData.questId, updatedQuest.status);
       }
     }
-    
+
     console.log(`Reward claimed: ${eventData.questId} by ${eventData.recipient}`);
   }
-  
+
   /**
    * Handle QuestCanceled event
    */
@@ -422,12 +434,12 @@ export class EventIndexer {
       transactionHash: log.transactionHash!,
       blockNumber: log.blockNumber!
     };
-    
+
     await database.updateQuestStatus(eventData.questId, 'canceled');
-    
+
     console.log(`Quest canceled: ${eventData.questId}`);
   }
-  
+
   /**
    * Handle VestingRewardClaimed event
    */
@@ -439,7 +451,7 @@ export class EventIndexer {
       transactionHash: log.transactionHash!,
       blockNumber: log.blockNumber!
     };
-    
+
     // Update existing participation record or create new one
     const participationData: ParticipationData = {
       id: `${eventData.questId}-${eventData.recipient}`,
@@ -451,12 +463,12 @@ export class EventIndexer {
       blockNumber: eventData.blockNumber,
       createdAt: Date.now()
     };
-    
+
     await database.addParticipation(participationData);
-    
+
     console.log(`Vesting reward claimed: ${eventData.questId} by ${eventData.recipient}`);
   }
-  
+
   /**
    * Handle RemainingRewardsWithdrawn event
    */
@@ -468,13 +480,13 @@ export class EventIndexer {
       transactionHash: log.transactionHash!,
       blockNumber: log.blockNumber!
     };
-    
+
     // Update quest status to closed when remaining rewards are withdrawn
     await database.updateQuestStatus(eventData.questId, 'closed');
-    
+
     console.log(`Remaining rewards withdrawn: ${eventData.questId} by ${eventData.sponsor}`);
   }
-  
+
   /**
    * Get current indexer status
    */
@@ -489,7 +501,7 @@ export class EventIndexer {
   }> {
     const currentBlock = await this.provider.getBlockNumber();
     const lastProcessedBlock = await database.getLastProcessedBlock();
-    
+
     return {
       isRunning: this.isRunning,
       isPolling: this.isPolling,
@@ -500,7 +512,7 @@ export class EventIndexer {
       pollingIntervalMs: this.POLLING_INTERVAL_MS
     };
   }
-  
+
   /**
    * Force reindex from a specific block
    */
@@ -508,32 +520,32 @@ export class EventIndexer {
     if (this.isRunning) {
       throw new Error('Cannot reindex while indexer is running');
     }
-    
+
     console.log(`Reindexing from block ${fromBlock}`);
-    
+
     // Update last processed block
     await database.updateLastProcessedBlock(fromBlock - 1);
-    
+
     // Start indexing
     await this.startIndexing();
   }
-  
+
   /**
    * Update quest statuses based on current time
    */
   async updateQuestStatuses(): Promise<void> {
     const quests = await database.getQuests();
-    
+
     for (const quest of quests) {
       const updatedQuest = QuestStatusCalculator.updateQuestStatus(quest);
-      
+
       if (updatedQuest.status !== quest.status) {
         await database.updateQuestStatus(quest.id, updatedQuest.status);
         console.log(`Updated quest ${quest.id} status: ${quest.status} -> ${updatedQuest.status}`);
       }
     }
   }
-  
+
   /**
    * Stop the indexer and polling
    */
@@ -553,7 +565,7 @@ export function getEventIndexer(): EventIndexer {
     if (!contractAddress || contractAddress.trim() === '') {
       throw new Error('Event indexer requires QUEST_CONTRACT_ADDRESS environment variable');
     }
-    
+
     _eventIndexer = new EventIndexer(
       process.env.MONAD_RPC_URL || 'https://testnet1.monad.xyz',
       contractAddress,

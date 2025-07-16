@@ -16,11 +16,24 @@
       "status": "active",
       "isVesting": false,
       "vestingDuration": 0,
-      "metadata": "[\"https://x.com/i/api/graphql/\",\"FJGOFKfjA67MmT4I9p1qZg\",\"3600\",\"1942933687978365289\",\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited\",\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted\",true,true,\"\",\"\",\"\",\"\"]",
+      "metadata": {
+        "apiUrlPattern": "https://x.com/i/api/graphql/",
+        "apiEndpointHash": "FJGOFKfjA67MmT4I9p1qZg",
+        "proofValidityPeriod": "3600",
+        "targetLikeRetweetId": "1942933687978365289",
+        "favoritedJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited",
+        "retweetedJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted",
+        "requireFavorite": true,
+        "requireRetweet": true,
+        "targetQuotedTweetId": "",
+        "quotedStatusIdJsonPath": "",
+        "userIdJsonPath": "",
+        "quoteTweetIdJsonPath": ""
+      },
       "transactionHash": "0xd0016bb8ddf3e36e8ed8a6b6a870b4acd9ba4960c48d753611d979cfaca8c237",
       "blockNumber": 8775154,
-      "createdAt": 1752654646041,
-      "updatedAt": 1752654646041
+      "createdAt": 1752657363940,
+      "updatedAt": 1752657363940
     },
     {
       "id": "2",
@@ -38,18 +51,31 @@
       "status": "active",
       "isVesting": false,
       "vestingDuration": 0,
-      "metadata": "[\"https://x.com/i/api/graphql/\",\"FJGOFKfjA67MmT4I9p1qZg\",\"3600\",\"1942933687978365289\",\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited\",\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted\",true,true,\"\",\"\",\"\",\"\"]",
+      "metadata": {
+        "apiUrlPattern": "https://x.com/i/api/graphql/",
+        "apiEndpointHash": "FJGOFKfjA67MmT4I9p1qZg",
+        "proofValidityPeriod": "3600",
+        "targetLikeRetweetId": "1942933687978365289",
+        "favoritedJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited",
+        "retweetedJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted",
+        "requireFavorite": true,
+        "requireRetweet": true,
+        "targetQuotedTweetId": "",
+        "quotedStatusIdJsonPath": "",
+        "userIdJsonPath": "",
+        "quoteTweetIdJsonPath": ""
+      },
       "transactionHash": "0x9caef7b39b6bb4b2fa3b4bee8f2f5d2d385465a35fa545d1908cddc2cab23356",
       "blockNumber": 8775285,
-      "createdAt": 1752654646598,
-      "updatedAt": 1752654646598
+      "createdAt": 1752657364401,
+      "updatedAt": 1752657364401
     }
   ],
   "participations": [],
   "users": [],
   "indexerState": {
-    "lastProcessedBlock": 8775399,
-    "lastUpdated": 1752654798916,
+    "lastProcessedBlock": 8775672,
+    "lastUpdated": 1752658230542,
     "contractAddress": "0xFf818668e40A4Dd69b73Ad9025587bD69fEF1141",
     "contractDeployBlock": 8775044
   }

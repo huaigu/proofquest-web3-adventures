@@ -8,9 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  ArrowLeft, 
-  Share2, 
+import {
+  ArrowLeft,
+  Share2,
   Wallet,
   CheckCircle,
   Clock,
@@ -73,7 +73,7 @@ interface Participant {
 // Mock data with different quest types
 const getMockQuest = (id: string): QuestDetail => {
   const questId = parseInt(id.replace('quest-', ''));
-  
+
   const questData = {
     'quest-1': {
       title: "Like and Retweet our Project Announcement",
@@ -152,14 +152,14 @@ const getMockParticipants = (): Participant[] => [
     status: "completed"
   },
   {
-    id: "2", 
+    id: "2",
     address: "0xDeF1234567890123456789012345678901234567890",
     joinedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
     status: "submitted"
   },
   {
     id: "3",
-    address: "0x1111234567890123456789012345678901234567890", 
+    address: "0x1111234567890123456789012345678901234567890",
     joinedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
     status: "joined"
   }
@@ -169,7 +169,7 @@ const QuestDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [quest, setQuest] = useState<QuestDetail | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -181,15 +181,91 @@ const QuestDetail = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // 通过接口获取 quest detail，字段映射
   useEffect(() => {
-    if (id) {
-      setQuest(getMockQuest(id));
-      setParticipants(getMockParticipants());
-    }
+    const fetchQuestDetail = async () => {
+      if (!id) return;
+      try {
+        const apiBase = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${apiBase}/api/quests/${id}`);
+        const result = await res.json();
+        if (!result.success) throw new Error('Quest not found');
+        const data = result.data;
+        // 字段映射
+        setQuest({
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          fullDescription: data.description,
+          creator: {
+            name: data.sponsor || "",
+            avatar: data.sponsor ? (data.sponsor.replace(/^0x/i, '').slice(0, 2).toUpperCase()) : "",
+            handle: "",
+            address: data.sponsor || ""
+          },
+          reward: {
+            amount: data.rewardPerUser ? Number(data.rewardPerUser) / 1e18 : 0,
+            type: "ETH",
+            distribution: "Per participant"
+          },
+          status: data.status ? (data.status.charAt(0).toUpperCase() + data.status.slice(1)) : 'Active',
+          participants: {
+            current: data.participantCount || (data.stats?.participationPercentage ? Math.round((data.stats.participationPercentage/100) * (data.maxParticipants || 100)) : 0),
+            max: data.maxParticipants || 100
+          },
+          deadline: data.endTime ? new Date(data.endTime) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          questType: data.questType === "likeAndRetweet" ? "twitter-interaction" : data.questType || 'twitter-interaction',
+          questConfig: {
+            tweetUrl: data.metadata?.targetLikeRetweetId ? `https://twitter.com/i/web/status/${data.metadata.targetLikeRetweetId}` : undefined,
+            requiredActions: [
+              data.metadata?.requireFavorite ? "like" : null,
+              data.metadata?.requireRetweet ? "retweet" : null
+            ].filter(Boolean),
+            // 其它 metadata 字段如需补充可在此添加
+          },
+          category: "Social",
+          createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+        });
+      } catch (e) {
+        setQuest(null);
+      }
+    };
+    fetchQuestDetail();
+  }, [id]);
+
+  // 通过接口获取 participants，字段映射
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      if (!id) return;
+      try {
+        const apiBase = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${apiBase}/api/participations/quest/${id}`);
+        const result = await res.json();
+        if (!result.success) throw new Error('No participants');
+        const data = result.data;
+        setParticipants(
+          Array.isArray(data.participations)
+            ? data.participations.map((item: any, idx: number) => ({
+                id: item.id || String(idx + 1),
+                address: item.userAddress || '',
+                joinedAt: item.joinedAt ? new Date(item.joinedAt) : new Date(),
+                status: item.status || 'joined',
+              }))
+            : []
+        );
+      } catch (e) {
+        setParticipants([]);
+      }
+    };
+    fetchParticipants();
   }, [id]);
 
   if (!quest) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full">
+        <span className="text-lg text-muted-foreground">Loading...</span>
+      </div>
+    );
   }
 
   const getStatusBadgeColor = (status: string) => {
@@ -254,7 +330,7 @@ const QuestDetail = () => {
       });
     } catch (error) {
       toast({
-        title: "Eligibility Check Failed", 
+        title: "Eligibility Check Failed",
         description: "Unable to verify eligibility. Please try again.",
         variant: "destructive"
       });
@@ -384,7 +460,7 @@ const QuestDetail = () => {
                 </div>
                 <h1 className="text-2xl font-bold text-white mb-2">{quest.title}</h1>
                 <p className="text-white/90 mb-3 text-sm">{quest.description}</p>
-                
+
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10 border-2 border-white/20">
                     <AvatarImage src={quest.creator.avatar} />
@@ -414,7 +490,7 @@ const QuestDetail = () => {
 
       <div className="container mx-auto px-4 mt-4">
         {/* Overview Cards - Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           {/* Reward Card */}
           <Card className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] text-white border-0 shadow-xl">
             <CardHeader className="pb-2">
@@ -519,9 +595,9 @@ const QuestDetail = () => {
                         {quest.questConfig.tweetUrl && (
                           <div className="mt-3">
                             <h5 className="font-medium mb-1 text-sm">Target Tweet</h5>
-                            <a 
-                              href={quest.questConfig.tweetUrl} 
-                              target="_blank" 
+                            <a
+                              href={quest.questConfig.tweetUrl}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:underline text-sm break-all"
                             >
@@ -538,9 +614,9 @@ const QuestDetail = () => {
                         {quest.questConfig.quoteTweetUrl && (
                           <div className="mb-3">
                             <h5 className="font-medium mb-1 text-sm">Original Tweet to Quote</h5>
-                            <a 
-                              href={quest.questConfig.quoteTweetUrl} 
-                              target="_blank" 
+                            <a
+                              href={quest.questConfig.quoteTweetUrl}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:underline text-sm break-all"
                             >
@@ -570,8 +646,8 @@ const QuestDetail = () => {
                     {/* Step 1: Connect Wallet */}
                     <div className="flex items-start gap-4 p-4 rounded-lg border">
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.walletConnected 
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white' 
+                        userProgress.walletConnected
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
                           : 'bg-muted text-muted-foreground'
                       }`}>
                         {userProgress.walletConnected ? <CheckCircle className="h-4 w-4" /> : '1'}
@@ -593,10 +669,10 @@ const QuestDetail = () => {
                     {/* Step 2: Verify Eligibility */}
                     <div className="flex items-start gap-4 p-4 rounded-lg border">
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.eligibilityChecked 
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white' 
-                          : userProgress.walletConnected 
-                            ? 'bg-primary text-primary-foreground' 
+                        userProgress.eligibilityChecked
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : userProgress.walletConnected
+                            ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-muted-foreground'
                       }`}>
                         {userProgress.eligibilityChecked ? <CheckCircle className="h-4 w-4" /> : '2'}
@@ -617,10 +693,10 @@ const QuestDetail = () => {
                     {/* Step 3: Complete Tasks */}
                     <div className="flex items-start gap-4 p-4 rounded-lg border">
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.tasksCompleted 
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white' 
-                          : userProgress.eligibilityChecked 
-                            ? 'bg-primary text-primary-foreground' 
+                        userProgress.tasksCompleted
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : userProgress.eligibilityChecked
+                            ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-muted-foreground'
                       }`}>
                         {userProgress.tasksCompleted ? <CheckCircle className="h-4 w-4" /> : '3'}
@@ -635,15 +711,15 @@ const QuestDetail = () => {
                             <div className="flex items-center gap-2 text-sm">
                               {getQuestTypeIcon()}
                               <span>
-                                {quest.questType === 'twitter-interaction' 
+                                {quest.questType === 'twitter-interaction'
                                   ? 'Complete the required Twitter interactions'
                                   : 'Create and publish your quote tweet'
                                 }
                               </span>
                               <ExternalLink className="h-3 w-3" />
                             </div>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => setUserProgress(prev => ({ ...prev, tasksCompleted: true }))}
                             >
@@ -657,10 +733,10 @@ const QuestDetail = () => {
                     {/* Step 4: Submit Proof */}
                     <div className="flex items-start gap-4 p-4 rounded-lg border">
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.proofSubmitted 
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white' 
-                          : userProgress.tasksCompleted 
-                            ? 'bg-primary text-primary-foreground' 
+                        userProgress.proofSubmitted
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : userProgress.tasksCompleted
+                            ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-muted-foreground'
                       }`}>
                         {userProgress.proofSubmitted ? <CheckCircle className="h-4 w-4" /> : '4'}
@@ -668,7 +744,7 @@ const QuestDetail = () => {
                       <div className="flex-1">
                         <h4 className="font-semibold mb-2">Submit Proof</h4>
                         <p className="text-sm text-muted-foreground mb-3">
-                          {quest.questType === 'twitter-interaction' 
+                          {quest.questType === 'twitter-interaction'
                             ? 'Verify that you completed all required interactions.'
                             : 'Submit the link to your quote tweet for verification.'
                           }
@@ -742,15 +818,15 @@ const QuestDetail = () => {
                       <span>{getTimeRemaining()}</span>
                     </div>
                   </div>
-                  <Button 
+                  <Button
                     className="w-full bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90"
                     size="lg"
                     disabled={isLoading || quest.status !== 'Active'}
                   >
-                    {userProgress.proofSubmitted 
-                      ? 'Proof Submitted' 
-                      : userProgress.walletConnected 
-                        ? 'Continue Quest' 
+                    {userProgress.proofSubmitted
+                      ? 'Proof Submitted'
+                      : userProgress.walletConnected
+                        ? 'Continue Quest'
                         : 'Start Quest'
                     }
                   </Button>
@@ -762,7 +838,7 @@ const QuestDetail = () => {
 
         {/* Mobile Sticky Action Button */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-background/80 backdrop-blur-lg border-t z-50">
-          <Button 
+          <Button
             className="w-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white border-0 h-12 text-lg font-semibold shadow-xl"
             disabled={isLoading || quest.status !== 'Active'}
             onClick={() => {
@@ -775,14 +851,14 @@ const QuestDetail = () => {
               }
             }}
           >
-            {userProgress.proofSubmitted 
-              ? 'Proof Submitted ✓' 
+            {userProgress.proofSubmitted
+              ? 'Proof Submitted ✓'
               : userProgress.tasksCompleted
                 ? 'Submit Proof'
                 : userProgress.eligibilityChecked
                   ? 'Complete Tasks'
-                  : userProgress.walletConnected 
-                    ? 'Check Eligibility' 
+                  : userProgress.walletConnected
+                    ? 'Check Eligibility'
                     : 'Start Quest'
             }
           </Button>

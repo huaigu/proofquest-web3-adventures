@@ -18,7 +18,7 @@ export interface QuestData {
   status: QuestStatus;           // Current quest status
   isVesting: boolean;            // Whether this quest uses vesting
   vestingDuration: number;       // Vesting duration in seconds
-  metadata: string;              // JSON metadata from contract
+  metadata: any;              // JSON metadata from contract
   transactionHash: string;       // Transaction hash of creation
   blockNumber: number;           // Block number of creation
   createdAt: number;             // Creation timestamp
