@@ -1,0 +1,18 @@
+{
+  "quests": [],
+  "participations": [],
+  "users": [
+    {
+      "address": "0x3E1F63baFADCEA8d93BDb1eF3044682eF36a1AcA",
+      "createdAt": 1752630761166,
+      "updatedAt": 1752632175689,
+      "lastLoginAt": 1752632175686
+    }
+  ],
+  "indexerState": {
+    "lastProcessedBlock": 8773679,
+    "lastUpdated": 1752633543571,
+    "contractAddress": "0xFFf9B161f78451368508E3246F4b3A3Bb5a12f87",
+    "contractDeployBlock": 8773533
+  }
+}

@@ -8,7 +8,7 @@
 export type QuestType = 'twitter-interaction' | 'quote-tweet' | 'send-tweet'
 export type InteractionType = 'like' | 'retweet' | 'comment' | 'follow'
 export type RewardType = 'ETH' | 'ERC20' | 'NFT'
-export type DistributionMethod = 'immediate' | 'manual' | 'scheduled'
+export type DistributionMethod = 'immediate' | 'manual' | 'scheduled' | 'linear'
 export type QuestStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled'
 export type ParticipationStatus = 'pending' | 'completed' | 'verified' | 'rewarded' | 'rejected'
 
@@ -30,11 +30,17 @@ export interface QuestFormData {
   tweetContent?: string
   requiredHashtags?: string[]
   
+  // Smart contract integration
+  requiredActions?: string[]
+  
   // Reward settings
   rewardType: RewardType
   totalRewardPool: number
   rewardPerParticipant: number
   distributionMethod: DistributionMethod
+  
+  // Linear vesting specific
+  linearPeriod?: number
   
   // Timing
   startDate: Date
@@ -66,11 +72,17 @@ export interface QuestCreateRequest {
   tweet_content?: string
   required_hashtags?: string[]
   
+  // Required actions for smart contract
+  required_actions?: string[]
+  
   // Reward settings
   reward_type: RewardType
   total_reward_pool: number
   reward_per_participant: number
   distribution_method: DistributionMethod
+  
+  // Linear vesting specific
+  linear_period?: number
   
   // Timing (ISO strings)
   start_date: string

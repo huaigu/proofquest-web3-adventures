@@ -9,6 +9,7 @@ import type {
   QuestCreateRequest,
   QuestResponse,
   QuestListItem,
+  QuestStatus,
   User
 } from '@/types'
 
@@ -85,11 +86,17 @@ export function transformQuestToApiRequest(formData: QuestFormData): QuestCreate
     tweet_content: formData.tweetContent,
     required_hashtags: formData.requiredHashtags,
     
+    // Smart contract fields
+    required_actions: formData.requiredActions,
+    
     // Reward settings
     reward_type: formData.rewardType,
     total_reward_pool: formData.totalRewardPool,
     reward_per_participant: formData.rewardPerParticipant,
     distribution_method: formData.distributionMethod,
+    
+    // Linear vesting
+    linear_period: formData.linearPeriod,
     
     // Timing (convert Date to ISO string)
     start_date: formData.startDate.toISOString(),
@@ -126,11 +133,17 @@ export function transformApiResponseToQuest(apiResponse: QuestResponse): QuestFo
     tweetContent: apiResponse.tweetContent,
     requiredHashtags: apiResponse.requiredHashtags,
     
+    // Smart contract fields
+    requiredActions: (apiResponse as any).requiredActions,
+    
     // Reward settings
     rewardType: apiResponse.rewardType,
     totalRewardPool: apiResponse.totalRewardPool,
     rewardPerParticipant: apiResponse.rewardPerParticipant,
     distributionMethod: apiResponse.distributionMethod,
+    
+    // Linear vesting
+    linearPeriod: (apiResponse as any).linearPeriod,
     
     // Timing (convert ISO string to Date)
     startDate: new Date(apiResponse.startDate),
@@ -233,6 +246,93 @@ export function mergeQuestData(backendQuests: QuestResponse[], mockQuests: Quest
 }
 
 /**
+ * Transform backend quest data to frontend QuestResponse format
+ */
+export function transformBackendQuestToResponse(backendQuest: any): QuestResponse {
+  return {
+    id: backendQuest.id,
+    title: backendQuest.title,
+    description: backendQuest.description,
+    questType: backendQuest.questType,
+    creator: {
+      address: backendQuest.sponsor,
+      nickname: backendQuest.sponsor,
+      avatarUrl: ''
+    },
+    rewardType: 'ETH' as const,
+    totalRewardPool: parseFloat(backendQuest.totalRewards) / 1e18, // Convert from wei
+    rewardPerParticipant: parseFloat(backendQuest.rewardPerUser) / 1e18, // Convert from wei
+    distributionMethod: 'immediate' as const,
+    startDate: new Date(backendQuest.startTime).toISOString(),
+    endDate: new Date(backendQuest.endTime).toISOString(),
+    rewardClaimDeadline: new Date(backendQuest.claimEndTime).toISOString(),
+    maxParticipants: backendQuest.maxParticipants,
+    requireWhitelist: false,
+    autoApproveSubmissions: true,
+    status: mapBackendStatusToFrontend(backendQuest.status),
+    participants: {
+      current: backendQuest.participantCount,
+      max: backendQuest.maxParticipants
+    },
+    createdAt: new Date(backendQuest.createdAt).toISOString(),
+    updatedAt: new Date(backendQuest.updatedAt).toISOString()
+  }
+}
+
+/**
+ * Transform backend quest data to frontend QuestListItem format
+ */
+export function transformBackendQuestToListItem(backendQuest: any): QuestListItem {
+  const now = Date.now()
+  const endTime = backendQuest.endTime
+  const timeRemaining = endTime > now ? formatTimeRemaining(endTime - now) : 'Ended'
+  
+  return {
+    id: backendQuest.id,
+    title: backendQuest.title,
+    creator: {
+      name: backendQuest.sponsor,
+      avatar: '',
+      handle: `@${backendQuest.sponsor.slice(0, 8)}...`
+    },
+    reward: {
+      amount: parseFloat(backendQuest.rewardPerUser) / 1e18, // Convert from wei
+      type: 'ETH' as const
+    },
+    status: mapBackendStatusToFrontend(backendQuest.status),
+    participants: {
+      current: backendQuest.participantCount,
+      max: backendQuest.maxParticipants
+    },
+    timeRemaining,
+    questType: backendQuest.questType,
+    category: 'General', // Default category since backend doesn't have this field yet
+    createdAt: new Date(backendQuest.createdAt),
+    endDate: new Date(backendQuest.endTime)
+  }
+}
+
+/**
+ * Map backend status to frontend status
+ */
+export function mapBackendStatusToFrontend(backendStatus: string): QuestStatus {
+  switch (backendStatus) {
+    case 'pending':
+      return 'draft'
+    case 'active':
+      return 'active'
+    case 'ended':
+      return 'completed'
+    case 'closed':
+      return 'completed'
+    case 'canceled':
+      return 'cancelled'
+    default:
+      return 'draft'
+  }
+}
+
+/**
  * Generic transformer for any object
  */
 export const transformers = {
@@ -263,5 +363,8 @@ export const transformers = {
       return result
     }
     return obj
-  }
+  },
+  backendQuestToResponse: transformBackendQuestToResponse,
+  backendQuestToListItem: transformBackendQuestToListItem,
+  mapBackendStatus: mapBackendStatusToFrontend
 }

@@ -7,7 +7,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import apiClient from '@/lib/api'
-import { transformers, mergeQuestData, transformQuestToApiRequest } from '@/lib/transformers'
+import { transformers, mergeQuestData, transformQuestToApiRequest, transformBackendQuestToListItem } from '@/lib/transformers'
 import { useToast } from '@/hooks/use-toast'
 import { useProtectedAction } from '@/hooks/useAuth'
 import type {
@@ -119,20 +119,46 @@ export function useQuests(filters?: QuestFilters, options?: {
     queryKey: questKeys.list({ ...filters, ...paginationOptions }),
     queryFn: async (): Promise<QuestListItem[]> => {
       try {
-        // Fetch from backend
+        // Fetch from backend (this already includes pagination and basic filtering)
         const backendResponse = await apiClient.getQuests({
           ...filters,
-          ...paginationOptions
+          limit: 1000, // Get all quests for client-side pagination
+          offset: 0
         })
 
-        // Get mock data
-        const mockData = includeMockData ? getMockQuestData() : []
+        // Transform backend quests to list items
+        const backendQuests = backendResponse.data.map(quest => ({
+          ...transformBackendQuestToListItem({
+            id: quest.id,
+            title: quest.title,
+            description: quest.description,
+            questType: quest.questType,
+            sponsor: quest.creator.address,
+            totalRewards: (quest.totalRewardPool * 1e18).toString(),
+            rewardPerUser: (quest.rewardPerParticipant * 1e18).toString(),
+            maxParticipants: quest.maxParticipants || 100,
+            participantCount: quest.participants.current,
+            startTime: new Date(quest.startDate).getTime(),
+            endTime: new Date(quest.endDate).getTime(),
+            claimEndTime: new Date(quest.rewardClaimDeadline).getTime(),
+            status: quest.status,
+            createdAt: new Date(quest.createdAt).getTime(),
+            updatedAt: new Date(quest.updatedAt).getTime()
+          }),
+          _source: 'backend' as const
+        }))
 
-        // Merge backend and mock data
-        const mergedData = mergeQuestData(backendResponse.data, mockData)
+        // Get mock data
+        const mockData = includeMockData ? getMockQuestData().map(quest => ({
+          ...quest,
+          _source: 'mock' as const
+        })) : []
+
+        // Combine backend and mock data
+        const allQuests = [...backendQuests, ...mockData]
         
-        // Apply client-side filtering if needed
-        let filteredData = mergedData
+        // Apply additional client-side filtering (not handled by backend)
+        let filteredData = allQuests
 
         if (filters?.search) {
           const searchTerm = filters.search.toLowerCase()
@@ -140,24 +166,6 @@ export function useQuests(filters?: QuestFilters, options?: {
             quest.title.toLowerCase().includes(searchTerm) ||
             quest.creator.name.toLowerCase().includes(searchTerm) ||
             quest.category.toLowerCase().includes(searchTerm)
-          )
-        }
-
-        if (filters?.status && filters.status.length > 0) {
-          filteredData = filteredData.filter(quest =>
-            filters.status!.includes(quest.status)
-          )
-        }
-
-        if (filters?.questType && filters.questType.length > 0) {
-          filteredData = filteredData.filter(quest =>
-            filters.questType!.includes(quest.questType)
-          )
-        }
-
-        if (filters?.rewardType && filters.rewardType.length > 0) {
-          filteredData = filteredData.filter(quest =>
-            filters.rewardType!.includes(quest.reward.type)
           )
         }
 
@@ -215,8 +223,45 @@ export function useCreateQuest() {
         // Transform frontend data to backend format
         const apiRequest = transformQuestToApiRequest(questData)
         
-        // Create quest via API
+        // Step 1: Create quest via backend API first
         const response = await apiClient.createQuest(apiRequest)
+        
+        try {
+          // Step 2: Create quest on smart contract
+          const { createLikeAndRetweetQuest } = await import('@/lib/questContract')
+          
+          // Convert quest data to contract parameters
+          const contractParams = {
+            totalRewards: questData.totalRewardPool?.toString() || '0',
+            rewardPerUser: questData.rewardPerParticipant?.toString() || '0',
+            startTime: Math.floor(questData.startDate.getTime() / 1000),
+            endTime: Math.floor(questData.endDate.getTime() / 1000),
+            claimEndTime: Math.floor(questData.rewardClaimDeadline.getTime() / 1000),
+            requireFavorite: questData.requiredActions?.includes('like') || false,
+            requireRetweet: questData.requiredActions?.includes('retweet') || false,
+            isVesting: questData.distributionMethod === 'linear',
+            vestingDuration: questData.linearPeriod ? questData.linearPeriod * 24 * 60 * 60 : 0 // Convert days to seconds
+          }
+          
+          // Call smart contract
+          const txHash = await createLikeAndRetweetQuest(contractParams)
+          
+          toast({
+            title: "Deploying to Blockchain",
+            description: `Transaction submitted: ${txHash}. Your quest will be fully active once confirmed.`,
+            variant: "default"
+          })
+          
+        } catch (contractError: any) {
+          console.error('Smart contract deployment failed:', contractError)
+          toast({
+            title: "Blockchain Deployment Failed",
+            description: "Quest was created in database but failed to deploy to blockchain. Please try again.",
+            variant: "destructive"
+          })
+          // Note: We don't throw here to avoid breaking the flow, 
+          // the quest exists in the backend and can be retried later
+        }
         
         return response
       }, {
@@ -229,7 +274,7 @@ export function useCreateQuest() {
       
       toast({
         title: "Quest Created Successfully",
-        description: `"${data.title}" has been created and is now live!`,
+        description: `"${data.title}" has been created and is being deployed to the blockchain!`,
         variant: "default"
       })
     },
@@ -345,6 +390,139 @@ export function useQuestStats() {
           totalParticipants: 8934,
           totalRewards: 12.47
         }
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
+  })
+}
+
+/**
+ * Hook for trending quests
+ */
+export function useTrendingQuests(limit: number = 5) {
+  return useQuery({
+    queryKey: ['trending-quests', limit],
+    queryFn: async (): Promise<QuestListItem[]> => {
+      try {
+        // Fetch active quests and sort by participation rate
+        const questsResponse = await apiClient.getQuests({
+          status: ['active'],
+          limit: 100
+        })
+        
+        // Transform to list items and sort by trending criteria
+        const questList = questsResponse.data.map(quest => transformBackendQuestToListItem({
+          id: quest.id,
+          title: quest.title,
+          description: quest.description,
+          questType: quest.questType,
+          sponsor: quest.creator.address,
+          totalRewards: (quest.totalRewardPool * 1e18).toString(),
+          rewardPerUser: (quest.rewardPerParticipant * 1e18).toString(),
+          maxParticipants: quest.maxParticipants || 100,
+          participantCount: quest.participants.current,
+          startTime: new Date(quest.startDate).getTime(),
+          endTime: new Date(quest.endDate).getTime(),
+          claimEndTime: new Date(quest.rewardClaimDeadline).getTime(),
+          status: quest.status,
+          createdAt: new Date(quest.createdAt).getTime(),
+          updatedAt: new Date(quest.updatedAt).getTime()
+        }))
+        
+        // Sort by trending score (participation rate + recency)
+        const trending = questList.sort((a, b) => {
+          const aRate = a.participants.max ? a.participants.current / a.participants.max : 0
+          const bRate = b.participants.max ? b.participants.current / b.participants.max : 0
+          const aRecency = Date.now() - a.createdAt.getTime()
+          const bRecency = Date.now() - b.createdAt.getTime()
+          
+          // Score: participation rate (0-1) + recency bonus (0-0.5)
+          const aScore = aRate + Math.max(0, 0.5 - (aRecency / (7 * 24 * 60 * 60 * 1000)))
+          const bScore = bRate + Math.max(0, 0.5 - (bRecency / (7 * 24 * 60 * 60 * 1000)))
+          
+          return bScore - aScore
+        })
+        
+        return trending.slice(0, limit)
+      } catch (error) {
+        console.error('Failed to fetch trending quests:', error)
+        // Fallback to mock data
+        return getMockQuestData().slice(0, limit)
+      }
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 1
+  })
+}
+
+/**
+ * Hook for participation statistics API
+ */
+export function useParticipationStats() {
+  return useQuery({
+    queryKey: ['participation-stats'],
+    queryFn: async () => {
+      try {
+        const response = await apiClient.get('/api/participations/statistics')
+        return response
+      } catch (error) {
+        console.error('Failed to fetch participation stats:', error)
+        // Fallback stats
+        return {
+          totalParticipations: 8934,
+          totalRewardsDistributed: '12.47',
+          averageRewardPerParticipation: '0.0014',
+          uniqueParticipants: 2847,
+          topQuests: [],
+          recentActivity: []
+        }
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
+  })
+}
+
+/**
+ * Hook for top earners leaderboard
+ */
+export function useTopEarners(limit: number = 10) {
+  return useQuery({
+    queryKey: ['top-earners', limit],
+    queryFn: async () => {
+      try {
+        const response = await apiClient.get(`/api/participations/leaderboard?limit=${limit}`)
+        return response.data?.leaderboard || []
+      } catch (error) {
+        console.error('Failed to fetch top earners:', error)
+        // Fallback data
+        return [
+          {
+            userAddress: '0x1234...5678',
+            totalParticipations: 12,
+            totalRewardsEarned: '2500000000000000000', // 2.5 ETH in wei
+            completionRate: 1.0,
+            averageRewardPerParticipation: '208333333333333333', // ~0.208 ETH
+            rank: 1
+          },
+          {
+            userAddress: '0xabcd...efgh',
+            totalParticipations: 8,
+            totalRewardsEarned: '1800000000000000000', // 1.8 ETH in wei
+            completionRate: 1.0,
+            averageRewardPerParticipation: '225000000000000000', // 0.225 ETH
+            rank: 2
+          },
+          {
+            userAddress: '0x9876...4321',
+            totalParticipations: 6,
+            totalRewardsEarned: '1200000000000000000', // 1.2 ETH in wei
+            completionRate: 1.0,
+            averageRewardPerParticipation: '200000000000000000', // 0.2 ETH
+            rank: 3
+          }
+        ]
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

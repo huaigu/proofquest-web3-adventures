@@ -5,7 +5,7 @@
  */
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { supabase } from '../lib/supabase.js'
+import { database } from '../lib/database.js'
 import { 
   verifyEVMSignature, 
   generateNonce, 
@@ -138,44 +138,30 @@ export default async function authRoutes(fastify: FastifyInstance) {
       nonceStore.delete(address)
 
       // Check if user exists, create if not
-      let { data: user, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('address', address)
-        .single()
+      let user = await database.getUserByAddress(address);
 
-      if (userError && userError.code === 'PGRST116') {
+      if (!user) {
         // User doesn't exist, create new user
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert({
-            address,
-            last_login_at: new Date().toISOString()
-          })
-          .select()
-          .single()
-
-        if (createError) {
-          console.error('User creation error:', createError)
+        const now = Date.now();
+        user = {
+          address,
+          createdAt: now,
+          updatedAt: now,
+          lastLoginAt: now
+        };
+        
+        try {
+          await database.addUser(user);
+        } catch (error) {
+          console.error('User creation error:', error);
           return reply.code(500).send({
             error: 'Database Error',
             message: 'Failed to create user account'
-          })
+          });
         }
-
-        user = newUser
-      } else if (userError) {
-        console.error('User lookup error:', userError)
-        return reply.code(500).send({
-          error: 'Database Error',
-          message: 'Failed to lookup user'
-        })
       } else {
         // Update last login
-        await supabase
-          .from('users')
-          .update({ last_login_at: new Date().toISOString() })
-          .eq('address', address)
+        await database.updateUserLastLogin(address);
       }
 
       // Generate JWT token
@@ -197,7 +183,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
         user: {
           address: user.address,
           nickname: user.nickname,
-          avatarUrl: user.avatar_url,
+          avatarUrl: user.avatarUrl,
           bio: user.bio
         },
         expiresAt: new Date(tokenExpiration * 1000).toISOString()
@@ -231,17 +217,13 @@ export default async function authRoutes(fastify: FastifyInstance) {
       const user = (request as any).user
       
       // Get user data from database
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('address', user.address)
-        .single()
+      const userData = await database.getUserByAddress(user.address);
 
-      if (error) {
+      if (!userData) {
         return reply.code(404).send({
           error: 'User Not Found',
           message: 'User account not found'
-        })
+        });
       }
 
       return reply.code(200).send({
@@ -249,7 +231,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
         user: {
           address: userData.address,
           nickname: userData.nickname,
-          avatarUrl: userData.avatar_url,
+          avatarUrl: userData.avatarUrl,
           bio: userData.bio
         },
         isAuthenticated: true

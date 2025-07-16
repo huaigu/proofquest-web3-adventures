@@ -443,6 +443,19 @@ export async function claimReward(questId: bigint, userAddress: string) {
   return hash;
 }
 
+// Claim reward with ZKTLS attestation
+export async function claimRewardWithAttestation(questId: bigint, attestation: unknown) {
+  const hash = await writeContract(config, {
+    address: QUEST_SYSTEM_ADDRESS,
+    abi: QUEST_SYSTEM_ABI,
+    functionName: 'claimReward',
+    args: [questId, attestation],
+    chainId: CHAIN_ID,
+  });
+
+  return hash;
+}
+
 // Get all quest IDs with pagination
 export async function getAllQuestIds(offset: number = 0, limit: number = 10) {
   const result = await readContract(config, {

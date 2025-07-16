@@ -17,10 +17,12 @@ import type {
   QuestCreateRequest,
   QuestResponse,
   QuestFilters,
+  QuestStatus,
   User,
   UserUpdateRequest,
   QuestParticipation
 } from '@/types'
+import { transformBackendQuestToResponse } from './transformers'
 
 class ApiClient {
   private baseUrl: string
@@ -222,11 +224,36 @@ class ApiClient {
     const query = searchParams.toString()
     const endpoint = query ? `/api/quests?${query}` : '/api/quests'
     
-    return this.get<PaginatedResponse<QuestResponse>>(endpoint)
+    const response = await this.get<{
+      success: true;
+      data: {
+        quests: any[];
+        total: number;
+        pagination: {
+          offset: number;
+          limit: number;
+          hasMore: boolean;
+        };
+      };
+    }>(endpoint)
+    
+    // Transform backend response to frontend format
+    return {
+      data: response.data.quests.map((quest: any) => transformBackendQuestToResponse(quest)),
+      total: response.data.total,
+      offset: response.data.pagination.offset,
+      limit: response.data.pagination.limit,
+      hasMore: response.data.pagination.hasMore
+    }
   }
 
   async getQuest(id: string): Promise<QuestResponse> {
-    return this.get<QuestResponse>(`/api/quests/${id}`)
+    const response = await this.get<{
+      success: true;
+      data: any;
+    }>(`/api/quests/${id}`)
+    
+    return transformBackendQuestToResponse(response.data)
   }
 
   async updateQuest(id: string, data: Partial<QuestCreateRequest>): Promise<QuestResponse> {

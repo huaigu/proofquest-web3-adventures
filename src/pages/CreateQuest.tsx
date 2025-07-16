@@ -43,7 +43,7 @@ import { useCreateQuest } from "@/hooks/useQuests";
 import { useAuthUI } from "@/hooks/useAuth";
 import type { QuestFormData } from "@/types";
 
-// Form schema for validation (matching backend API expectations)
+// Form schema for validation (matching QuestFormData interface)
 const questSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -57,11 +57,14 @@ const questSchema = z.object({
   // Send tweet specific
   tweetContent: z.string().optional(),
   requiredHashtags: z.array(z.string()).optional(),
+  // Smart contract integration
+  requiredActions: z.array(z.string()).optional(),
   // Step 2 - Reward configuration
   rewardType: z.enum(["ETH", "ERC20", "NFT"]),
   totalRewardPool: z.number().min(0.001, "Reward pool must be greater than 0"),
   rewardPerParticipant: z.number().min(0.001, "Reward per participant must be greater than 0"),
-  distributionMethod: z.enum(["immediate", "manual", "scheduled"]),
+  distributionMethod: z.enum(["immediate", "manual", "scheduled", "linear"]),
+  linearPeriod: z.number().optional(),
   // Step 3 - Time and settings configuration
   startDate: z.date(),
   endDate: z.date(),
@@ -79,17 +82,32 @@ const CreateQuest = () => {
   
   // Backend integration
   const createQuestMutation = useCreateQuest();
-  const { isAuthenticated, handleSignIn } = useAuthUI();
+  const authUI = useAuthUI();
+  const { isAuthenticated } = authUI;
+  const handleSignIn = authUI.authButtonState.action || (() => Promise.resolve(false));
 
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<QuestFormData>({
     resolver: zodResolver(questSchema),
     defaultValues: {
+      title: "",
+      description: "",
       questType: "twitter-interaction",
+      interactionType: undefined,
+      targetAccount: "",
+      tweetUrl: "",
+      quoteTweetUrl: "",
+      tweetContent: "",
+      requiredHashtags: [],
+      requiredActions: [],
       rewardType: "ETH",
+      totalRewardPool: 0.1,
+      rewardPerParticipant: 0.01,
       distributionMethod: "immediate",
+      linearPeriod: undefined,
       startDate: new Date(),
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       rewardClaimDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+      maxParticipants: undefined,
       requireWhitelist: false,
       autoApproveSubmissions: true,
       agreeToTerms: false
@@ -135,8 +153,13 @@ const CreateQuest = () => {
   };
 
   const onSubmit = async (data: QuestFormData) => {
+    console.log('🚀 Form submitted with data:', data);
+    console.log('🔐 Authentication status:', isAuthenticated);
+    console.log('📝 Required actions:', data.requiredActions);
+    
     // Check authentication first
     if (!isAuthenticated) {
+      console.log('❌ User not authenticated, requesting sign-in');
       toast({
         title: "Authentication Required",
         description: "Please sign in with your wallet to create a quest.",
@@ -147,8 +170,10 @@ const CreateQuest = () => {
     }
 
     try {
+      console.log('✅ Creating quest via backend API...');
       // Create quest via backend API
       const createdQuest = await createQuestMutation.mutateAsync(data);
+      console.log('✅ Quest created successfully:', createdQuest);
       
       // Clear draft on success
       localStorage.removeItem('questDraft');
@@ -157,7 +182,7 @@ const CreateQuest = () => {
       navigate(`/quest/${createdQuest.id}`);
       
     } catch (error: any) {
-      console.error('Quest creation failed:', error);
+      console.error('❌ Quest creation failed:', error);
       // Error handling is done in the mutation hook
     }
   };
@@ -334,7 +359,14 @@ const CreateQuest = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, (errors) => {
+          console.log('❌ Form validation errors:', errors);
+          toast({
+            title: "Form Validation Failed",
+            description: "Please check the required fields and try again.",
+            variant: "destructive"
+          });
+        })}>
               {/* Step 1: Basic Information */}
               {currentStep === 1 && (
                 <Card>
@@ -352,6 +384,7 @@ const CreateQuest = () => {
                         render={({ field }) => (
                           <Input
                             {...field}
+                            value={field.value || ""}
                             placeholder="Enter quest title"
                             className={errors.title ? "border-destructive" : ""}
                           />
@@ -371,6 +404,7 @@ const CreateQuest = () => {
                         render={({ field }) => (
                           <Textarea
                             {...field}
+                            value={field.value || ""}
                             placeholder="Describe what participants need to do"
                             rows={4}
                             className={errors.description ? "border-destructive" : ""}
@@ -586,10 +620,9 @@ const CreateQuest = () => {
                           render={({ field }) => (
                             <Input
                               type="number"
-                              {...field}
                               placeholder="100"
-                              value={field.value || ""}
-                              onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
+                              value={field.value?.toString() || ""}
+                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                             />
                           )}
                         />
@@ -674,10 +707,9 @@ const CreateQuest = () => {
                               <Input
                                 type="number"
                                 step="0.001"
-                                {...field}
                                 placeholder="1.0"
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
+                                value={field.value?.toString() || ""}
+                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                                 className={errors.totalRewardPool ? "border-destructive" : ""}
                               />
                             )}
@@ -695,10 +727,9 @@ const CreateQuest = () => {
                               <Input
                                 type="number"
                                 step="0.001"
-                                {...field}
                                 placeholder="0.01"
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
+                                value={field.value?.toString() || ""}
+                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                                 className={errors.rewardPerParticipant ? "border-destructive" : ""}
                               />
                             )}
@@ -782,10 +813,9 @@ const CreateQuest = () => {
                             render={({ field }) => (
                               <Input
                                 type="number"
-                                {...field}
                                 placeholder="30"
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(Number(e.target.value) || undefined)}
+                                value={field.value?.toString() || ""}
+                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                               />
                             )}
                           />
@@ -1257,6 +1287,16 @@ const CreateQuest = () => {
                   type="submit"
                   disabled={createQuestMutation.isPending}
                   className="bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
+                  onClick={(e) => {
+                    console.log('🖱️ Deploy Quest button clicked!');
+                    console.log('📋 Form data:', formData);
+                    console.log('🔍 Form validation state:', errors);
+                    console.log('⚡ Mutation state:', {
+                      isPending: createQuestMutation.isPending,
+                      isError: createQuestMutation.isError,
+                      error: createQuestMutation.error
+                    });
+                  }}
                 >
                   {createQuestMutation.isPending ? (
                     <>

@@ -1,225 +1,416 @@
-import { FastifyInstance } from 'fastify'
-import { supabase } from '../lib/supabase.js'
-import { validateQuestData, transformToDbFormat, transformToApiFormat } from '../lib/validation.js'
-import { authenticate, getAuthenticatedAddress } from '../lib/authMiddleware.js'
-import type { QuestInsert } from '../types/database.js'
-import type { QuestResponse, ErrorResponse, QuestsListResponse } from '../types/quest.js'
+import { FastifyInstance } from 'fastify';
+import { database } from '../lib/database.js';
+import { QuestStatusCalculator } from '../lib/questStatusCalculator.js';
+import type { QuestData } from '../types/database.js';
 
 export async function questRoutes(fastify: FastifyInstance) {
-  // POST /api/quests - Create a new quest (requires authentication)
-  fastify.post<{
-    Body: unknown
-    Reply: { success: true; data: QuestResponse } | ErrorResponse
-  }>('/api/quests', {
-    preHandler: [authenticate]
-  }, async (request, reply) => {
-    try {
-      // Get authenticated user address
-      const creatorAddress = getAuthenticatedAddress(request)
-      if (!creatorAddress) {
-        return reply.status(401).send({
-          error: 'Authentication Required',
-          message: 'Must be authenticated to create a quest',
-          statusCode: 401
-        })
-      }
-
-      // Validate request body
-      const validation = validateQuestData(request.body)
-      
-      if (!validation.success) {
-        return reply.status(400).send({
-          error: 'Validation Error',
-          message: 'Invalid quest data provided',
-          statusCode: 400,
-          details: validation.errors
-        })
-      }
-
-      // Transform to database format
-      const questDbData = transformToDbFormat(validation.data)
-      
-      // Set creator address from authenticated user
-      questDbData.creator_id = creatorAddress
-
-      // Insert into Supabase
-      const { data, error } = await supabase
-        .from('quests')
-        .insert(questDbData as QuestInsert)
-        .select()
-        .single()
-
-      if (error) {
-        fastify.log.error('Database error creating quest:', error)
-        
-        // Handle specific database errors
-        if (error.code === '23514') { // Check constraint violation
-          return reply.status(400).send({
-            error: 'Constraint Violation',
-            message: 'Quest data violates database constraints',
-            statusCode: 400,
-            details: error.message
-          })
-        }
-        
-        return reply.status(500).send({
-          error: 'Database Error',
-          message: 'Failed to create quest',
-          statusCode: 500,
-          details: error.message
-        })
-      }
-
-      // Transform to API response format
-      const questResponse = transformToApiFormat(data)
-
-      fastify.log.info(`Quest created successfully with ID: ${questResponse.id}`)
-
-      return reply.status(201).send({
-        success: true,
-        data: questResponse
-      })
-
-    } catch (error) {
-      fastify.log.error('Unexpected error creating quest:', error)
-      return reply.status(500).send({
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred',
-        statusCode: 500
-      })
-    }
-  })
-
-  // GET /api/quests - Get all quests
+  // GET /api/quests - Get all quests with pagination and filtering
   fastify.get<{
     Querystring: {
-      status?: string
-      questType?: string
-      limit?: string
-      offset?: string
-    }
-    Reply: { success: true; data: QuestsListResponse } | ErrorResponse
+      status?: string;
+      questType?: string;
+      limit?: string;
+      offset?: string;
+      search?: string;
+    };
+    Reply: {
+      success: true;
+      data: {
+        quests: QuestData[];
+        total: number;
+        pagination: {
+          offset: number;
+          limit: number;
+          hasMore: boolean;
+        };
+      };
+    } | {
+      error: string;
+      message: string;
+      statusCode: number;
+    };
   }>('/api/quests', async (request, reply) => {
     try {
-      const { status, questType, limit = '50', offset = '0' } = request.query
+      const { status, questType, limit = '20', offset = '0', search } = request.query;
+      const limitNum = Math.min(parseInt(limit) || 20, 100);
+      const offsetNum = parseInt(offset) || 0;
 
-      // Build query
-      let query = supabase
-        .from('quests')
-        .select('*')
-        .order('created_at', { ascending: false })
+      // Get all quests from database
+      let quests = await database.getQuests();
 
       // Apply filters
       if (status) {
-        query = query.eq('status', status)
+        quests = quests.filter(quest => quest.status === status);
       }
-      
+
       if (questType) {
-        query = query.eq('quest_type', questType)
+        quests = quests.filter(quest => quest.questType === questType);
       }
 
-      // Apply pagination (though user requested no pagination initially)
-      const limitNum = Math.min(parseInt(limit) || 50, 100) // Max 100 items
-      const offsetNum = parseInt(offset) || 0
-      
-      query = query.range(offsetNum, offsetNum + limitNum - 1)
-
-      // Execute query
-      const { data, error, count } = await supabase
-        .from('quests')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        fastify.log.error('Database error fetching quests:', error)
-        return reply.status(500).send({
-          error: 'Database Error',
-          message: 'Failed to fetch quests',
-          statusCode: 500,
-          details: error.message
-        })
+      if (search) {
+        const searchLower = search.toLowerCase();
+        quests = quests.filter(quest => 
+          quest.title.toLowerCase().includes(searchLower) ||
+          quest.description.toLowerCase().includes(searchLower)
+        );
       }
 
-      // Transform to API response format
-      const quests = data?.map(transformToApiFormat) || []
+      // Update quest statuses before returning
+      const updatedQuests = quests.map(quest => {
+        const updatedQuest = QuestStatusCalculator.updateQuestStatus(quest);
+        // Update database if status changed
+        if (updatedQuest.status !== quest.status) {
+          database.updateQuestStatus(quest.id, updatedQuest.status);
+        }
+        return updatedQuest;
+      });
 
-      fastify.log.info(`Retrieved ${quests.length} quests`)
+      // Sort by creation date (newest first)
+      updatedQuests.sort((a, b) => b.createdAt - a.createdAt);
+
+      // Apply pagination
+      const total = updatedQuests.length;
+      const paginatedQuests = updatedQuests.slice(offsetNum, offsetNum + limitNum);
 
       return reply.send({
         success: true,
         data: {
-          quests,
-          total: count || 0
+          quests: paginatedQuests,
+          total,
+          pagination: {
+            offset: offsetNum,
+            limit: limitNum,
+            hasMore: offsetNum + limitNum < total
+          }
         }
-      })
-
+      });
     } catch (error) {
-      fastify.log.error('Unexpected error fetching quests:', error)
+      fastify.log.error('Error fetching quests:', error);
       return reply.status(500).send({
         error: 'Internal Server Error',
-        message: 'An unexpected error occurred',
+        message: 'Failed to fetch quests',
         statusCode: 500
-      })
+      });
     }
-  })
+  });
 
   // GET /api/quests/:id - Get a specific quest by ID
   fastify.get<{
-    Params: { id: string }
-    Reply: { success: true; data: QuestResponse } | ErrorResponse
+    Params: { id: string };
+    Reply: {
+      success: true;
+      data: QuestData & {
+        stats: {
+          status: string;
+          canParticipate: boolean;
+          canClaimRewards: boolean;
+          progressPercentage: number;
+          participationPercentage: number;
+          timeUntilStart: number;
+          timeUntilEnd: number;
+          timeUntilClaimDeadline: number;
+          remainingSpots: number;
+          remainingRewards: string;
+          isFull: boolean;
+        };
+      };
+    } | {
+      error: string;
+      message: string;
+      statusCode: number;
+    };
   }>('/api/quests/:id', async (request, reply) => {
     try {
-      const { id } = request.params
+      const { id } = request.params;
 
-      // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-      if (!uuidRegex.test(id)) {
-        return reply.status(400).send({
-          error: 'Invalid ID',
-          message: 'Quest ID must be a valid UUID',
-          statusCode: 400
-        })
+      const quest = await database.getQuestById(id);
+
+      if (!quest) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'Quest not found',
+          statusCode: 404
+        });
       }
 
-      const { data, error } = await supabase
-        .from('quests')
-        .select('*')
-        .eq('id', id)
-        .single()
-
-      if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
-          return reply.status(404).send({
-            error: 'Not Found',
-            message: 'Quest not found',
-            statusCode: 404
-          })
-        }
-
-        fastify.log.error('Database error fetching quest:', error)
-        return reply.status(500).send({
-          error: 'Database Error',
-          message: 'Failed to fetch quest',
-          statusCode: 500,
-          details: error.message
-        })
+      // Update quest status
+      const updatedQuest = QuestStatusCalculator.updateQuestStatus(quest);
+      if (updatedQuest.status !== quest.status) {
+        await database.updateQuestStatus(id, updatedQuest.status);
       }
 
-      // Transform to API response format
-      const questResponse = transformToApiFormat(data)
+      // Generate quest statistics
+      const stats = QuestStatusCalculator.generateQuestStats(updatedQuest);
 
       return reply.send({
         success: true,
-        data: questResponse
-      })
-
+        data: {
+          ...updatedQuest,
+          stats
+        }
+      });
     } catch (error) {
-      fastify.log.error('Unexpected error fetching quest:', error)
+      fastify.log.error('Error fetching quest:', error);
       return reply.status(500).send({
         error: 'Internal Server Error',
-        message: 'An unexpected error occurred',
+        message: 'Failed to fetch quest',
         statusCode: 500
-      })
+      });
     }
-  })
+  });
+
+  // GET /api/quests/statistics - Get quest statistics
+  fastify.get<{
+    Reply: {
+      success: true;
+      data: {
+        totalQuests: number;
+        activeQuests: number;
+        completedQuests: number;
+        totalParticipants: number;
+        totalRewardsDistributed: string;
+        averageRewardPerQuest: string;
+        successRate: number;
+      };
+    } | {
+      error: string;
+      message: string;
+      statusCode: number;
+    };
+  }>('/api/quests/statistics', async (request, reply) => {
+    try {
+      const statistics = await database.getQuestStatistics();
+
+      return reply.send({
+        success: true,
+        data: statistics
+      });
+    } catch (error) {
+      fastify.log.error('Error fetching quest statistics:', error);
+      return reply.status(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to fetch quest statistics',
+        statusCode: 500
+      });
+    }
+  });
+
+  // GET /api/quests/trending - Get trending quests
+  fastify.get<{
+    Querystring: {
+      limit?: string;
+    };
+    Reply: {
+      success: true;
+      data: QuestData[];
+    } | {
+      error: string;
+      message: string;
+      statusCode: number;
+    };
+  }>('/api/quests/trending', async (request, reply) => {
+    try {
+      const { limit = '10' } = request.query;
+      const limitNum = Math.min(parseInt(limit) || 10, 50);
+
+      let quests = await database.getQuests();
+
+      // Filter for active quests
+      quests = quests.filter(quest => {
+        const updatedQuest = QuestStatusCalculator.updateQuestStatus(quest);
+        return updatedQuest.status === 'active';
+      });
+
+      // Sort by participation percentage (most popular first)
+      quests.sort((a, b) => {
+        const aPercentage = QuestStatusCalculator.getParticipationPercentage(a);
+        const bPercentage = QuestStatusCalculator.getParticipationPercentage(b);
+        return bPercentage - aPercentage;
+      });
+
+      // Apply limit
+      const trendingQuests = quests.slice(0, limitNum);
+
+      return reply.send({
+        success: true,
+        data: trendingQuests
+      });
+    } catch (error) {
+      fastify.log.error('Error fetching trending quests:', error);
+      return reply.status(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to fetch trending quests',
+        statusCode: 500
+      });
+    }
+  });
+
+  // GET /api/quests/status/:id - Get quest status and timing information
+  fastify.get<{
+    Params: { id: string };
+    Reply: {
+      success: true;
+      data: {
+        questId: string;
+        status: string;
+        canParticipate: boolean;
+        canClaimRewards: boolean;
+        progressPercentage: number;
+        participationPercentage: number;
+        timeUntilStart: number;
+        timeUntilEnd: number;
+        timeUntilClaimDeadline: number;
+        remainingSpots: number;
+        remainingRewards: string;
+        isFull: boolean;
+        timing: {
+          startTime: number;
+          endTime: number;
+          claimEndTime: number;
+          startTimeFormatted: string;
+          endTimeFormatted: string;
+          claimEndTimeFormatted: string;
+        };
+      };
+    } | {
+      error: string;
+      message: string;
+      statusCode: number;
+    };
+  }>('/api/quests/status/:id', async (request, reply) => {
+    try {
+      const { id } = request.params;
+
+      const quest = await database.getQuestById(id);
+
+      if (!quest) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'Quest not found',
+          statusCode: 404
+        });
+      }
+
+      // Update quest status
+      const updatedQuest = QuestStatusCalculator.updateQuestStatus(quest);
+      if (updatedQuest.status !== quest.status) {
+        await database.updateQuestStatus(id, updatedQuest.status);
+      }
+
+      // Generate quest statistics
+      const stats = QuestStatusCalculator.generateQuestStats(updatedQuest);
+
+      return reply.send({
+        success: true,
+        data: {
+          questId: id,
+          ...stats,
+          timing: {
+            startTime: updatedQuest.startTime,
+            endTime: updatedQuest.endTime,
+            claimEndTime: updatedQuest.claimEndTime,
+            startTimeFormatted: QuestStatusCalculator.formatTimestamp(updatedQuest.startTime),
+            endTimeFormatted: QuestStatusCalculator.formatTimestamp(updatedQuest.endTime),
+            claimEndTimeFormatted: QuestStatusCalculator.formatTimestamp(updatedQuest.claimEndTime)
+          }
+        }
+      });
+    } catch (error) {
+      fastify.log.error('Error fetching quest status:', error);
+      return reply.status(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to fetch quest status',
+        statusCode: 500
+      });
+    }
+  });
+
+  // POST /api/quests/validate-timing - Validate quest timing configuration
+  fastify.post<{
+    Body: {
+      startTime: number;
+      endTime: number;
+      claimEndTime: number;
+    };
+    Reply: {
+      success: true;
+      data: {
+        valid: boolean;
+        errors: string[];
+      };
+    } | {
+      error: string;
+      message: string;
+      statusCode: number;
+    };
+  }>('/api/quests/validate-timing', async (request, reply) => {
+    try {
+      const { startTime, endTime, claimEndTime } = request.body;
+
+      const validation = QuestStatusCalculator.validateQuestTiming({
+        startTime,
+        endTime,
+        claimEndTime
+      });
+
+      return reply.send({
+        success: true,
+        data: validation
+      });
+    } catch (error) {
+      fastify.log.error('Error validating quest timing:', error);
+      return reply.status(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to validate quest timing',
+        statusCode: 500
+      });
+    }
+  });
+
+  // GET /api/quests/count - Get total quest count
+  fastify.get<{
+    Reply: {
+      success: true;
+      data: {
+        total: number;
+        byStatus: Record<string, number>;
+        byType: Record<string, number>;
+      };
+    } | {
+      error: string;
+      message: string;
+      statusCode: number;
+    };
+  }>('/api/quests/count', async (request, reply) => {
+    try {
+      const quests = await database.getQuests();
+      const total = quests.length;
+
+      // Count by status
+      const byStatus: Record<string, number> = {};
+      const byType: Record<string, number> = {};
+
+      quests.forEach(quest => {
+        const updatedQuest = QuestStatusCalculator.updateQuestStatus(quest);
+        byStatus[updatedQuest.status] = (byStatus[updatedQuest.status] || 0) + 1;
+        byType[quest.questType] = (byType[quest.questType] || 0) + 1;
+      });
+
+      return reply.send({
+        success: true,
+        data: {
+          total,
+          byStatus,
+          byType
+        }
+      });
+    } catch (error) {
+      fastify.log.error('Error fetching quest count:', error);
+      return reply.status(500).send({
+        error: 'Internal Server Error',
+        message: 'Failed to fetch quest count',
+        statusCode: 500
+      });
+    }
+  });
 }

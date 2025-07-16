@@ -135,39 +135,42 @@ export function transformUserToApiFormat(dbUser: any) {
   return {
     address: dbUser.address,
     nickname: dbUser.nickname,
-    avatarUrl: dbUser.avatar_url,
+    avatarUrl: dbUser.avatarUrl,
     bio: dbUser.bio,
-    createdAt: dbUser.created_at,
-    updatedAt: dbUser.updated_at,
-    lastLoginAt: dbUser.last_login_at
+    createdAt: new Date(dbUser.createdAt).toISOString(),
+    updatedAt: new Date(dbUser.updatedAt).toISOString(),
+    lastLoginAt: dbUser.lastLoginAt ? new Date(dbUser.lastLoginAt).toISOString() : undefined
   }
 }
 
 // Transform API format to database format for users
 export function transformUserToDbFormat(userData: UserFormData) {
+  const now = Date.now();
   return {
     address: userData.address.toLowerCase(), // Ensure lowercase
-    nickname: userData.nickname || null,
-    avatar_url: userData.avatarUrl || null,
-    bio: userData.bio || null,
-    last_login_at: new Date().toISOString()
+    nickname: userData.nickname,
+    avatarUrl: userData.avatarUrl,
+    bio: userData.bio,
+    createdAt: now,
+    updatedAt: now,
+    lastLoginAt: now
   }
 }
 
 // Transform API update format to database format
 export function transformUserUpdateToDbFormat(userData: UserUpdateData) {
   const updateData: any = {
-    updated_at: new Date().toISOString()
+    updatedAt: Date.now()
   }
   
   if (userData.nickname !== undefined) {
-    updateData.nickname = userData.nickname || null
+    updateData.nickname = userData.nickname
   }
   if (userData.avatarUrl !== undefined) {
-    updateData.avatar_url = userData.avatarUrl || null
+    updateData.avatarUrl = userData.avatarUrl
   }
   if (userData.bio !== undefined) {
-    updateData.bio = userData.bio || null
+    updateData.bio = userData.bio
   }
   
   return updateData

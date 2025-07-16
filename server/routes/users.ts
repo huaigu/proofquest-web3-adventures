@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { supabase } from '../lib/supabase.js'
+import { database } from '../lib/database.js'
 import { 
   validateUserData, 
   validateUserUpdateData,
@@ -7,7 +7,7 @@ import {
   transformUserToDbFormat,
   transformUserUpdateToDbFormat
 } from '../lib/userValidation.js'
-import type { UserInsert, UserUpdate } from '../types/database.js'
+import type { UserData } from '../types/database.js'
 import type { UserResponse, UsersListResponse, ErrorResponse } from '../types/user.js'
 
 export async function userRoutes(fastify: FastifyInstance) {
@@ -30,48 +30,35 @@ export async function userRoutes(fastify: FastifyInstance) {
       }
 
       // Transform to database format
-      const userData = transformUserToDbFormat(validation.data)
+      const userData = transformUserToDbFormat(validation.data) as UserData
 
-      // Upsert user (insert or update if exists)
-      const { data, error } = await supabase
-        .from('users')
-        .upsert(userData as UserInsert, { 
-          onConflict: 'address',
-          ignoreDuplicates: false 
-        })
-        .select()
-        .single()
-
-      if (error) {
-        fastify.log.error('Database error creating/updating user:', error)
+      try {
+        // Add or update user
+        await database.addUser(userData)
         
-        // Handle specific database errors
-        if (error.code === '23514') { // Check constraint violation
-          return reply.status(400).send({
-            error: 'Constraint Violation',
-            message: 'User data violates database constraints',
-            statusCode: 400,
-            details: error.message
-          })
+        // Get the updated user data
+        const savedUser = await database.getUserByAddress(userData.address)
+        if (!savedUser) {
+          throw new Error('Failed to retrieve saved user')
         }
-        
+
+        // Transform to API response format
+        const userResponse = transformUserToApiFormat(savedUser)
+
+        fastify.log.info(`User profile created/updated for address: ${userResponse.address}`)
+
+        return reply.status(201).send({
+          success: true,
+          data: userResponse
+        })
+      } catch (error) {
+        fastify.log.error('Database error creating/updating user:', error)
         return reply.status(500).send({
           error: 'Database Error',
           message: 'Failed to create/update user',
-          statusCode: 500,
-          details: error.message
+          statusCode: 500
         })
       }
-
-      // Transform to API response format
-      const userResponse = transformUserToApiFormat(data)
-
-      fastify.log.info(`User profile created/updated for address: ${userResponse.address}`)
-
-      return reply.status(201).send({
-        success: true,
-        data: userResponse
-      })
 
     } catch (error) {
       fastify.log.error('Unexpected error creating/updating user:', error)
@@ -101,27 +88,13 @@ export async function userRoutes(fastify: FastifyInstance) {
         })
       }
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('address', address.toLowerCase())
-        .single()
+      const data = await database.getUserByAddress(address.toLowerCase())
 
-      if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
-          return reply.status(404).send({
-            error: 'Not Found',
-            message: 'User not found',
-            statusCode: 404
-          })
-        }
-
-        fastify.log.error('Database error fetching user:', error)
-        return reply.status(500).send({
-          error: 'Database Error',
-          message: 'Failed to fetch user',
-          statusCode: 500,
-          details: error.message
+      if (!data) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'User not found',
+          statusCode: 404
         })
       }
 
@@ -178,28 +151,13 @@ export async function userRoutes(fastify: FastifyInstance) {
       const updateData = transformUserUpdateToDbFormat(validation.data)
 
       // Update user
-      const { data, error } = await supabase
-        .from('users')
-        .update(updateData as UserUpdate)
-        .eq('address', address.toLowerCase())
-        .select()
-        .single()
+      const data = await database.updateUser(address.toLowerCase(), updateData)
 
-      if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
-          return reply.status(404).send({
-            error: 'Not Found',
-            message: 'User not found',
-            statusCode: 404
-          })
-        }
-
-        fastify.log.error('Database error updating user:', error)
-        return reply.status(500).send({
-          error: 'Database Error',
-          message: 'Failed to update user',
-          statusCode: 500,
-          details: error.message
+      if (!data) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'User not found',
+          statusCode: 404
         })
       }
 
@@ -235,38 +193,30 @@ export async function userRoutes(fastify: FastifyInstance) {
     try {
       const { limit = '20', offset = '0', search } = request.query
 
-      // Build query
-      let query = supabase
-        .from('users')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+      // Get all users from database
+      let allUsers = await database.getUsers()
 
       // Apply search filter if provided
       if (search) {
-        query = query.or(`nickname.ilike.%${search}%,address.ilike.%${search}%`)
+        const searchLower = search.toLowerCase()
+        allUsers = allUsers.filter(user => 
+          (user.nickname?.toLowerCase().includes(searchLower)) ||
+          user.address.toLowerCase().includes(searchLower)
+        )
       }
+
+      // Sort by creation date (newest first)
+      allUsers.sort((a, b) => b.createdAt - a.createdAt)
 
       // Apply pagination
       const limitNum = Math.min(parseInt(limit) || 20, 100) // Max 100 items
       const offsetNum = parseInt(offset) || 0
       
-      query = query.range(offsetNum, offsetNum + limitNum - 1)
-
-      // Execute query
-      const { data, error, count } = await query
-
-      if (error) {
-        fastify.log.error('Database error fetching users:', error)
-        return reply.status(500).send({
-          error: 'Database Error',
-          message: 'Failed to fetch users',
-          statusCode: 500,
-          details: error.message
-        })
-      }
+      const total = allUsers.length
+      const paginatedUsers = allUsers.slice(offsetNum, offsetNum + limitNum)
 
       // Transform to API response format
-      const users = data?.map(transformUserToApiFormat) || []
+      const users = paginatedUsers.map(transformUserToApiFormat)
 
       fastify.log.info(`Retrieved ${users.length} users`)
 
@@ -274,7 +224,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         success: true,
         data: {
           users,
-          total: count || 0
+          total
         }
       })
 
@@ -306,18 +256,13 @@ export async function userRoutes(fastify: FastifyInstance) {
         })
       }
 
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('address', address.toLowerCase())
+      const deleted = await database.deleteUser(address.toLowerCase())
 
-      if (error) {
-        fastify.log.error('Database error deleting user:', error)
-        return reply.status(500).send({
-          error: 'Database Error',
-          message: 'Failed to delete user',
-          statusCode: 500,
-          details: error.message
+      if (!deleted) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'User not found',
+          statusCode: 404
         })
       }
 

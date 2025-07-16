@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { useZKTLS } from '@/hooks/useZKTLS';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,13 +19,16 @@ import {
   Repeat2,
   Trophy,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Shield,
+  Zap
 } from 'lucide-react';
 import { 
   createLikeAndRetweetQuest,
   getQuest,
   getNextQuestId,
   claimReward,
+  claimRewardWithAttestation,
   getAllQuests,
   hasUserQualified,
   QUEST_SYSTEM_ADDRESS,
@@ -36,6 +40,15 @@ const QuestTest = () => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
+  const { 
+    isGenerating: isGeneratingProof,
+    attestation,
+    error: zktlsError,
+    generateProof,
+    validateProof,
+    clearAttestation,
+    formatForContract
+  } = useZKTLS();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -60,6 +73,10 @@ const QuestTest = () => {
   const [selectedQuestData, setSelectedQuestData] = useState<any>(null);
   const [isLoadingQuests, setIsLoadingQuests] = useState(false);
   const [userQualificationStatus, setUserQualificationStatus] = useState<{[key: string]: boolean}>({});
+  
+  // ZKTLS state
+  const [useZKTLS, setUseZKTLS] = useState(false);
+  const [proofGenerated, setProofGenerated] = useState(false);
 
   // Check if we're on Sepolia
   const isOnSepolia = chainId === 11155111;
@@ -268,6 +285,68 @@ const QuestTest = () => {
     }
   };
 
+  // Generate ZKTLS proof
+  const handleGenerateZKTLSProof = async (questId: string) => {
+    if (!address || !questId) return;
+
+    try {
+      const launchPage = `https://x.com/monad_xyz/status/1942933687978365289?quest=${questId}&user=${address}`;
+      const result = await generateProof(questId, launchPage);
+      
+      if (result) {
+        setProofGenerated(true);
+        toast({
+          title: "ZKTLS Proof Generated!",
+          description: "Proof has been generated successfully. You can now claim your reward.",
+        });
+      }
+    } catch (error: any) {
+      console.error('ZKTLS proof generation failed:', error);
+      toast({
+        title: "Proof Generation Failed",
+        description: error.message || "Failed to generate ZKTLS proof",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle claim reward with ZKTLS proof
+  const handleClaimRewardWithZKTLS = async (questId: bigint) => {
+    if (!address || !attestation) return;
+
+    setIsClaiming(true);
+    try {
+      // Format attestation for contract
+      const formattedAttestation = formatForContract(attestation);
+      
+      // Use the claimRewardWithAttestation function
+      const hash = await claimRewardWithAttestation(questId, formattedAttestation);
+
+      toast({
+        title: "Reward Claimed with ZKTLS Proof!",
+        description: `Transaction hash: ${hash}`,
+      });
+
+      // Clear the attestation and refresh quest data
+      clearAttestation();
+      setProofGenerated(false);
+      if (questId === (questId)) {
+        await fetchQuestData(questId);
+      }
+      await loadAllQuests();
+
+    } catch (error: any) {
+      console.error('Reward claim with ZKTLS failed:', error);
+      toast({
+        title: "Reward Claim Failed",
+        description: error.message || "Unknown error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -312,6 +391,52 @@ const QuestTest = () => {
               )}
             </AlertDescription>
           </Alert>
+        </div>
+
+        {/* ZKTLS Mode Toggle */}
+        <div className="mb-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                ZKTLS Proof Mode
+              </CardTitle>
+              <CardDescription>
+                Enable real ZKTLS proof generation instead of mock attestation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="useZKTLS"
+                  checked={useZKTLS}
+                  onCheckedChange={(checked) => setUseZKTLS(checked as boolean)}
+                />
+                <Label htmlFor="useZKTLS" className="flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Use ZKTLS Real Proof Generation
+                </Label>
+              </div>
+              
+              {zktlsError && (
+                <Alert className="mt-4 border-red-500/50 bg-red-500/10">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-red-400">
+                    ZKTLS Error: {zktlsError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {attestation && (
+                <Alert className="mt-4 border-green-500/50 bg-green-500/10">
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription className="text-green-400">
+                    ZKTLS Proof Generated Successfully
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Contract Info */}
@@ -494,23 +619,65 @@ const QuestTest = () => {
                     </div>
                   </div>
 
-                  <Button
-                    onClick={handleClaimReward}
-                    disabled={isClaiming || !isConnected || !isOnSepolia}
-                    className="w-full bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90"
-                  >
-                    {isClaiming ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Claiming Reward...
-                      </>
-                    ) : (
-                      <>
-                        <Trophy className="h-4 w-4 mr-2" />
-                        Claim Reward
-                      </>
-                    )}
-                  </Button>
+                  {useZKTLS ? (
+                    <div className="space-y-2">
+                      {!attestation ? (
+                        <Button
+                          onClick={() => handleGenerateZKTLSProof(questId?.toString() || '')}
+                          disabled={isGeneratingProof || !isConnected || !isOnSepolia || !questId}
+                          className="w-full bg-[hsl(var(--vibrant-purple))] hover:bg-[hsl(var(--vibrant-purple))]/90"
+                        >
+                          {isGeneratingProof ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Generating ZKTLS Proof...
+                            </>
+                          ) : (
+                            <>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Generate ZKTLS Proof
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleClaimRewardWithZKTLS(questId)}
+                          disabled={isClaiming || !isConnected || !isOnSepolia || !questId}
+                          className="w-full bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
+                        >
+                          {isClaiming ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Claiming with ZKTLS...
+                            </>
+                          ) : (
+                            <>
+                              <Trophy className="h-4 w-4 mr-2" />
+                              Claim Reward with ZKTLS
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={handleClaimReward}
+                      disabled={isClaiming || !isConnected || !isOnSepolia}
+                      className="w-full bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90"
+                    >
+                      {isClaiming ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Claiming Reward...
+                        </>
+                      ) : (
+                        <>
+                          <Trophy className="h-4 w-4 mr-2" />
+                          Claim Reward (Mock)
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground py-8">
@@ -634,39 +801,103 @@ const QuestTest = () => {
                     </div>
                   </div>
 
-                  <Button
-                    onClick={handleClaimSelectedReward}
-                    disabled={
-                      isClaiming || 
-                      !isConnected || 
-                      !isOnSepolia || 
-                      userQualificationStatus[selectedQuestId] ||
-                      questData.status !== 1
-                    }
-                    className="w-full bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
-                  >
-                    {isClaiming ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Claiming Reward...
-                      </>
-                    ) : userQualificationStatus[selectedQuestId] ? (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Already Claimed
-                      </>
-                    ) : questData.status !== 1 ? (
-                      <>
-                        <AlertCircle className="h-4 w-4 mr-2" />
-                        Quest Not Active
-                      </>
-                    ) : (
-                      <>
-                        <Trophy className="h-4 w-4 mr-2" />
-                        Claim Reward (Mock Data)
-                      </>
-                    )}
-                  </Button>
+                  {useZKTLS ? (
+                    <div className="space-y-2">
+                      {!attestation ? (
+                        <Button
+                          onClick={() => handleGenerateZKTLSProof(selectedQuestId)}
+                          disabled={
+                            isGeneratingProof || 
+                            !isConnected || 
+                            !isOnSepolia || 
+                            userQualificationStatus[selectedQuestId] ||
+                            questData.status !== 1
+                          }
+                          className="w-full bg-[hsl(var(--vibrant-purple))] hover:bg-[hsl(var(--vibrant-purple))]/90"
+                        >
+                          {isGeneratingProof ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Generating ZKTLS Proof...
+                            </>
+                          ) : userQualificationStatus[selectedQuestId] ? (
+                            <>
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Already Claimed
+                            </>
+                          ) : questData.status !== 1 ? (
+                            <>
+                              <AlertCircle className="h-4 w-4 mr-2" />
+                              Quest Not Active
+                            </>
+                          ) : (
+                            <>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Generate ZKTLS Proof
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleClaimRewardWithZKTLS(BigInt(selectedQuestId))}
+                          disabled={
+                            isClaiming || 
+                            !isConnected || 
+                            !isOnSepolia || 
+                            userQualificationStatus[selectedQuestId] ||
+                            questData.status !== 1
+                          }
+                          className="w-full bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
+                        >
+                          {isClaiming ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Claiming with ZKTLS...
+                            </>
+                          ) : (
+                            <>
+                              <Trophy className="h-4 w-4 mr-2" />
+                              Claim Reward with ZKTLS
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={handleClaimSelectedReward}
+                      disabled={
+                        isClaiming || 
+                        !isConnected || 
+                        !isOnSepolia || 
+                        userQualificationStatus[selectedQuestId] ||
+                        questData.status !== 1
+                      }
+                      className="w-full bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
+                    >
+                      {isClaiming ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Claiming Reward...
+                        </>
+                      ) : userQualificationStatus[selectedQuestId] ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Already Claimed
+                        </>
+                      ) : questData.status !== 1 ? (
+                        <>
+                          <AlertCircle className="h-4 w-4 mr-2" />
+                          Quest Not Active
+                        </>
+                      ) : (
+                        <>
+                          <Trophy className="h-4 w-4 mr-2" />
+                          Claim Reward (Mock Data)
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               )}
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with the server-side cod
 
 ## Project Overview
 
-ProofQuest Server is a Fastify-based API backend that powers the ProofQuest Web3 quest platform. It handles quest management, user authentication, reward distribution, and integrates with Supabase for data persistence and real-time features.
+ProofQuest Server is a Fastify-based API backend that powers the ProofQuest Web3 quest platform. It handles quest management, user authentication, reward distribution, and uses lowdb for local JSON-based data persistence - perfect for hackathon development.
 
 ## Development Commands
 
@@ -26,7 +26,7 @@ ProofQuest Server is a Fastify-based API backend that powers the ProofQuest Web3
 - **Bun** - JavaScript runtime and package manager
 - **TypeScript** - Type-safe JavaScript development
 - **Fastify** - High-performance web framework
-- **Supabase** - Backend-as-a-Service for database, auth, and real-time features
+- **lowdb** - Simple JSON file database for hackathon development
 
 ### Project Structure
 ```
@@ -39,10 +39,12 @@ server/
 │   ├── quests.ts            # Quest management endpoints
 │   ├── users.ts             # User profile endpoints
 │   └── auth.ts              # Authentication endpoints
-├── lib/                      # Utility libraries (planned)
-│   ├── supabase.ts          # Supabase client configuration
+├── lib/                      # Utility libraries
+│   ├── database.ts          # lowdb database service
+│   ├── eventIndexer.ts      # Blockchain event indexing
+│   ├── questStatusCalculator.ts # Quest status management
 │   ├── validation.ts        # Request validation schemas
-│   └── utils.ts             # Helper functions
+│   └── auth.ts              # Authentication utilities
 ├── middleware/               # Fastify middleware (planned)
 │   ├── auth.ts              # Authentication middleware
 │   └── cors.ts              # CORS configuration
@@ -73,25 +75,40 @@ server/
 - `POST /api/auth/refresh` - Refresh authentication token
 - `POST /api/auth/logout` - Logout user
 
-## Supabase Integration
+## Database Integration
+
+### lowdb JSON Database
+The server uses lowdb for local JSON file-based data storage, perfect for hackathon development:
+
+- **File Location**: `./data/database.json`
+- **Schema**: Defined in `types/database.ts`
+- **Service**: `lib/database.ts` provides full CRUD operations
 
 ### Database Schema
-- **Users Table**: User profiles, wallet addresses, statistics
-- **Quests Table**: Quest details, requirements, rewards
-- **Participations Table**: User quest participation tracking
-- **Completions Table**: Quest completion records and proofs
-- **Rewards Table**: Reward distribution history
+The JSON database contains the following collections:
+- **quests**: Quest details, requirements, rewards, status
+- **participations**: User quest participation tracking with rewards
+- **indexerState**: Blockchain event indexing state
 
-### Real-time Features
-- Quest participation updates
-- Leaderboard changes
-- New quest notifications
-- Completion status updates
+### Data Structure
+```json
+{
+  "quests": [],
+  "participations": [],
+  "indexerState": {
+    "lastProcessedBlock": 0,
+    "lastUpdated": 0,
+    "contractAddress": "",
+    "contractDeployBlock": 0
+  }
+}
+```
 
-### Authentication
-- Supabase Auth integration with wallet-based login
-- JWT token management
-- Row Level Security (RLS) policies
+### Database Operations
+- All operations are asynchronous and use file I/O
+- Automatic data persistence with each write operation
+- Built-in backup functionality
+- Statistics calculation methods for analytics
 
 ## Development Configuration
 
@@ -103,18 +120,17 @@ server/
 
 ### Environment Variables
 ```env
-# Supabase Configuration
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
 # Server Configuration
 PORT=3001
 NODE_ENV=development
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
 
 # Web3 Configuration
 MONAD_RPC_URL=https://testnet1.monad.xyz
 PRIVATE_KEY=your_server_wallet_private_key
+
+# Database Configuration (lowdb)
+DATABASE_PATH=./data  # Optional: defaults to ./data
 ```
 
 ### Fastify Configuration
@@ -159,8 +175,8 @@ PRIVATE_KEY=your_server_wallet_private_key
 - Authentication via Bearer tokens
 
 ### Data Synchronization
-- Real-time updates via Supabase WebSocket
-- Optimistic updates for better UX
+- File-based persistence with lowdb
+- Polling-based updates for real-time feel
 - Error recovery and retry logic
 
 ### Development Workflow
@@ -178,7 +194,7 @@ PRIVATE_KEY=your_server_wallet_private_key
 
 ### Data Protection
 - Input validation and sanitization
-- SQL injection prevention via Supabase
+- File system security for JSON database
 - XSS protection
 - Secure headers configuration
 
@@ -197,11 +213,31 @@ PRIVATE_KEY=your_server_wallet_private_key
 - Health check endpoints
 
 ### Infrastructure
-- Supabase hosted database
+- Local JSON file database (lowdb)
 - Server deployment on cloud platform
-- CDN for static assets
+- File system backup strategies
 - Monitoring and logging setup
+
+## Hackathon Development Notes
+
+### Quick Setup
+1. Clone repository
+2. `cd server && bun install`
+3. `bun run index.ts`
+4. Database file automatically created at `./data/database.json`
+
+### Data Persistence
+- All data stored in JSON file
+- Automatic backups available via API
+- Easy to inspect and debug
+- Perfect for rapid prototyping
+
+### Migration from Supabase
+- All Supabase dependencies removed
+- Database operations converted to lowdb
+- Environment variables simplified
+- No external service dependencies
 
 ---
 
-*ProofQuest Server | Fastify + Supabase + Bun | Web3 Quest Platform Backend*
+*ProofQuest Server | Fastify + lowdb + Bun | Web3 Quest Platform Backend*
