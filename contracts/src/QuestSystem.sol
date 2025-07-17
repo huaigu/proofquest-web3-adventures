@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {IPrimusZKTLS, Attestation} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./utils/JsonParser.sol";
 import "./utils/StringUtils.sol";
 
@@ -14,7 +15,7 @@ import "./utils/StringUtils.sol";
  * with direct or vesting reward mechanisms using ETH only.
  * This contract is deployed directly without proxy pattern.
  */
-contract QuestSystem is Ownable {
+contract QuestSystem is Ownable, UUPSUpgradeable {
     using JsonParser for string;
     using StringUtils for string;
 
@@ -279,7 +280,9 @@ contract QuestSystem is Ownable {
         }
 
         // Verify zkTLS attestation
-        if (!primusZKTLS.verifyAttestation(_attestation)) {
+        try primusZKTLS.verifyAttestation(_attestation) {
+            // Verification successful
+        } catch {
             revert QuestSystem__AttestationVerificationFailed();
         }
 
@@ -352,8 +355,11 @@ contract QuestSystem is Ownable {
         VerificationParams storage params = q.verificationParams;
 
         // Check proof validity period
+        // Convert attestation timestamp from milliseconds to seconds
+        uint256 attestationTimestampSeconds = _attestation.timestamp / 1000;
+        
         if (
-            block.timestamp - _attestation.timestamp >
+            block.timestamp - attestationTimestampSeconds >
             params.proofValidityPeriod
         ) {
             return false;
@@ -1004,4 +1010,12 @@ contract QuestSystem is Ownable {
     receive() external payable {}
 
     fallback() external payable {}
+
+    // --- UUPS Upgrade Authorization ---
+
+    /**
+     * @notice Authorize contract upgrade (only owner)
+     * @param newImplementation Address of new implementation
+     */
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }
