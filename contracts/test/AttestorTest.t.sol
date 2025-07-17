@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {Test, console} from "forge-std/Test.sol";
 import {AttestorTest} from "../src/AttestorTest.sol";
-import {IPrimusZKTLS, Attestation, RequestData, ResponseResolve, Attestor} from "@primuslabs/zktls-contracts/src/IPrimusZKTLS.sol";
+import {IPrimusZKTLS, Attestation, AttNetworkRequest, AttNetworkResponseResolve, Attestor} from "@primuslabs/zktls-contracts/src/IPrimusZKTLS.sol";
 
 // Mock contract for testing
 contract MockPrimusZKTLS is IPrimusZKTLS {
@@ -42,15 +42,15 @@ contract AttestorTestTest is Test {
     
     function testVerifySignature() public {
         // Create a test attestation with all required fields
-        RequestData memory request = RequestData({
+        AttNetworkRequest memory request = AttNetworkRequest({
             url: "https://example.com",
             header: "",
             method: "GET",
             body: ""
         });
         
-        ResponseResolve[] memory responseResolve = new ResponseResolve[](1);
-        responseResolve[0] = ResponseResolve({
+        AttNetworkResponseResolve[] memory responseResolve = new AttNetworkResponseResolve[](1);
+        responseResolve[0] = AttNetworkResponseResolve({
             keyName: "test",
             parseType: "",
             parsePath: "$.test"
@@ -70,10 +70,10 @@ contract AttestorTestTest is Test {
         Attestation memory attestation = Attestation({
             recipient: address(0x1234),
             request: request,
-            responseResolve: responseResolve,
+            reponseResolve: responseResolve,
             data: '{"test":"value"}',
             attConditions: attConditions,
-            timestamp: block.timestamp,
+            timestamp: uint64(block.timestamp),
             additionParams: "{}",
             attestors: attestors,
             signatures: signatures,
@@ -87,15 +87,15 @@ contract AttestorTestTest is Test {
     
     function testVerifySignatureWithDifferentData() public {
         // Create another test attestation with different data
-        RequestData memory request2 = RequestData({
+        AttNetworkRequest memory request2 = AttNetworkRequest({
             url: "https://different.com",
             header: "",
             method: "POST",
             body: ""
         });
         
-        ResponseResolve[] memory responseResolve2 = new ResponseResolve[](1);
-        responseResolve2[0] = ResponseResolve({
+        AttNetworkResponseResolve[] memory responseResolve2 = new AttNetworkResponseResolve[](1);
+        responseResolve2[0] = AttNetworkResponseResolve({
             keyName: "different",
             parseType: "",
             parsePath: "$.different"
@@ -115,10 +115,10 @@ contract AttestorTestTest is Test {
         Attestation memory attestation = Attestation({
             recipient: address(0x5678),
             request: request2,
-            responseResolve: responseResolve2,
+            reponseResolve: responseResolve2,
             data: '{"different":"value"}',
             attConditions: attConditions2,
-            timestamp: block.timestamp + 100,
+            timestamp: uint64(block.timestamp + 100),
             additionParams: "{}",
             attestors: attestors2,
             signatures: signatures2,

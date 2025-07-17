@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IPrimusZKTLS, Attestation, RequestData, ResponseResolve, Attestor} from "../../lib/zktls-contracts/src/IPrimusZKTLS.sol";
+import {IPrimusZKTLS, Attestation, AttNetworkRequest, AttNetworkResponseResolve, Attestor} from "../../lib/zktls-contracts/src/IPrimusZKTLS.sol";
 import "../utils/JsonParser.sol";
 import "../utils/StringUtils.sol";
 
@@ -151,7 +151,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         attestation.recipient = _recipient;
         
         // Create basic request data
-        attestation.request = RequestData({
+        attestation.request = AttNetworkRequest({
             url: _jsonData.getString("request.url"),
             header: _jsonData.getString("request.header"),
             method: _jsonData.getString("request.method"),
@@ -160,7 +160,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
 
         // Set the main data
         attestation.data = _jsonData.getString("data");
-        attestation.timestamp = _timestamp;
+        attestation.timestamp = uint64(_timestamp);
         attestation.additionParams = _jsonData.getString("additionParams");
         attestation.extendedData = _jsonData.getString("extendedData");
 
@@ -201,7 +201,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
             "%22%2C%22with_rux_injections%22%3Afalse%7D"
         ));
         
-        attestation.request = RequestData({
+        attestation.request = AttNetworkRequest({
             url: url,
             header: "",
             method: "GET",
@@ -209,13 +209,13 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         });
 
         // Create ResponseResolve array
-        attestation.responseResolve = new ResponseResolve[](2);
-        attestation.responseResolve[0] = ResponseResolve({
+        attestation.reponseResolve = new AttNetworkResponseResolve[](2);
+        attestation.reponseResolve[0] = AttNetworkResponseResolve({
             keyName: "favorited",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited"
         });
-        attestation.responseResolve[1] = ResponseResolve({
+        attestation.reponseResolve[1] = AttNetworkResponseResolve({
             keyName: "retweeted",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted"
@@ -228,7 +228,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
             '{"favorited":"', favStr, '","retweeted":"', retStr, '"}'
         ));
 
-        attestation.timestamp = block.timestamp;
+        attestation.timestamp = uint64(block.timestamp);
         attestation.additionParams = '{"algorithmType":"proxytls"}';
 
         // Create attestor
@@ -271,7 +271,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
             "%22%2C%22with_rux_injections%22%3Afalse%7D"
         ));
         
-        attestation.request = RequestData({
+        attestation.request = AttNetworkRequest({
             url: url,
             header: "",
             method: "GET",
@@ -279,18 +279,18 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         });
 
         // Create ResponseResolve array
-        attestation.responseResolve = new ResponseResolve[](3);
-        attestation.responseResolve[0] = ResponseResolve({
+        attestation.reponseResolve = new AttNetworkResponseResolve[](3);
+        attestation.reponseResolve[0] = AttNetworkResponseResolve({
             keyName: "quoted_status_id_str",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.quoted_status_id_str"
         });
-        attestation.responseResolve[1] = ResponseResolve({
+        attestation.reponseResolve[1] = AttNetworkResponseResolve({
             keyName: "user_id_str",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.user_id_str"
         });
-        attestation.responseResolve[2] = ResponseResolve({
+        attestation.reponseResolve[2] = AttNetworkResponseResolve({
             keyName: "id_str",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.id_str"
@@ -303,7 +303,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
             '","quoted_status_id_str":"', _quotedTweetId, '"}'
         ));
 
-        attestation.timestamp = block.timestamp;
+        attestation.timestamp = uint64(block.timestamp);
         attestation.additionParams = '{"algorithmType":"proxytls"}';
 
         // Create attestor

@@ -194,6 +194,7 @@ const QuestDetail = () => {
     proofVerified: false,
     rewardClaimed: false
   });
+  const [hasAlreadyParticipated, setHasAlreadyParticipated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<string>('');
   const [zkProofData, setZkProofData] = useState<any>(null);
@@ -232,8 +233,33 @@ const QuestDetail = () => {
         proofVerified: false,
         rewardClaimed: false
       }));
+      setHasAlreadyParticipated(false);
     }
   }, [isConnected, address]);
+
+  // 检查用户是否已经参与过当前活动
+  useEffect(() => {
+    const checkParticipation = async () => {
+      if (!isConnected || !address || !quest?.id) return;
+      
+      try {
+        const apiBase = import.meta.env.VITE_API_URL || '';
+        const response = await fetch(`${apiBase}/api/participations/check/${quest.id}/${address}`);
+        const result = await response.json();
+        
+        if (result.success && result.data.hasParticipated) {
+          setHasAlreadyParticipated(true);
+          setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
+        } else {
+          setHasAlreadyParticipated(false);
+        }
+      } catch (error) {
+        console.error('Failed to check participation:', error);
+      }
+    };
+    
+    checkParticipation();
+  }, [isConnected, address, quest?.id]);
 
   // 通过接口获取 quest detail，字段映射
   useEffect(() => {
@@ -510,43 +536,9 @@ const QuestDetail = () => {
       // Debug: Log the zkProofData structure
       console.log('zkProofData structure:', JSON.stringify(zkProofData, null, 2));
 
-      // Transform zkProofData to match contract Attestation struct exactly
-      const attestation = {
-        recipient: zkProofData.recipient || address,
-        request: {
-          url: zkProofData.request?.url || '',
-          header: zkProofData.request?.header || '',
-          method: zkProofData.request?.method || 'GET',
-          body: zkProofData.request?.body || ''
-        },
-        responseResolve: Array.isArray(zkProofData.reponseResolve) 
-          ? zkProofData.reponseResolve.map((item: any) => ({
-              keyName: item.keyName || '',
-              parseType: item.parseType || '',
-              parsePath: item.parsePath || ''
-            }))
-          : [],
-        data: zkProofData.data || '',
-        attConditions: zkProofData.attConditions || '',
-        timestamp: zkProofData.timestamp || Date.now(),
-        additionParams: zkProofData.additionParams || '',
-        attestors: Array.isArray(zkProofData.attestors)
-          ? zkProofData.attestors.map((item: any) => ({
-              attestorAddr: item.attestorAddr || '',
-              url: item.url || ''
-            }))
-          : [],
-        signatures: Array.isArray(zkProofData.signatures) 
-          ? zkProofData.signatures 
-          : [],
-        extendedData: zkProofData.extendedData || ''
-      };
-
-      console.log('Transformed attestation:', JSON.stringify(attestation, null, 2));
-
       // 调用智能合约 claimReward 方法
       const questIdBigInt = BigInt(quest.id);
-      const txHash = await claimRewardWithAttestation(questIdBigInt, attestation);
+      const txHash = await claimRewardWithAttestation(questIdBigInt, zkProofData);
 
       console.log('Transaction submitted:', txHash);
 
@@ -897,6 +889,14 @@ const QuestDetail = () => {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
+                  {/* 已参与提示 */}
+                  {hasAlreadyParticipated && (
+                    <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] text-white rounded-lg mb-4">
+                      <div className="text-lg font-bold">✅ 您已参与此活动</div>
+                      <div className="text-white/80 text-sm">奖励已成功领取</div>
+                    </div>
+                  )}
+
                   {/* 奖励信息 */}
                   <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg">
                     <div className="text-xl font-bold">{formatReward()}</div>
@@ -940,7 +940,7 @@ const QuestDetail = () => {
                   <div className="flex items-start gap-3 p-3 rounded-lg border">
                     <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofStarted
                         ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                        : isConnected
+                        : isConnected && !hasAlreadyParticipated
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-muted-foreground'
                       }`}>
@@ -951,11 +951,15 @@ const QuestDetail = () => {
                       <p className="text-xs text-muted-foreground mb-2">
                         获取 ZK 签名并启动证明流程
                       </p>
-                      {isConnected && !userProgress.zkProofStarted && (
+                      {hasAlreadyParticipated ? (
+                        <div className="text-xs text-muted-foreground">
+                          您已经参与过此活动
+                        </div>
+                      ) : isConnected && !userProgress.zkProofStarted ? (
                         <Button onClick={handleStartProof} disabled={isLoading} size="sm" className="w-full">
                           {isLoading && currentStep.includes('ZK') ? '启动中...' : '开始证明'}
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 
@@ -1016,17 +1020,20 @@ const QuestDetail = () => {
                       <p className="text-xs text-muted-foreground mb-2">
                         提交证明并领取任务奖励
                       </p>
-                      {userProgress.proofVerified && !userProgress.rewardClaimed && (
+                      {hasAlreadyParticipated ? (
+                        <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
+                          🎉 您已经成功领取过奖励！
+                        </div>
+                      ) : userProgress.proofVerified && !userProgress.rewardClaimed ? (
                         <Button onClick={handleClaimReward} disabled={isLoading} size="sm" className="w-full">
                           <Trophy className="h-3 w-3 mr-1" />
                           {isLoading && currentStep.includes('reward') ? '领取中...' : '领取奖励'}
                         </Button>
-                      )}
-                      {userProgress.rewardClaimed && (
+                      ) : userProgress.rewardClaimed ? (
                         <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
                           🎉 奖励已成功领取！
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>

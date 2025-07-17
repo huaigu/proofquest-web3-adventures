@@ -2,7 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {IPrimusZKTLS, Attestation} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./utils/JsonParser.sol";
 import "./utils/StringUtils.sol";
 
@@ -12,9 +14,9 @@ import "./utils/StringUtils.sol";
  * @notice A decentralized system for creating and verifying quests using Primus zkTLS attestations.
  * It supports various quest types like 'Like & Retweet' and 'Quote Tweet',
  * with direct or vesting reward mechanisms using ETH only.
- * This contract is deployed directly without proxy pattern.
+ * This contract is upgradeable using the UUPS pattern.
  */
-contract QuestSystem is Ownable {
+contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     using JsonParser for string;
     using StringUtils for string;
 
@@ -132,12 +134,25 @@ contract QuestSystem is Ownable {
         _;
     }
 
-    // --- Constructor ---
+    // --- Initializer ---
 
-    constructor(address _primusZKTLS) Ownable(msg.sender) {
-        primusZKTLS = IPrimusZKTLS(_primusZKTLS);
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(IPrimusZKTLS _primusZKTLS) public initializer {
+        __Ownable_init(msg.sender);
+        __UUPSUpgradeable_init();
+        primusZKTLS = _primusZKTLS;
         _nextQuestId = 1;
     }
+
+    // --- Authorization for upgrades ---
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     // --- Sponsor Functions ---
 

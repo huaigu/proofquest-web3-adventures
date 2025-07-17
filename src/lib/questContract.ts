@@ -10,309 +10,7 @@ export const QUEST_SYSTEM_ADDRESS = (import.meta.env.VITE_QUEST_SYSTEM_ADDRESS |
 export const CHAIN_ID = parseInt(import.meta.env.VITE_CHAIN_ID || '11155111');
 
 // QuestSystem ABI (minimal required functions)
-export const QUEST_SYSTEM_ABI = [
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "address", "name": "sponsor", "type": "address" },
-          { "internalType": "string", "name": "title", "type": "string" },
-          { "internalType": "string", "name": "description", "type": "string" },
-          { "internalType": "string", "name": "launch_page", "type": "string" },
-          { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
-          { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
-          {
-            "components": [
-              { "internalType": "string", "name": "apiUrlPattern", "type": "string" },
-              { "internalType": "string", "name": "apiEndpointHash", "type": "string" },
-              { "internalType": "uint256", "name": "proofValidityPeriod", "type": "uint256" },
-              { "internalType": "string", "name": "targetLikeRetweetId", "type": "string" },
-              { "internalType": "string", "name": "favoritedJsonPath", "type": "string" },
-              { "internalType": "string", "name": "retweetedJsonPath", "type": "string" },
-              { "internalType": "bool", "name": "requireFavorite", "type": "bool" },
-              { "internalType": "bool", "name": "requireRetweet", "type": "bool" },
-              { "internalType": "string", "name": "targetQuotedTweetId", "type": "string" },
-              { "internalType": "string", "name": "quotedStatusIdJsonPath", "type": "string" },
-              { "internalType": "string", "name": "userIdJsonPath", "type": "string" },
-              { "internalType": "string", "name": "quoteTweetIdJsonPath", "type": "string" }
-            ],
-            "internalType": "struct QuestSystem.VerificationParams",
-            "name": "verificationParams",
-            "type": "tuple"
-          },
-          { "internalType": "uint256", "name": "totalRewards", "type": "uint256" },
-          { "internalType": "uint256", "name": "rewardPerUser", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxParticipants", "type": "uint256" },
-          { "internalType": "uint256", "name": "participantCount", "type": "uint256" },
-          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
-          { "internalType": "uint256", "name": "endTime", "type": "uint256" },
-          { "internalType": "uint256", "name": "claimEndTime", "type": "uint256" },
-          { "internalType": "bool", "name": "isVesting", "type": "bool" },
-          { "internalType": "uint256", "name": "vestingDuration", "type": "uint256" }
-        ],
-        "internalType": "struct QuestSystem.Quest",
-        "name": "_quest",
-        "type": "tuple"
-      }
-    ],
-    "name": "createQuest",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "type": "function",
-    "name": "claimReward",
-    "inputs": [
-      {
-        "name": "_questId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "_attestation",
-        "type": "tuple",
-        "internalType": "struct Attestation",
-        "components": [
-          {
-            "name": "recipient",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "request",
-            "type": "tuple",
-            "internalType": "struct RequestData",
-            "components": [
-              {
-                "name": "url",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "header",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "method",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "body",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "responseResolve",
-            "type": "tuple[]",
-            "internalType": "struct ResponseResolve[]",
-            "components": [
-              {
-                "name": "keyName",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "parseType",
-                "type": "string",
-                "internalType": "string"
-              },
-              {
-                "name": "parsePath",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "data",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "attConditions",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "timestamp",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "additionParams",
-            "type": "string",
-            "internalType": "string"
-          },
-          {
-            "name": "attestors",
-            "type": "tuple[]",
-            "internalType": "struct Attestor[]",
-            "components": [
-              {
-                "name": "attestorAddr",
-                "type": "address",
-                "internalType": "address"
-              },
-              {
-                "name": "url",
-                "type": "string",
-                "internalType": "string"
-              }
-            ]
-          },
-          {
-            "name": "signatures",
-            "type": "bytes[]",
-            "internalType": "bytes[]"
-          },
-          {
-            "name": "extendedData",
-            "type": "string",
-            "internalType": "string"
-          }
-        ]
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "inputs": [{ "internalType": "uint256", "name": "_questId", "type": "uint256" }],
-    "name": "getQuest",
-    "outputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "address", "name": "sponsor", "type": "address" },
-          { "internalType": "string", "name": "title", "type": "string" },
-          { "internalType": "string", "name": "description", "type": "string" },
-          { "internalType": "string", "name": "launch_page", "type": "string" },
-          { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
-          { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
-          {
-            "components": [
-              { "internalType": "string", "name": "apiUrlPattern", "type": "string" },
-              { "internalType": "string", "name": "apiEndpointHash", "type": "string" },
-              { "internalType": "uint256", "name": "proofValidityPeriod", "type": "uint256" },
-              { "internalType": "string", "name": "targetLikeRetweetId", "type": "string" },
-              { "internalType": "string", "name": "favoritedJsonPath", "type": "string" },
-              { "internalType": "string", "name": "retweetedJsonPath", "type": "string" },
-              { "internalType": "bool", "name": "requireFavorite", "type": "bool" },
-              { "internalType": "bool", "name": "requireRetweet", "type": "bool" },
-              { "internalType": "string", "name": "targetQuotedTweetId", "type": "string" },
-              { "internalType": "string", "name": "quotedStatusIdJsonPath", "type": "string" },
-              { "internalType": "string", "name": "userIdJsonPath", "type": "string" },
-              { "internalType": "string", "name": "quoteTweetIdJsonPath", "type": "string" }
-            ],
-            "internalType": "struct QuestSystem.VerificationParams",
-            "name": "verificationParams",
-            "type": "tuple"
-          },
-          { "internalType": "uint256", "name": "totalRewards", "type": "uint256" },
-          { "internalType": "uint256", "name": "rewardPerUser", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxParticipants", "type": "uint256" },
-          { "internalType": "uint256", "name": "participantCount", "type": "uint256" },
-          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
-          { "internalType": "uint256", "name": "endTime", "type": "uint256" },
-          { "internalType": "uint256", "name": "claimEndTime", "type": "uint256" },
-          { "internalType": "bool", "name": "isVesting", "type": "bool" },
-          { "internalType": "uint256", "name": "vestingDuration", "type": "uint256" }
-        ],
-        "internalType": "struct QuestSystem.Quest",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getNextQuestId",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "_offset", "type": "uint256" },
-      { "internalType": "uint256", "name": "_limit", "type": "uint256" }
-    ],
-    "name": "getAllQuestIds",
-    "outputs": [
-      { "internalType": "uint256[]", "name": "questIds", "type": "uint256[]" },
-      { "internalType": "uint256", "name": "totalCount", "type": "uint256" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint256[]", "name": "_questIds", "type": "uint256[]" }],
-    "name": "getMultipleQuests",
-    "outputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "id", "type": "uint256" },
-          { "internalType": "address", "name": "sponsor", "type": "address" },
-          { "internalType": "string", "name": "title", "type": "string" },
-          { "internalType": "string", "name": "description", "type": "string" },
-          { "internalType": "string", "name": "launch_page", "type": "string" },
-          { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
-          { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
-          {
-            "components": [
-              { "internalType": "string", "name": "apiUrlPattern", "type": "string" },
-              { "internalType": "string", "name": "apiEndpointHash", "type": "string" },
-              { "internalType": "uint256", "name": "proofValidityPeriod", "type": "uint256" },
-              { "internalType": "string", "name": "targetLikeRetweetId", "type": "string" },
-              { "internalType": "string", "name": "favoritedJsonPath", "type": "string" },
-              { "internalType": "string", "name": "retweetedJsonPath", "type": "string" },
-              { "internalType": "bool", "name": "requireFavorite", "type": "bool" },
-              { "internalType": "bool", "name": "requireRetweet", "type": "bool" },
-              { "internalType": "string", "name": "targetQuotedTweetId", "type": "string" },
-              { "internalType": "string", "name": "quotedStatusIdJsonPath", "type": "string" },
-              { "internalType": "string", "name": "userIdJsonPath", "type": "string" },
-              { "internalType": "string", "name": "quoteTweetIdJsonPath", "type": "string" }
-            ],
-            "internalType": "struct QuestSystem.VerificationParams",
-            "name": "verificationParams",
-            "type": "tuple"
-          },
-          { "internalType": "uint256", "name": "totalRewards", "type": "uint256" },
-          { "internalType": "uint256", "name": "rewardPerUser", "type": "uint256" },
-          { "internalType": "uint256", "name": "maxParticipants", "type": "uint256" },
-          { "internalType": "uint256", "name": "participantCount", "type": "uint256" },
-          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
-          { "internalType": "uint256", "name": "endTime", "type": "uint256" },
-          { "internalType": "uint256", "name": "claimEndTime", "type": "uint256" },
-          { "internalType": "bool", "name": "isVesting", "type": "bool" },
-          { "internalType": "uint256", "name": "vestingDuration", "type": "uint256" }
-        ],
-        "internalType": "struct QuestSystem.Quest[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "_questId", "type": "uint256" },
-      { "internalType": "address", "name": "_user", "type": "address" }
-    ],
-    "name": "hasUserQualified",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  }
-] as const;
+export const QUEST_SYSTEM_ABI = [{ "type": "constructor", "inputs": [], "stateMutability": "nonpayable" }, { "type": "fallback", "stateMutability": "payable" }, { "type": "receive", "stateMutability": "payable" }, { "type": "function", "name": "UPGRADE_INTERFACE_VERSION", "inputs": [], "outputs": [{ "name": "", "type": "string", "internalType": "string" }], "stateMutability": "view" }, { "type": "function", "name": "amountClaimedVesting", "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }, { "name": "", "type": "address", "internalType": "address" }], "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "canUserClaimReward", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }, { "name": "_user", "type": "address", "internalType": "address" }], "outputs": [{ "name": "canClaim", "type": "bool", "internalType": "bool" }, { "name": "reason", "type": "string", "internalType": "string" }], "stateMutability": "view" }, { "type": "function", "name": "cancelQuest", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }], "outputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "claimReward", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }, { "name": "_attestation", "type": "tuple", "internalType": "struct Attestation", "components": [{ "name": "recipient", "type": "address", "internalType": "address" }, { "name": "request", "type": "tuple", "internalType": "struct AttNetworkRequest", "components": [{ "name": "url", "type": "string", "internalType": "string" }, { "name": "header", "type": "string", "internalType": "string" }, { "name": "method", "type": "string", "internalType": "string" }, { "name": "body", "type": "string", "internalType": "string" }] }, { "name": "reponseResolve", "type": "tuple[]", "internalType": "struct AttNetworkResponseResolve[]", "components": [{ "name": "keyName", "type": "string", "internalType": "string" }, { "name": "parseType", "type": "string", "internalType": "string" }, { "name": "parsePath", "type": "string", "internalType": "string" }] }, { "name": "data", "type": "string", "internalType": "string" }, { "name": "attConditions", "type": "string", "internalType": "string" }, { "name": "timestamp", "type": "uint64", "internalType": "uint64" }, { "name": "additionParams", "type": "string", "internalType": "string" }, { "name": "attestors", "type": "tuple[]", "internalType": "struct Attestor[]", "components": [{ "name": "attestorAddr", "type": "address", "internalType": "address" }, { "name": "url", "type": "string", "internalType": "string" }] }, { "name": "signatures", "type": "bytes[]", "internalType": "bytes[]" }, { "name": "extendedData", "type": "string", "internalType": "string" }] }], "outputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "claimRewardTest", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }, { "name": "_attestation", "type": "tuple", "internalType": "struct Attestation", "components": [{ "name": "recipient", "type": "address", "internalType": "address" }, { "name": "request", "type": "tuple", "internalType": "struct AttNetworkRequest", "components": [{ "name": "url", "type": "string", "internalType": "string" }, { "name": "header", "type": "string", "internalType": "string" }, { "name": "method", "type": "string", "internalType": "string" }, { "name": "body", "type": "string", "internalType": "string" }] }, { "name": "reponseResolve", "type": "tuple[]", "internalType": "struct AttNetworkResponseResolve[]", "components": [{ "name": "keyName", "type": "string", "internalType": "string" }, { "name": "parseType", "type": "string", "internalType": "string" }, { "name": "parsePath", "type": "string", "internalType": "string" }] }, { "name": "data", "type": "string", "internalType": "string" }, { "name": "attConditions", "type": "string", "internalType": "string" }, { "name": "timestamp", "type": "uint64", "internalType": "uint64" }, { "name": "additionParams", "type": "string", "internalType": "string" }, { "name": "attestors", "type": "tuple[]", "internalType": "struct Attestor[]", "components": [{ "name": "attestorAddr", "type": "address", "internalType": "address" }, { "name": "url", "type": "string", "internalType": "string" }] }, { "name": "signatures", "type": "bytes[]", "internalType": "bytes[]" }, { "name": "extendedData", "type": "string", "internalType": "string" }] }], "outputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "claimVestingReward", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }], "outputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "createQuest", "inputs": [{ "name": "_quest", "type": "tuple", "internalType": "struct QuestSystem.Quest", "components": [{ "name": "id", "type": "uint256", "internalType": "uint256" }, { "name": "sponsor", "type": "address", "internalType": "address" }, { "name": "title", "type": "string", "internalType": "string" }, { "name": "description", "type": "string", "internalType": "string" }, { "name": "launch_page", "type": "string", "internalType": "string" }, { "name": "questType", "type": "uint8", "internalType": "enum QuestSystem.QuestType" }, { "name": "status", "type": "uint8", "internalType": "enum QuestSystem.QuestStatus" }, { "name": "verificationParams", "type": "tuple", "internalType": "struct QuestSystem.VerificationParams", "components": [{ "name": "apiUrlPattern", "type": "string", "internalType": "string" }, { "name": "apiEndpointHash", "type": "string", "internalType": "string" }, { "name": "proofValidityPeriod", "type": "uint256", "internalType": "uint256" }, { "name": "targetLikeRetweetId", "type": "string", "internalType": "string" }, { "name": "favoritedJsonPath", "type": "string", "internalType": "string" }, { "name": "retweetedJsonPath", "type": "string", "internalType": "string" }, { "name": "requireFavorite", "type": "bool", "internalType": "bool" }, { "name": "requireRetweet", "type": "bool", "internalType": "bool" }, { "name": "targetQuotedTweetId", "type": "string", "internalType": "string" }, { "name": "quotedStatusIdJsonPath", "type": "string", "internalType": "string" }, { "name": "userIdJsonPath", "type": "string", "internalType": "string" }, { "name": "quoteTweetIdJsonPath", "type": "string", "internalType": "string" }] }, { "name": "totalRewards", "type": "uint256", "internalType": "uint256" }, { "name": "rewardPerUser", "type": "uint256", "internalType": "uint256" }, { "name": "maxParticipants", "type": "uint256", "internalType": "uint256" }, { "name": "participantCount", "type": "uint256", "internalType": "uint256" }, { "name": "startTime", "type": "uint256", "internalType": "uint256" }, { "name": "endTime", "type": "uint256", "internalType": "uint256" }, { "name": "claimEndTime", "type": "uint256", "internalType": "uint256" }, { "name": "isVesting", "type": "bool", "internalType": "bool" }, { "name": "vestingDuration", "type": "uint256", "internalType": "uint256" }] }], "outputs": [], "stateMutability": "payable" }, { "type": "function", "name": "getAllQuestIds", "inputs": [{ "name": "_offset", "type": "uint256", "internalType": "uint256" }, { "name": "_limit", "type": "uint256", "internalType": "uint256" }], "outputs": [{ "name": "questIds", "type": "uint256[]", "internalType": "uint256[]" }, { "name": "totalCount", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getMultipleQuests", "inputs": [{ "name": "_questIds", "type": "uint256[]", "internalType": "uint256[]" }], "outputs": [{ "name": "", "type": "tuple[]", "internalType": "struct QuestSystem.Quest[]", "components": [{ "name": "id", "type": "uint256", "internalType": "uint256" }, { "name": "sponsor", "type": "address", "internalType": "address" }, { "name": "title", "type": "string", "internalType": "string" }, { "name": "description", "type": "string", "internalType": "string" }, { "name": "launch_page", "type": "string", "internalType": "string" }, { "name": "questType", "type": "uint8", "internalType": "enum QuestSystem.QuestType" }, { "name": "status", "type": "uint8", "internalType": "enum QuestSystem.QuestStatus" }, { "name": "verificationParams", "type": "tuple", "internalType": "struct QuestSystem.VerificationParams", "components": [{ "name": "apiUrlPattern", "type": "string", "internalType": "string" }, { "name": "apiEndpointHash", "type": "string", "internalType": "string" }, { "name": "proofValidityPeriod", "type": "uint256", "internalType": "uint256" }, { "name": "targetLikeRetweetId", "type": "string", "internalType": "string" }, { "name": "favoritedJsonPath", "type": "string", "internalType": "string" }, { "name": "retweetedJsonPath", "type": "string", "internalType": "string" }, { "name": "requireFavorite", "type": "bool", "internalType": "bool" }, { "name": "requireRetweet", "type": "bool", "internalType": "bool" }, { "name": "targetQuotedTweetId", "type": "string", "internalType": "string" }, { "name": "quotedStatusIdJsonPath", "type": "string", "internalType": "string" }, { "name": "userIdJsonPath", "type": "string", "internalType": "string" }, { "name": "quoteTweetIdJsonPath", "type": "string", "internalType": "string" }] }, { "name": "totalRewards", "type": "uint256", "internalType": "uint256" }, { "name": "rewardPerUser", "type": "uint256", "internalType": "uint256" }, { "name": "maxParticipants", "type": "uint256", "internalType": "uint256" }, { "name": "participantCount", "type": "uint256", "internalType": "uint256" }, { "name": "startTime", "type": "uint256", "internalType": "uint256" }, { "name": "endTime", "type": "uint256", "internalType": "uint256" }, { "name": "claimEndTime", "type": "uint256", "internalType": "uint256" }, { "name": "isVesting", "type": "bool", "internalType": "bool" }, { "name": "vestingDuration", "type": "uint256", "internalType": "uint256" }] }], "stateMutability": "view" }, { "type": "function", "name": "getNextQuestId", "inputs": [], "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getQuest", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }], "outputs": [{ "name": "", "type": "tuple", "internalType": "struct QuestSystem.Quest", "components": [{ "name": "id", "type": "uint256", "internalType": "uint256" }, { "name": "sponsor", "type": "address", "internalType": "address" }, { "name": "title", "type": "string", "internalType": "string" }, { "name": "description", "type": "string", "internalType": "string" }, { "name": "launch_page", "type": "string", "internalType": "string" }, { "name": "questType", "type": "uint8", "internalType": "enum QuestSystem.QuestType" }, { "name": "status", "type": "uint8", "internalType": "enum QuestSystem.QuestStatus" }, { "name": "verificationParams", "type": "tuple", "internalType": "struct QuestSystem.VerificationParams", "components": [{ "name": "apiUrlPattern", "type": "string", "internalType": "string" }, { "name": "apiEndpointHash", "type": "string", "internalType": "string" }, { "name": "proofValidityPeriod", "type": "uint256", "internalType": "uint256" }, { "name": "targetLikeRetweetId", "type": "string", "internalType": "string" }, { "name": "favoritedJsonPath", "type": "string", "internalType": "string" }, { "name": "retweetedJsonPath", "type": "string", "internalType": "string" }, { "name": "requireFavorite", "type": "bool", "internalType": "bool" }, { "name": "requireRetweet", "type": "bool", "internalType": "bool" }, { "name": "targetQuotedTweetId", "type": "string", "internalType": "string" }, { "name": "quotedStatusIdJsonPath", "type": "string", "internalType": "string" }, { "name": "userIdJsonPath", "type": "string", "internalType": "string" }, { "name": "quoteTweetIdJsonPath", "type": "string", "internalType": "string" }] }, { "name": "totalRewards", "type": "uint256", "internalType": "uint256" }, { "name": "rewardPerUser", "type": "uint256", "internalType": "uint256" }, { "name": "maxParticipants", "type": "uint256", "internalType": "uint256" }, { "name": "participantCount", "type": "uint256", "internalType": "uint256" }, { "name": "startTime", "type": "uint256", "internalType": "uint256" }, { "name": "endTime", "type": "uint256", "internalType": "uint256" }, { "name": "claimEndTime", "type": "uint256", "internalType": "uint256" }, { "name": "isVesting", "type": "bool", "internalType": "bool" }, { "name": "vestingDuration", "type": "uint256", "internalType": "uint256" }] }], "stateMutability": "view" }, { "type": "function", "name": "getQuestDetails", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }], "outputs": [{ "name": "quest", "type": "tuple", "internalType": "struct QuestSystem.Quest", "components": [{ "name": "id", "type": "uint256", "internalType": "uint256" }, { "name": "sponsor", "type": "address", "internalType": "address" }, { "name": "title", "type": "string", "internalType": "string" }, { "name": "description", "type": "string", "internalType": "string" }, { "name": "launch_page", "type": "string", "internalType": "string" }, { "name": "questType", "type": "uint8", "internalType": "enum QuestSystem.QuestType" }, { "name": "status", "type": "uint8", "internalType": "enum QuestSystem.QuestStatus" }, { "name": "verificationParams", "type": "tuple", "internalType": "struct QuestSystem.VerificationParams", "components": [{ "name": "apiUrlPattern", "type": "string", "internalType": "string" }, { "name": "apiEndpointHash", "type": "string", "internalType": "string" }, { "name": "proofValidityPeriod", "type": "uint256", "internalType": "uint256" }, { "name": "targetLikeRetweetId", "type": "string", "internalType": "string" }, { "name": "favoritedJsonPath", "type": "string", "internalType": "string" }, { "name": "retweetedJsonPath", "type": "string", "internalType": "string" }, { "name": "requireFavorite", "type": "bool", "internalType": "bool" }, { "name": "requireRetweet", "type": "bool", "internalType": "bool" }, { "name": "targetQuotedTweetId", "type": "string", "internalType": "string" }, { "name": "quotedStatusIdJsonPath", "type": "string", "internalType": "string" }, { "name": "userIdJsonPath", "type": "string", "internalType": "string" }, { "name": "quoteTweetIdJsonPath", "type": "string", "internalType": "string" }] }, { "name": "totalRewards", "type": "uint256", "internalType": "uint256" }, { "name": "rewardPerUser", "type": "uint256", "internalType": "uint256" }, { "name": "maxParticipants", "type": "uint256", "internalType": "uint256" }, { "name": "participantCount", "type": "uint256", "internalType": "uint256" }, { "name": "startTime", "type": "uint256", "internalType": "uint256" }, { "name": "endTime", "type": "uint256", "internalType": "uint256" }, { "name": "claimEndTime", "type": "uint256", "internalType": "uint256" }, { "name": "isVesting", "type": "bool", "internalType": "bool" }, { "name": "vestingDuration", "type": "uint256", "internalType": "uint256" }] }, { "name": "currentStatus", "type": "uint8", "internalType": "enum QuestSystem.QuestStatus" }, { "name": "remainingSlots", "type": "uint256", "internalType": "uint256" }, { "name": "timeUntilStart", "type": "uint256", "internalType": "uint256" }, { "name": "timeUntilEnd", "type": "uint256", "internalType": "uint256" }, { "name": "timeUntilClaimEnd", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getQuestStatistics", "inputs": [], "outputs": [{ "name": "totalQuests", "type": "uint256", "internalType": "uint256" }, { "name": "activeQuests", "type": "uint256", "internalType": "uint256" }, { "name": "completedQuests", "type": "uint256", "internalType": "uint256" }, { "name": "totalRewardsDistributed", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getQuestsByParticipant", "inputs": [{ "name": "_user", "type": "address", "internalType": "address" }, { "name": "_offset", "type": "uint256", "internalType": "uint256" }, { "name": "_limit", "type": "uint256", "internalType": "uint256" }], "outputs": [{ "name": "questIds", "type": "uint256[]", "internalType": "uint256[]" }, { "name": "totalCount", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getQuestsBySponsor", "inputs": [{ "name": "_sponsor", "type": "address", "internalType": "address" }, { "name": "_offset", "type": "uint256", "internalType": "uint256" }, { "name": "_limit", "type": "uint256", "internalType": "uint256" }], "outputs": [{ "name": "questIds", "type": "uint256[]", "internalType": "uint256[]" }, { "name": "totalCount", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getQuestsByStatus", "inputs": [{ "name": "_status", "type": "uint8", "internalType": "enum QuestSystem.QuestStatus" }, { "name": "_offset", "type": "uint256", "internalType": "uint256" }, { "name": "_limit", "type": "uint256", "internalType": "uint256" }], "outputs": [{ "name": "questIds", "type": "uint256[]", "internalType": "uint256[]" }, { "name": "totalCount", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getUserStatistics", "inputs": [{ "name": "_user", "type": "address", "internalType": "address" }], "outputs": [{ "name": "participatedQuests", "type": "uint256", "internalType": "uint256" }, { "name": "totalRewardsEarned", "type": "uint256", "internalType": "uint256" }, { "name": "pendingVestingRewards", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "getVestingInfo", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }, { "name": "_user", "type": "address", "internalType": "address" }], "outputs": [{ "name": "vestedAmount", "type": "uint256", "internalType": "uint256" }, { "name": "claimedAmount", "type": "uint256", "internalType": "uint256" }, { "name": "claimableAmount", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "hasQualified", "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }, { "name": "", "type": "address", "internalType": "address" }], "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }], "stateMutability": "view" }, { "type": "function", "name": "hasUserQualified", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }, { "name": "_user", "type": "address", "internalType": "address" }], "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }], "stateMutability": "view" }, { "type": "function", "name": "initialize", "inputs": [{ "name": "_primusZKTLS", "type": "address", "internalType": "contract IPrimusZKTLS" }], "outputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "isQuoteTweetIdUsed", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }, { "name": "_quoteTweetId", "type": "string", "internalType": "string" }], "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }], "stateMutability": "view" }, { "type": "function", "name": "isQuoteTweetUsed", "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }, { "name": "", "type": "string", "internalType": "string" }], "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }], "stateMutability": "view" }, { "type": "function", "name": "owner", "inputs": [], "outputs": [{ "name": "", "type": "address", "internalType": "address" }], "stateMutability": "view" }, { "type": "function", "name": "primusZKTLS", "inputs": [], "outputs": [{ "name": "", "type": "address", "internalType": "contract IPrimusZKTLS" }], "stateMutability": "view" }, { "type": "function", "name": "proxiableUUID", "inputs": [], "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }], "stateMutability": "view" }, { "type": "function", "name": "quests", "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }], "outputs": [{ "name": "id", "type": "uint256", "internalType": "uint256" }, { "name": "sponsor", "type": "address", "internalType": "address" }, { "name": "title", "type": "string", "internalType": "string" }, { "name": "description", "type": "string", "internalType": "string" }, { "name": "launch_page", "type": "string", "internalType": "string" }, { "name": "questType", "type": "uint8", "internalType": "enum QuestSystem.QuestType" }, { "name": "status", "type": "uint8", "internalType": "enum QuestSystem.QuestStatus" }, { "name": "verificationParams", "type": "tuple", "internalType": "struct QuestSystem.VerificationParams", "components": [{ "name": "apiUrlPattern", "type": "string", "internalType": "string" }, { "name": "apiEndpointHash", "type": "string", "internalType": "string" }, { "name": "proofValidityPeriod", "type": "uint256", "internalType": "uint256" }, { "name": "targetLikeRetweetId", "type": "string", "internalType": "string" }, { "name": "favoritedJsonPath", "type": "string", "internalType": "string" }, { "name": "retweetedJsonPath", "type": "string", "internalType": "string" }, { "name": "requireFavorite", "type": "bool", "internalType": "bool" }, { "name": "requireRetweet", "type": "bool", "internalType": "bool" }, { "name": "targetQuotedTweetId", "type": "string", "internalType": "string" }, { "name": "quotedStatusIdJsonPath", "type": "string", "internalType": "string" }, { "name": "userIdJsonPath", "type": "string", "internalType": "string" }, { "name": "quoteTweetIdJsonPath", "type": "string", "internalType": "string" }] }, { "name": "totalRewards", "type": "uint256", "internalType": "uint256" }, { "name": "rewardPerUser", "type": "uint256", "internalType": "uint256" }, { "name": "maxParticipants", "type": "uint256", "internalType": "uint256" }, { "name": "participantCount", "type": "uint256", "internalType": "uint256" }, { "name": "startTime", "type": "uint256", "internalType": "uint256" }, { "name": "endTime", "type": "uint256", "internalType": "uint256" }, { "name": "claimEndTime", "type": "uint256", "internalType": "uint256" }, { "name": "isVesting", "type": "bool", "internalType": "bool" }, { "name": "vestingDuration", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "renounceOwnership", "inputs": [], "outputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "transferOwnership", "inputs": [{ "name": "newOwner", "type": "address", "internalType": "address" }], "outputs": [], "stateMutability": "nonpayable" }, { "type": "function", "name": "upgradeToAndCall", "inputs": [{ "name": "newImplementation", "type": "address", "internalType": "address" }, { "name": "data", "type": "bytes", "internalType": "bytes" }], "outputs": [], "stateMutability": "payable" }, { "type": "function", "name": "withdrawRemainingRewards", "inputs": [{ "name": "_questId", "type": "uint256", "internalType": "uint256" }], "outputs": [], "stateMutability": "nonpayable" }, { "type": "event", "name": "Initialized", "inputs": [{ "name": "version", "type": "uint64", "indexed": false, "internalType": "uint64" }], "anonymous": false }, { "type": "event", "name": "OwnershipTransferred", "inputs": [{ "name": "previousOwner", "type": "address", "indexed": true, "internalType": "address" }, { "name": "newOwner", "type": "address", "indexed": true, "internalType": "address" }], "anonymous": false }, { "type": "event", "name": "QuestCanceled", "inputs": [{ "name": "questId", "type": "uint256", "indexed": true, "internalType": "uint256" }], "anonymous": false }, { "type": "event", "name": "QuestCreated", "inputs": [{ "name": "questId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "sponsor", "type": "address", "indexed": true, "internalType": "address" }, { "name": "totalRewards", "type": "uint256", "indexed": false, "internalType": "uint256" }, { "name": "title", "type": "string", "indexed": false, "internalType": "string" }, { "name": "description", "type": "string", "indexed": false, "internalType": "string" }], "anonymous": false }, { "type": "event", "name": "RemainingRewardsWithdrawn", "inputs": [{ "name": "questId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "sponsor", "type": "address", "indexed": true, "internalType": "address" }, { "name": "amount", "type": "uint256", "indexed": false, "internalType": "uint256" }], "anonymous": false }, { "type": "event", "name": "RewardClaimed", "inputs": [{ "name": "questId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "recipient", "type": "address", "indexed": true, "internalType": "address" }, { "name": "amount", "type": "uint256", "indexed": false, "internalType": "uint256" }], "anonymous": false }, { "type": "event", "name": "Upgraded", "inputs": [{ "name": "implementation", "type": "address", "indexed": true, "internalType": "address" }], "anonymous": false }, { "type": "event", "name": "VestingRewardClaimed", "inputs": [{ "name": "questId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "recipient", "type": "address", "indexed": true, "internalType": "address" }, { "name": "amount", "type": "uint256", "indexed": false, "internalType": "uint256" }], "anonymous": false }, { "type": "error", "name": "AddressEmptyCode", "inputs": [{ "name": "target", "type": "address", "internalType": "address" }] }, { "type": "error", "name": "ERC1967InvalidImplementation", "inputs": [{ "name": "implementation", "type": "address", "internalType": "address" }] }, { "type": "error", "name": "ERC1967NonPayable", "inputs": [] }, { "type": "error", "name": "FailedCall", "inputs": [] }, { "type": "error", "name": "InvalidInitialization", "inputs": [] }, { "type": "error", "name": "NotInitializing", "inputs": [] }, { "type": "error", "name": "OwnableInvalidOwner", "inputs": [{ "name": "owner", "type": "address", "internalType": "address" }] }, { "type": "error", "name": "OwnableUnauthorizedAccount", "inputs": [{ "name": "account", "type": "address", "internalType": "address" }] }, { "type": "error", "name": "QuestSystem__AttestationVerificationFailed", "inputs": [] }, { "type": "error", "name": "QuestSystem__CannotCancelWithParticipants", "inputs": [] }, { "type": "error", "name": "QuestSystem__ClaimPeriodNotOver", "inputs": [] }, { "type": "error", "name": "QuestSystem__ContentVerificationFailed", "inputs": [] }, { "type": "error", "name": "QuestSystem__IncorrectETHAmount", "inputs": [] }, { "type": "error", "name": "QuestSystem__InvalidRewardAmount", "inputs": [] }, { "type": "error", "name": "QuestSystem__InvalidTimeSequence", "inputs": [] }, { "type": "error", "name": "QuestSystem__NoRewardsToClaim", "inputs": [] }, { "type": "error", "name": "QuestSystem__NotSponsor", "inputs": [] }, { "type": "error", "name": "QuestSystem__NotVestingQuest", "inputs": [] }, { "type": "error", "name": "QuestSystem__QuestAlreadyCanceled", "inputs": [] }, { "type": "error", "name": "QuestSystem__QuestNotActive", "inputs": [] }, { "type": "error", "name": "QuestSystem__RewardPoolDepleted", "inputs": [] }, { "type": "error", "name": "QuestSystem__UserAlreadyQualified", "inputs": [] }, { "type": "error", "name": "QuestSystem__UserNotQualified", "inputs": [] }, { "type": "error", "name": "UUPSUnauthorizedCallContext", "inputs": [] }, { "type": "error", "name": "UUPSUnsupportedProxiableUUID", "inputs": [{ "name": "slot", "type": "bytes32", "internalType": "bytes32" }] }] as const;
 
 // Mock attestation data from ProofFavAndRetweet.json (updated to match contract structure)
 export const MOCK_ATTESTATION = {
@@ -488,10 +186,6 @@ export async function claimRewardWithAttestation(questId: bigint, attestation: u
     throw new Error('Attestation responseResolve must be an array');
   }
 
-  if (!Array.isArray(att.attestors)) {
-    throw new Error('Attestation attestors must be an array');
-  }
-
   if (!Array.isArray(att.signatures)) {
     throw new Error('Attestation signatures must be an array');
   }
@@ -501,15 +195,55 @@ export async function claimRewardWithAttestation(questId: bigint, attestation: u
     attestation: att
   });
 
-  const hash = await writeContract(config, {
-    address: QUEST_SYSTEM_ADDRESS,
-    abi: QUEST_SYSTEM_ABI,
-    functionName: 'claimReward',
-    args: [questId, attestation],
-    chainId: CHAIN_ID,
-  });
+  try {
+    // Add contract simulation for debugging
+    console.log('Simulating contract call first...');
 
-  return hash;
+    // Use viem's simulateContract to catch errors before wallet submission
+    const { request } = await import('@wagmi/core').then(m => m.simulateContract(config, {
+      address: QUEST_SYSTEM_ADDRESS,
+      abi: QUEST_SYSTEM_ABI,
+      functionName: 'claimReward',
+      args: [questId, attestation],
+      chainId: CHAIN_ID,
+    }));
+
+    console.log('Contract simulation successful, proceeding with actual transaction...');
+
+    const hash = await writeContract(config, request);
+    return hash;
+  } catch (simulationError: any) {
+    console.error('Contract simulation failed:', simulationError);
+
+    // Parse simulation error to identify specific contract requirement failures
+    let errorMessage = 'Contract execution would fail';
+
+    if (simulationError?.message) {
+      const msg = simulationError.message.toLowerCase();
+
+      if (msg.includes('questsystem__questnotactive')) {
+        errorMessage = 'Quest is not currently active';
+      } else if (msg.includes('questsystem__useralreadyqualified')) {
+        errorMessage = 'User has already qualified for this quest';
+      } else if (msg.includes('questsystem__rewardpooldepleted')) {
+        errorMessage = 'Quest reward pool is depleted (max participants reached)';
+      } else if (msg.includes('questsystem__attestationverificationfailed')) {
+        errorMessage = 'ZKTLS attestation verification failed';
+      } else if (msg.includes('questsystem__contentverificationfailed')) {
+        errorMessage = 'Quest content verification failed (check if you liked/retweeted the correct tweet)';
+      } else if (msg.includes('revert')) {
+        // Extract revert reason if available
+        const revertMatch = msg.match(/revert (.+)/);
+        if (revertMatch) {
+          errorMessage = `Contract reverted: ${revertMatch[1]}`;
+        }
+      }
+
+      errorMessage += `\n\nDetailed error: ${simulationError.message}`;
+    }
+
+    throw new Error(errorMessage);
+  }
 }
 
 // Get all quest IDs with pagination

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useAccount, useChainId, useSwitchChain } from 'wagmi';
+import { useAccount, useChainId, useSwitchChain, useReadContract } from 'wagmi';
+import { sepolia } from 'wagmi/chains';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,9 +13,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Loader2, 
-  AlertCircle, 
+import {
+  Loader2,
+  AlertCircle,
   CheckCircle,
   Heart,
   Repeat2,
@@ -24,7 +25,7 @@ import {
   Shield,
   Zap
 } from 'lucide-react';
-import { 
+import {
   createLikeAndRetweetQuest,
   getQuest,
   getNextQuestId,
@@ -35,6 +36,129 @@ import {
   QUEST_SYSTEM_ADDRESS,
   MOCK_ATTESTATION
 } from '@/lib/questContract';
+
+// Verification contract ABI
+const VERIFICATION_CONTRACT_ABI = [
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "recipient",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "url",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "header",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "method",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "body",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct AttNetworkRequest",
+            "name": "request",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "keyName",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "parseType",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "parsePath",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct AttNetworkResponseResolve[]",
+            "name": "reponseResolve",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "string",
+            "name": "data",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "attConditions",
+            "type": "string"
+          },
+          {
+            "internalType": "uint64",
+            "name": "timestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "string",
+            "name": "additionParams",
+            "type": "string"
+          },
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "attestorAddr",
+                "type": "address"
+              },
+              {
+                "internalType": "string",
+                "name": "url",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct Attestor[]",
+            "name": "attestors",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "signatures",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct Attestation",
+        "name": "attestation",
+        "type": "tuple"
+      }
+    ],
+    "name": "verifySignature",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+const VERIFICATION_CONTRACT_ADDRESS = '0x0bD2FD02c83AC72eCD8E075C2136F9BA9c8e41F1';
 
 const QuestTest = () => {
   const { toast } = useToast();
@@ -54,7 +178,7 @@ const QuestTest = () => {
       error: 'ZKTLS initialization failed',
       generateProof: async () => null,
       validateProof: async () => false,
-      clearAttestation: () => {},
+      clearAttestation: () => { },
       formatForContract: (att: any) => att
     };
   }
@@ -91,11 +215,14 @@ const QuestTest = () => {
   const [selectedQuestId, setSelectedQuestId] = useState<string>('');
   const [selectedQuestData, setSelectedQuestData] = useState<any>(null);
   const [isLoadingQuests, setIsLoadingQuests] = useState(false);
-  const [userQualificationStatus, setUserQualificationStatus] = useState<{[key: string]: boolean}>({});
-  
+  const [userQualificationStatus, setUserQualificationStatus] = useState<{ [key: string]: boolean }>({});
+
   // ZKTLS state
   const [enableZKTLS, setEnableZKTLS] = useState(false);
   const [proofGenerated, setProofGenerated] = useState(false);
+
+  // Verification state
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Check if we're on Sepolia
   const isOnSepolia = chainId === 11155111;
@@ -226,11 +353,11 @@ const QuestTest = () => {
     try {
       const { quests, totalCount } = await getAllQuests(50);
       setAllQuests(quests);
-      
+
       // Check user qualification status for each quest
       if (address && quests.length > 0) {
-        const qualificationStatus: {[key: string]: boolean} = {};
-        
+        const qualificationStatus: { [key: string]: boolean } = {};
+
         for (const quest of quests) {
           try {
             const hasQualified = await hasUserQualified(quest.id, address);
@@ -240,7 +367,7 @@ const QuestTest = () => {
             qualificationStatus[quest.id.toString()] = false;
           }
         }
-        
+
         setUserQualificationStatus(qualificationStatus);
       }
 
@@ -264,7 +391,7 @@ const QuestTest = () => {
   // Handle quest selection
   const handleQuestSelection = async (questIdString: string) => {
     setSelectedQuestId(questIdString);
-    
+
     if (questIdString) {
       const questId = BigInt(questIdString);
       await fetchQuestData(questId);
@@ -309,9 +436,9 @@ const QuestTest = () => {
     if (!address || !questId) return;
 
     try {
-      const launchPage = `https://x.com/monad_xyz/status/1942933687978365289?quest=${questId}&user=${address}`;
+      const launchPage = `https://x.com/BoxMrChen/status/1945396393528713656`;
       const result = await generateProof(questId, launchPage);
-      
+
       if (result) {
         setProofGenerated(true);
         toast({
@@ -337,7 +464,7 @@ const QuestTest = () => {
     try {
       // Format attestation for contract
       const formattedAttestation = formatForContract(attestation);
-      
+
       // Use the claimRewardWithAttestation function
       const hash = await claimRewardWithAttestation(questId, formattedAttestation);
 
@@ -366,11 +493,69 @@ const QuestTest = () => {
     }
   };
 
+  // Handle verify signature using selected quest
+  const handleVerifySignature = async () => {
+    if (!selectedQuestId || !address || !attestation) {
+      toast({
+        title: "Verification Failed",
+        description: "Please select a quest and generate proof first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!isOnSepolia) {
+      toast({
+        title: "Wrong Network",
+        description: "Please switch to Sepolia network first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      // Format attestation for contract
+      // const formattedAttestation = formatForContract(attestation);
+
+      // console.log('Calling verifySignature with attestation:', formattedAttestation);
+
+      // Use wagmi's readContract for view functions
+      const { readContract } = await import('wagmi/actions');
+      const { config } = await import('@/lib/wagmi');
+
+      const result = await readContract(config, {
+        address: VERIFICATION_CONTRACT_ADDRESS,
+        abi: VERIFICATION_CONTRACT_ABI,
+        functionName: 'verifySignature',
+        args: [attestation],
+        chainId: 11155111, // Sepolia
+      });
+
+      toast({
+        title: "Signature Verified!",
+        description: `Verification result: ${result ? 'Valid ✓' : 'Invalid ✗'}`,
+      });
+
+      console.log('Verification result:', result);
+
+    } catch (error: any) {
+      console.error('Signature verification failed:', error);
+      toast({
+        title: "Verification Failed",
+        description: error.message || "Unknown error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const maxParticipants = formData.totalRewards && formData.rewardPerUser 
+  const maxParticipants = formData.totalRewards && formData.rewardPerUser
     ? Math.floor(Number(formData.totalRewards) / Number(formData.rewardPerUser))
     : 0;
 
@@ -436,7 +621,7 @@ const QuestTest = () => {
                   Use ZKTLS Real Proof Generation
                 </Label>
               </div>
-              
+
               {zktlsError && (
                 <Alert className="mt-4 border-red-500/50 bg-red-500/10">
                   <AlertCircle className="h-4 w-4" />
@@ -445,7 +630,7 @@ const QuestTest = () => {
                   </AlertDescription>
                 </Alert>
               )}
-              
+
               {attestation && (
                 <Alert className="mt-4 border-green-500/50 bg-green-500/10">
                   <CheckCircle className="h-4 w-4" />
@@ -605,9 +790,9 @@ const QuestTest = () => {
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Status</Label>
                       <Badge variant="outline" className="ml-2">
-                        {questData.status === 0 ? 'Pending' : 
-                         questData.status === 1 ? 'Active' : 
-                         questData.status === 2 ? 'Ended' : 'Closed'}
+                        {questData.status === 0 ? 'Pending' :
+                          questData.status === 1 ? 'Active' :
+                            questData.status === 2 ? 'Ended' : 'Closed'}
                       </Badge>
                     </div>
                     <div>
@@ -760,9 +945,9 @@ const QuestTest = () => {
                             <span>Quest #{quest.id.toString()}</span>
                             <div className="flex items-center gap-2 ml-2">
                               <Badge variant="outline" className="text-xs">
-                                {quest.status === 0 ? 'Pending' : 
-                                 quest.status === 1 ? 'Active' : 
-                                 quest.status === 2 ? 'Ended' : 'Closed'}
+                                {quest.status === 0 ? 'Pending' :
+                                  quest.status === 1 ? 'Active' :
+                                    quest.status === 2 ? 'Ended' : 'Closed'}
                               </Badge>
                               {userQualificationStatus[quest.id.toString()] && (
                                 <Badge variant="outline" className="text-xs bg-green-500/20 text-green-400">
@@ -788,9 +973,9 @@ const QuestTest = () => {
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Status</Label>
                       <Badge variant="outline" className="ml-2">
-                        {questData.status === 0 ? 'Pending' : 
-                         questData.status === 1 ? 'Active' : 
-                         questData.status === 2 ? 'Ended' : 'Closed'}
+                        {questData.status === 0 ? 'Pending' :
+                          questData.status === 1 ? 'Active' :
+                            questData.status === 2 ? 'Ended' : 'Closed'}
                       </Badge>
                     </div>
                     <div>
@@ -826,9 +1011,9 @@ const QuestTest = () => {
                         <Button
                           onClick={() => handleGenerateZKTLSProof(selectedQuestId)}
                           disabled={
-                            isGeneratingProof || 
-                            !isConnected || 
-                            !isOnSepolia || 
+                            isGeneratingProof ||
+                            !isConnected ||
+                            !isOnSepolia ||
                             userQualificationStatus[selectedQuestId] ||
                             questData.status !== 1
                           }
@@ -857,38 +1042,59 @@ const QuestTest = () => {
                           )}
                         </Button>
                       ) : (
-                        <Button
-                          onClick={() => handleClaimRewardWithZKTLS(BigInt(selectedQuestId))}
-                          disabled={
-                            isClaiming || 
-                            !isConnected || 
-                            !isOnSepolia || 
-                            userQualificationStatus[selectedQuestId] ||
-                            questData.status !== 1
-                          }
-                          className="w-full bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
-                        >
-                          {isClaiming ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Claiming with ZKTLS...
-                            </>
-                          ) : (
-                            <>
-                              <Trophy className="h-4 w-4 mr-2" />
-                              Claim Reward with ZKTLS
-                            </>
-                          )}
-                        </Button>
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => handleClaimRewardWithZKTLS(BigInt(selectedQuestId))}
+                            disabled={
+                              isClaiming ||
+                              !isConnected ||
+                              !isOnSepolia ||
+                              userQualificationStatus[selectedQuestId] ||
+                              questData.status !== 1
+                            }
+                            className="w-full bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90"
+                          >
+                            {isClaiming ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Claiming with ZKTLS...
+                              </>
+                            ) : (
+                              <>
+                                <Trophy className="h-4 w-4 mr-2" />
+                                Claim Reward with ZKTLS
+                              </>
+                            )}
+                          </Button>
+
+                          {/* Verify Signature Button */}
+                          <Button
+                            onClick={handleVerifySignature}
+                            disabled={isVerifying || !isConnected || !isOnSepolia || !attestation}
+                            className="w-full bg-[hsl(var(--vibrant-yellow))] hover:bg-[hsl(var(--vibrant-yellow))]/90"
+                          >
+                            {isVerifying ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Verifying Signature...
+                              </>
+                            ) : (
+                              <>
+                                <Shield className="h-4 w-4 mr-2" />
+                                Verify Signature
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       )}
                     </div>
                   ) : (
                     <Button
                       onClick={handleClaimSelectedReward}
                       disabled={
-                        isClaiming || 
-                        !isConnected || 
-                        !isOnSepolia || 
+                        isClaiming ||
+                        !isConnected ||
+                        !isOnSepolia ||
                         userQualificationStatus[selectedQuestId] ||
                         questData.status !== 1
                       }

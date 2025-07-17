@@ -3,9 +3,9 @@ let PrimusZKTLS: any = null;
 
 // ZKTLS Configuration
 export const ZKTLS_CONFIG = {
-  appId: "0xfef6261ed3b52eda2f9ad85ecc83ac6e9f45a580",
-  templateId: "31df898f-a87c-4807-9e84-0cb7b5a098ae",
-  dataSourceUrl: "https://x.com/monad_xyz/status/1942933687978365289",
+  appId: import.meta.env.VITE_PRIMUS_APP_ID,
+  templateId: "60ca2736-b331-4321-b78e-a2495956700c",
+  dataSourceUrl: "https://x.com/BoxMrChen/status/1945396393528713656",
   backendUrl: "http://localhost:3001"
 };
 
@@ -78,8 +78,6 @@ export async function generateZKTLSProof(
     // Set additional parameters
     const additionParams = {
       launch_page: launchPage || ZKTLS_CONFIG.dataSourceUrl,
-      quest_id: questId,
-      user_address: userAddress
     };
     request.setAdditionParams(JSON.stringify(additionParams));
     

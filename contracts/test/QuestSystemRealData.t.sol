@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import {Test, console} from "forge-std/Test.sol";
 import {QuestSystem} from "../src/QuestSystem.sol";
 import {MockPrimusZKTLS} from "../src/mocks/MockPrimusZKTLS.sol";
-import {IPrimusZKTLS, Attestation, RequestData, ResponseResolve, Attestor} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
+import {IPrimusZKTLS, Attestation, AttNetworkRequest, AttNetworkResponseResolve, Attestor} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
 import {JsonParser} from "../src/utils/JsonParser.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
@@ -69,13 +69,13 @@ contract QuestSystemRealDataTest is Test {
     }
     
     function createRealLikeRetweetAttestation() internal view returns (Attestation memory) {
-        ResponseResolve[] memory responseResolve = new ResponseResolve[](2);
-        responseResolve[0] = ResponseResolve({
+        AttNetworkResponseResolve[] memory responseResolve = new AttNetworkResponseResolve[](2);
+        responseResolve[0] = AttNetworkResponseResolve({
             keyName: "favorited",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited"
         });
-        responseResolve[1] = ResponseResolve({
+        responseResolve[1] = AttNetworkResponseResolve({
             keyName: "retweeted", 
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted"
@@ -92,13 +92,13 @@ contract QuestSystemRealDataTest is Test {
         
         return Attestation({
             recipient: user1,
-            request: RequestData({
+            request: AttNetworkRequest({
                 url: REAL_FAV_RETWEET_URL,
                 header: "",
                 method: "GET",
                 body: ""
             }),
-            responseResolve: responseResolve,
+            reponseResolve: responseResolve,
             data: REAL_FAV_RETWEET_DATA,
             attConditions: "[{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited\"},{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted\"}]",
             timestamp: REAL_FAV_RETWEET_TIMESTAMP,
@@ -110,18 +110,18 @@ contract QuestSystemRealDataTest is Test {
     }
     
     function createRealQuoteTweetAttestation() internal view returns (Attestation memory) {
-        ResponseResolve[] memory responseResolve = new ResponseResolve[](3);
-        responseResolve[0] = ResponseResolve({
+        AttNetworkResponseResolve[] memory responseResolve = new AttNetworkResponseResolve[](3);
+        responseResolve[0] = AttNetworkResponseResolve({
             keyName: "quoted_status_id_str",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.quoted_status_id_str"
         });
-        responseResolve[1] = ResponseResolve({
+        responseResolve[1] = AttNetworkResponseResolve({
             keyName: "user_id_str",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.user_id_str"
         });
-        responseResolve[2] = ResponseResolve({
+        responseResolve[2] = AttNetworkResponseResolve({
             keyName: "id_str",
             parseType: "",
             parsePath: "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.id_str"
@@ -138,13 +138,13 @@ contract QuestSystemRealDataTest is Test {
         
         return Attestation({
             recipient: user1,
-            request: RequestData({
+            request: AttNetworkRequest({
                 url: REAL_QUOTE_TWEET_URL,
                 header: "",
                 method: "GET", 
                 body: ""
             }),
-            responseResolve: responseResolve,
+            reponseResolve: responseResolve,
             data: REAL_QUOTE_TWEET_DATA,
             attConditions: "[{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.quoted_status_id_str\"},{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.user_id_str\"},{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.id_str\"}]",
             timestamp: REAL_QUOTE_TWEET_TIMESTAMP,
