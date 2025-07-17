@@ -2,21 +2,34 @@ import { PrimusZKTLS } from '@primuslabs/zktls-js-sdk';
 
 // ZKTLS Configuration
 export const ZKTLS_CONFIG = {
-  appId: "0xfef6261ed3b52eda2f9ad85ecc83ac6e9f45a580",
-  appSecret: "0xdad67d6888fa454d7016caffb20a65663d0bcce4adc640436dbc589d8b3d4e89",
+  appId: process.env.ZKTLS_APP_ID,
+  appSecret: process.env.ZKTLS_SECRET,
   templateId: "31df898f-a87c-4807-9e84-0cb7b5a098ae",
   dataSourceUrl: "https://x.com/monad_xyz/status/1942933687978365289"
 };
+
+// Validate required environment variables
+function validateConfig() {
+  if (!ZKTLS_CONFIG.appId) {
+    throw new Error('ZKTLS_APP_ID environment variable is required');
+  }
+  if (!ZKTLS_CONFIG.appSecret) {
+    throw new Error('ZKTLS_SECRET environment variable is required');
+  }
+}
 
 // Initialize ZKTLS instance
 let primusZKTLS: PrimusZKTLS | null = null;
 
 export async function initializeZKTLS(): Promise<PrimusZKTLS> {
   if (!primusZKTLS) {
+    // Validate configuration before initializing
+    validateConfig();
+    
     primusZKTLS = new PrimusZKTLS();
     
     // Initialize with appId and appSecret
-    await primusZKTLS.init(ZKTLS_CONFIG.appId, ZKTLS_CONFIG.appSecret);
+    await primusZKTLS.init(ZKTLS_CONFIG.appId!, ZKTLS_CONFIG.appSecret!);
     
     console.log('ZKTLS initialized successfully');
   }

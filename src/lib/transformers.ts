@@ -76,6 +76,7 @@ export function transformQuestToApiRequest(formData: QuestFormData): QuestCreate
   const baseData = {
     title: formData.title,
     description: formData.description,
+    launch_page: formData.launch_page,
     quest_type: formData.questType,
     
     // Optional interaction fields
@@ -123,6 +124,7 @@ export function transformApiResponseToQuest(apiResponse: QuestResponse): QuestFo
   return {
     title: apiResponse.title,
     description: apiResponse.description,
+    launch_page: apiResponse.launch_page,
     questType: apiResponse.questType,
     
     // Optional interaction fields

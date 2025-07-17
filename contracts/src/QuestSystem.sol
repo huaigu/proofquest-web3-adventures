@@ -49,6 +49,7 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         address sponsor;                // Quest creator
         string title;                   // Quest title
         string description;             // Quest description
+        string launch_page;             // Complete URL link to the tweet
         QuestType questType;            // Quest type
         QuestStatus status;             // Quest status
         VerificationParams verificationParams; // Verification parameters
@@ -175,6 +176,7 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         q.sponsor = msg.sender;
         q.title = _quest.title;
         q.description = _quest.description;
+        q.launch_page = _quest.launch_page;
         q.questType = _quest.questType;
         q.status = _quest.status;
         q.verificationParams = _quest.verificationParams;

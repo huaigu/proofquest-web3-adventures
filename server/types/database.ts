@@ -7,6 +7,7 @@ export interface QuestData {
   sponsor: string;               // Sponsor address
   title: string;                 // Quest title
   description: string;           // Quest description
+  launch_page: string;           // Complete URL link to the tweet
   questType: string;             // Quest type (from metadata)
   totalRewards: string;          // Total rewards in wei
   rewardPerUser: string;         // Reward per user in wei

@@ -16,6 +16,7 @@ export type ParticipationStatus = 'pending' | 'completed' | 'verified' | 'reward
 export interface QuestFormData {
   title: string
   description: string
+  launch_page: string // Complete URL link to the tweet
   questType: QuestType
   
   // Twitter interaction specific
@@ -58,6 +59,7 @@ export interface QuestFormData {
 export interface QuestCreateRequest {
   title: string
   description: string
+  launch_page: string // Complete URL link to the tweet
   quest_type: QuestType
   
   // Twitter interaction specific
@@ -101,6 +103,7 @@ export interface QuestResponse {
   id: string
   title: string
   description: string
+  launch_page: string // Complete URL link to the tweet
   questType: QuestType
   
   // Creator info

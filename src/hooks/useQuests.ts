@@ -232,6 +232,9 @@ export function useCreateQuest() {
           
           // Convert quest data to contract parameters
           const contractParams = {
+            title: questData.title,
+            description: questData.description,
+            launch_page: questData.launch_page,
             totalRewards: questData.totalRewardPool?.toString() || '0',
             rewardPerUser: questData.rewardPerParticipant?.toString() || '0',
             startTime: Math.floor(questData.startDate.getTime() / 1000),

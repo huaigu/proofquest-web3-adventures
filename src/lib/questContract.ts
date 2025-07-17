@@ -19,6 +19,7 @@ export const QUEST_SYSTEM_ABI = [
           { "internalType": "address", "name": "sponsor", "type": "address" },
           { "internalType": "string", "name": "title", "type": "string" },
           { "internalType": "string", "name": "description", "type": "string" },
+          { "internalType": "string", "name": "launch_page", "type": "string" },
           { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
           { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
           {
@@ -61,9 +62,18 @@ export const QUEST_SYSTEM_ABI = [
     "type": "function"
   },
   {
+    "type": "function",
+    "name": "claimReward",
     "inputs": [
-      { "internalType": "uint256", "name": "_questId", "type": "uint256" },
       {
+        "name": "_questId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_attestation",
+        "type": "tuple",
+        "internalType": "struct Attestation",
         "components": [
           {
             "name": "recipient",
@@ -73,7 +83,7 @@ export const QUEST_SYSTEM_ABI = [
           {
             "name": "request",
             "type": "tuple",
-            "internalType": "struct AttNetworkRequest",
+            "internalType": "struct RequestData",
             "components": [
               {
                 "name": "url",
@@ -98,9 +108,9 @@ export const QUEST_SYSTEM_ABI = [
             ]
           },
           {
-            "name": "reponseResolve",
+            "name": "responseResolve",
             "type": "tuple[]",
-            "internalType": "struct AttNetworkResponseResolve[]",
+            "internalType": "struct ResponseResolve[]",
             "components": [
               {
                 "name": "keyName",
@@ -131,8 +141,8 @@ export const QUEST_SYSTEM_ABI = [
           },
           {
             "name": "timestamp",
-            "type": "uint64",
-            "internalType": "uint64"
+            "type": "uint256",
+            "internalType": "uint256"
           },
           {
             "name": "additionParams",
@@ -160,17 +170,17 @@ export const QUEST_SYSTEM_ABI = [
             "name": "signatures",
             "type": "bytes[]",
             "internalType": "bytes[]"
+          },
+          {
+            "name": "extendedData",
+            "type": "string",
+            "internalType": "string"
           }
-        ],
-        "internalType": "struct Attestation",
-        "name": "_attestation",
-        "type": "tuple"
+        ]
       }
     ],
-    "name": "claimReward",
     "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "stateMutability": "nonpayable"
   },
   {
     "inputs": [{ "internalType": "uint256", "name": "_questId", "type": "uint256" }],
@@ -182,6 +192,7 @@ export const QUEST_SYSTEM_ABI = [
           { "internalType": "address", "name": "sponsor", "type": "address" },
           { "internalType": "string", "name": "title", "type": "string" },
           { "internalType": "string", "name": "description", "type": "string" },
+          { "internalType": "string", "name": "launch_page", "type": "string" },
           { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
           { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
           {
@@ -251,6 +262,7 @@ export const QUEST_SYSTEM_ABI = [
           { "internalType": "address", "name": "sponsor", "type": "address" },
           { "internalType": "string", "name": "title", "type": "string" },
           { "internalType": "string", "name": "description", "type": "string" },
+          { "internalType": "string", "name": "launch_page", "type": "string" },
           { "internalType": "enum QuestSystem.QuestType", "name": "questType", "type": "uint8" },
           { "internalType": "enum QuestSystem.QuestStatus", "name": "status", "type": "uint8" },
           {
@@ -302,7 +314,7 @@ export const QUEST_SYSTEM_ABI = [
   }
 ] as const;
 
-// Mock attestation data from ProofFavAndRetweet.json
+// Mock attestation data from ProofFavAndRetweet.json (updated to match contract structure)
 export const MOCK_ATTESTATION = {
   "recipient": "0xB12a1f7035FdCBB4cC5Fa102C01346BD45439Adf",
   "request": {
@@ -348,6 +360,7 @@ export function extractTweetIdFromUrl(url: string): string {
 export async function createLikeAndRetweetQuest(params: {
   title: string; // Quest title
   description: string; // Quest description
+  launch_page: string; // Complete URL link to the tweet
   totalRewards: string; // in ETH
   rewardPerUser: string; // in ETH
   startTime: number; // Unix timestamp
@@ -370,6 +383,7 @@ export async function createLikeAndRetweetQuest(params: {
     sponsor: '0x0000000000000000000000000000000000000000', // Will be set by contract
     title: params.title,
     description: params.description,
+    launch_page: params.launch_page,
     questType: 0, // LikeAndRetweet
     status: 0, // Pending
     verificationParams: {
@@ -439,19 +453,14 @@ export async function getNextQuestId() {
 }
 
 // Claim reward with mock attestation
-export async function claimReward(questId: bigint, userAddress: string) {
-  // Update the recipient address in the mock attestation
-  const attestation = {
-    ...MOCK_ATTESTATION,
-    recipient: userAddress
-  };
-
+export async function claimReward(questId: bigint, attestation: any) {
   const hash = await writeContract(config, {
     address: QUEST_SYSTEM_ADDRESS,
     abi: QUEST_SYSTEM_ABI,
     functionName: 'claimReward',
     args: [questId, attestation],
     chainId: CHAIN_ID,
+    value: 0n
   });
 
   return hash;
@@ -459,6 +468,39 @@ export async function claimReward(questId: bigint, userAddress: string) {
 
 // Claim reward with ZKTLS attestation
 export async function claimRewardWithAttestation(questId: bigint, attestation: unknown) {
+  // Validate attestation structure before sending to contract
+  const att = attestation as any;
+
+  if (!att) {
+    throw new Error('Attestation is required');
+  }
+
+  // Ensure required fields exist
+  if (!att.recipient) {
+    throw new Error('Attestation missing recipient');
+  }
+
+  if (!att.request) {
+    throw new Error('Attestation missing request');
+  }
+
+  if (!Array.isArray(att.responseResolve)) {
+    throw new Error('Attestation responseResolve must be an array');
+  }
+
+  if (!Array.isArray(att.attestors)) {
+    throw new Error('Attestation attestors must be an array');
+  }
+
+  if (!Array.isArray(att.signatures)) {
+    throw new Error('Attestation signatures must be an array');
+  }
+
+  console.log('Calling claimReward with:', {
+    questId: questId.toString(),
+    attestation: att
+  });
+
   const hash = await writeContract(config, {
     address: QUEST_SYSTEM_ADDRESS,
     abi: QUEST_SYSTEM_ABI,

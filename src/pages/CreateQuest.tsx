@@ -50,6 +50,7 @@ import { parseEther } from 'viem';
 const questSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
   description: z.string().min(10, "Description must be at least 10 characters"),
+  launch_page: z.string().optional(), // Will be populated automatically from tweet URLs
   questType: z.enum(["twitter-interaction", "quote-tweet", "send-tweet"]),
   // Twitter interaction specific
   interactionType: z.enum(["like", "retweet", "comment", "follow"]).optional(),
@@ -81,6 +82,24 @@ const questSchema = z.object({
 }, {
   message: "Quest End Date must be after Quest Start Date",
   path: ["endDate"]
+}).refine((data) => {
+  // 验证Twitter Interaction类型需要Tweet URL
+  if (data.questType === "twitter-interaction") {
+    return data.tweetUrl && data.tweetUrl.trim().length > 0;
+  }
+  return true;
+}, {
+  message: "Tweet URL is required for Twitter Interaction quests",
+  path: ["tweetUrl"]
+}).refine((data) => {
+  // 验证Quote Tweet类型需要Quote Tweet URL
+  if (data.questType === "quote-tweet") {
+    return data.quoteTweetUrl && data.quoteTweetUrl.trim().length > 0;
+  }
+  return true;
+}, {
+  message: "Original Tweet URL is required for Quote Tweet quests",
+  path: ["quoteTweetUrl"]
 });
 
 const CreateQuest = () => {
@@ -107,6 +126,7 @@ const CreateQuest = () => {
     defaultValues: {
       title: "",
       description: "",
+      launch_page: "",
       questType: "twitter-interaction",
       interactionType: undefined,
       targetAccount: "",
@@ -159,6 +179,16 @@ const CreateQuest = () => {
       }
     }
   }, [setValue]);
+
+  // 同步相应的URL字段到launch_page
+  useEffect(() => {
+    const questType = formData.questType;
+    if (questType === 'twitter-interaction' && formData.tweetUrl) {
+      setValue('launch_page', formData.tweetUrl);
+    } else if (questType === 'quote-tweet' && formData.quoteTweetUrl) {
+      setValue('launch_page', formData.quoteTweetUrl);
+    }
+  }, [formData.questType, formData.tweetUrl, formData.quoteTweetUrl, setValue]);
 
   const nextStep = () => {
     if (currentStep < 5) setCurrentStep(currentStep + 1);
@@ -213,6 +243,7 @@ const CreateQuest = () => {
 
       const contractParams = {
         title: data.title,
+        launch_page: data.launch_page,
         description: data.description,
         totalRewards: data.totalRewardPool.toString(),
         rewardPerUser: rewardPerParticipant.toString(),
@@ -600,9 +631,21 @@ const CreateQuest = () => {
                                   {...field}
                                   placeholder="https://twitter.com/..."
                                   value={field.value || ""}
+                                  onChange={(e) => {
+                                    field.onChange(e.target.value);
+                                    // 同步到launch_page字段
+                                    setValue('launch_page', e.target.value);
+                                  }}
+                                  className={errors.tweetUrl ? "border-destructive" : ""}
                                 />
                               )}
                             />
+                            {errors.tweetUrl && (
+                              <p className="text-sm text-destructive">{errors.tweetUrl.message}</p>
+                            )}
+                            <p className="text-sm text-muted-foreground">
+                              This URL will be used as the launch page for participants to interact with
+                            </p>
                           </div>
                           <div className="space-y-4">
                             <Label>Required Actions *</Label>
@@ -657,11 +700,20 @@ const CreateQuest = () => {
                                   {...field}
                                   placeholder="https://twitter.com/..."
                                   value={field.value || ""}
+                                  onChange={(e) => {
+                                    field.onChange(e.target.value);
+                                    // 同步到launch_page字段
+                                    setValue('launch_page', e.target.value);
+                                  }}
+                                  className={errors.quoteTweetUrl ? "border-destructive" : ""}
                                 />
                               )}
                             />
+                            {errors.quoteTweetUrl && (
+                              <p className="text-sm text-destructive">{errors.quoteTweetUrl.message}</p>
+                            )}
                             <p className="text-sm text-muted-foreground">
-                              Enter the URL of the tweet you want participants to quote
+                              Enter the URL of the tweet you want participants to quote. This will be used as the launch page.
                             </p>
                           </div>
                           <div className="space-y-2">
@@ -1112,6 +1164,12 @@ const CreateQuest = () => {
                         <Label className="text-sm font-medium text-muted-foreground">Description</Label>
                         <p className="text-sm">{formData.description}</p>
                       </div>
+                      {formData.launch_page && (
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Launch Page URL</Label>
+                          <p className="text-sm text-[hsl(var(--vibrant-blue))] break-all">{formData.launch_page}</p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 

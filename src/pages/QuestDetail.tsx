@@ -8,6 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { PrimusZKTLS } from "@primuslabs/zktls-js-sdk";
+import { useAccount } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { claimRewardWithAttestation } from '@/lib/questContract';
 import {
   ArrowLeft,
   Share2,
@@ -29,12 +33,20 @@ import {
   Hash
 } from "lucide-react";
 
+// 扩展 window 对象类型
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 // Mock quest data type
 interface QuestDetail {
   id: string;
   title: string;
   description: string;
   fullDescription: string;
+  launch_page: string; // Complete URL link to the tweet
   creator: {
     name: string;
     avatar: string;
@@ -131,6 +143,7 @@ const getMockQuest = (id: string): QuestDetail => {
   return {
     id,
     ...quest,
+    launch_page: quest.questConfig.tweetUrl || quest.questConfig.quoteTweetUrl || 'https://x.com/monad_xyz/status/1942933687978365289',
     creator: {
       name: "ProofQuest Team",
       avatar: "",
@@ -169,17 +182,58 @@ const QuestDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { address, isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
 
   const [quest, setQuest] = useState<QuestDetail | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [userProgress, setUserProgress] = useState({
     walletConnected: false,
-    eligibilityChecked: false,
-    tasksCompleted: false,
-    proofSubmitted: false
+    zkProofStarted: false,
+    zkProofGenerated: false,
+    proofVerified: false,
+    rewardClaimed: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState<string>('');
+  const [zkProofData, setZkProofData] = useState<any>(null);
+  const [primusZKTLS, setPrimusZKTLS] = useState<any>(null);
+
+  // 初始化 Primus ZKTLS SDK
+  useEffect(() => {
+    const initializePrimus = async () => {
+      try {
+        const primus = new PrimusZKTLS();
+        const appId = import.meta.env.VITE_PRIMUS_APP_ID;
+        if (!appId) {
+          console.error('VITE_PRIMUS_APP_ID not found in environment');
+          return;
+        }
+        const initResult = await primus.init(appId);
+        console.log("Primus ZKTLS initialized:", initResult);
+        setPrimusZKTLS(primus);
+      } catch (error) {
+        console.error("Failed to initialize Primus ZKTLS:", error);
+      }
+    };
+    initializePrimus();
+  }, []);
+
+  // 监听钱包连接状态
+  useEffect(() => {
+    if (isConnected && address) {
+      setUserProgress(prev => ({ ...prev, walletConnected: true }));
+    } else {
+      setUserProgress(prev => ({
+        ...prev,
+        walletConnected: false,
+        zkProofStarted: false,
+        zkProofGenerated: false,
+        proofVerified: false,
+        rewardClaimed: false
+      }));
+    }
+  }, [isConnected, address]);
 
   // 通过接口获取 quest detail，字段映射
   useEffect(() => {
@@ -197,6 +251,7 @@ const QuestDetail = () => {
           title: data.title,
           description: data.description,
           fullDescription: data.description,
+          launch_page: data.launch_page || '',
           creator: {
             name: data.sponsor || "",
             avatar: data.sponsor ? (data.sponsor.replace(/^0x/i, '').slice(0, 2).toUpperCase()) : "",
@@ -210,7 +265,7 @@ const QuestDetail = () => {
           },
           status: data.status ? (data.status.charAt(0).toUpperCase() + data.status.slice(1)) : 'Active',
           participants: {
-            current: data.participantCount || (data.stats?.participationPercentage ? Math.round((data.stats.participationPercentage/100) * (data.maxParticipants || 100)) : 0),
+            current: data.participantCount || (data.stats?.participationPercentage ? Math.round((data.stats.participationPercentage / 100) * (data.maxParticipants || 100)) : 0),
             max: data.maxParticipants || 100
           },
           deadline: data.endTime ? new Date(data.endTime) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -246,11 +301,11 @@ const QuestDetail = () => {
         setParticipants(
           Array.isArray(data.participations)
             ? data.participations.map((item: any, idx: number) => ({
-                id: item.id || String(idx + 1),
-                address: item.userAddress || '',
-                joinedAt: item.joinedAt ? new Date(item.joinedAt) : new Date(),
-                status: item.status || 'joined',
-              }))
+              id: item.id || String(idx + 1),
+              address: item.userAddress || '',
+              joinedAt: item.joinedAt ? new Date(item.joinedAt) : new Date(),
+              status: item.status || 'joined',
+            }))
             : []
         );
       } catch (e) {
@@ -298,63 +353,224 @@ const QuestDetail = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // 新的处理函数
   const handleConnectWallet = async () => {
-    setIsLoading(true);
     try {
-      // Simulate wallet connection
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setIsWalletConnected(true);
-      setUserProgress(prev => ({ ...prev, walletConnected: true }));
-      toast({
-        title: "Wallet Connected",
-        description: "Your wallet has been successfully connected."
-      });
+      if (!isConnected && openConnectModal) {
+        openConnectModal();
+      }
     } catch (error) {
       toast({
-        title: "Connection Failed",
-        description: "Failed to connect wallet. Please try again.",
+        title: "连接失败",
+        description: "钱包连接失败，请重试。",
         variant: "destructive"
       });
     }
-    setIsLoading(false);
   };
 
-  const handleEligibilityCheck = async () => {
+  const handleStartProof = async () => {
+    setCurrentStep('启动 ZK 证明中...');
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setUserProgress(prev => ({ ...prev, eligibilityChecked: true }));
-      toast({
-        title: "Eligibility Verified",
-        description: "You meet all requirements for this quest!"
+      if (!primusZKTLS) {
+        throw new Error('Primus ZKTLS not initialized');
+      }
+
+      if (!address) {
+        throw new Error('Wallet not connected');
+      }
+
+      let attTemplateID = ""
+      // 使用固定的 Template ID
+      if (quest.questType == "twitter-interaction") {
+        attTemplateID = "60ca2736-b331-4321-b78e-a2495956700c";
+      }
+
+      const userAddress = address;
+
+      // 生成证明请求
+      const request = primusZKTLS.generateRequestParams(attTemplateID, userAddress);
+
+      // 设置额外参数 - 使用quest的launch_page
+      const additionParams = {
+        "launch_page": quest.launch_page,
+      };
+      request.setAdditionParams(JSON.stringify(additionParams));
+
+      // 转换请求为字符串
+      const requestStr = request.toJsonString();
+
+      // 发送给服务器签名
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiBase}/api/zktls/sign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signParams: requestStr })
       });
+      const responseJson = await response.json();
+      const signedRequestStr = responseJson.signResult;
+
+      setUserProgress(prev => ({ ...prev, zkProofStarted: true }));
+      toast({
+        title: "ZK 签名完成",
+        description: "已获取 ZK 签名，开始生成证明。"
+      });
+
+      // 自动进入下一步
+      setTimeout(() => handleGenerateProof(signedRequestStr), 1000);
     } catch (error) {
       toast({
-        title: "Eligibility Check Failed",
-        description: "Unable to verify eligibility. Please try again.",
+        title: "签名失败",
+        description: "ZK 签名失败，请重试。",
         variant: "destructive"
       });
+      setIsLoading(false);
+      setCurrentStep('');
     }
-    setIsLoading(false);
   };
 
-  const handleSubmitProof = async () => {
-    setIsLoading(true);
+  const handleGenerateProof = async (signedRequestStr: string) => {
+    setCurrentStep('生成证明中...');
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setUserProgress(prev => ({ ...prev, proofSubmitted: true }));
+      if (!primusZKTLS) {
+        throw new Error('Primus ZKTLS not initialized');
+      }
+
+      // 开始证明过程
+      const attestation = await primusZKTLS.startAttestation(signedRequestStr);
+      console.log("attestation=", attestation);
+
+      setZkProofData(attestation);
+      setUserProgress(prev => ({ ...prev, zkProofGenerated: true }));
       toast({
-        title: "Proof Submitted",
-        description: "Your proof has been submitted for review!"
+        title: "证明生成完成",
+        description: "ZK 证明已生成，开始验证。"
+      });
+
+      // 自动进入下一步
+      setTimeout(() => handleVerifyProof(attestation), 1000);
+    } catch (error) {
+      toast({
+        title: "生成失败",
+        description: "证明生成失败，请重试。",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      setCurrentStep('');
+    }
+  };
+
+  const handleVerifyProof = async (attestation: any) => {
+    setCurrentStep('验证证明中...');
+    try {
+      if (!primusZKTLS) {
+        throw new Error('Primus ZKTLS not initialized');
+      }
+
+      // 验证证明
+      const verifyResult = await primusZKTLS.verifyAttestation(attestation);
+      console.log("verifyResult=", verifyResult);
+
+      if (!verifyResult) {
+        throw new Error('Proof verification failed');
+      }
+
+      setUserProgress(prev => ({ ...prev, proofVerified: true }));
+      toast({
+        title: "证明验证通过",
+        description: "证明验证成功，可以提交领取奖励。"
       });
     } catch (error) {
       toast({
-        title: "Submission Failed",
-        description: "Failed to submit proof. Please try again.",
+        title: "验证失败",
+        description: "证明验证失败，请重试。",
         variant: "destructive"
       });
     }
     setIsLoading(false);
+    setCurrentStep('');
+  };
+
+  const handleClaimReward = async () => {
+    setCurrentStep('领取奖励中...');
+    setIsLoading(true);
+    try {
+      if (!zkProofData) {
+        throw new Error('ZK proof data not available');
+      }
+
+      if (!isConnected || !address) {
+        throw new Error('Wallet not connected');
+      }
+
+      if (!quest?.id) {
+        throw new Error('Quest ID not found');
+      }
+
+      // Debug: Log the zkProofData structure
+      console.log('zkProofData structure:', JSON.stringify(zkProofData, null, 2));
+
+      // Transform zkProofData to match contract Attestation struct exactly
+      const attestation = {
+        recipient: zkProofData.recipient || address,
+        request: {
+          url: zkProofData.request?.url || '',
+          header: zkProofData.request?.header || '',
+          method: zkProofData.request?.method || 'GET',
+          body: zkProofData.request?.body || ''
+        },
+        responseResolve: Array.isArray(zkProofData.reponseResolve) 
+          ? zkProofData.reponseResolve.map((item: any) => ({
+              keyName: item.keyName || '',
+              parseType: item.parseType || '',
+              parsePath: item.parsePath || ''
+            }))
+          : [],
+        data: zkProofData.data || '',
+        attConditions: zkProofData.attConditions || '',
+        timestamp: zkProofData.timestamp || Date.now(),
+        additionParams: zkProofData.additionParams || '',
+        attestors: Array.isArray(zkProofData.attestors)
+          ? zkProofData.attestors.map((item: any) => ({
+              attestorAddr: item.attestorAddr || '',
+              url: item.url || ''
+            }))
+          : [],
+        signatures: Array.isArray(zkProofData.signatures) 
+          ? zkProofData.signatures 
+          : [],
+        extendedData: zkProofData.extendedData || ''
+      };
+
+      console.log('Transformed attestation:', JSON.stringify(attestation, null, 2));
+
+      // 调用智能合约 claimReward 方法
+      const questIdBigInt = BigInt(quest.id);
+      const txHash = await claimRewardWithAttestation(questIdBigInt, attestation);
+
+      console.log('Transaction submitted:', txHash);
+
+      setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
+      toast({
+        title: "奖励领取成功！",
+        description: `恭喜！您已成功领取 ${formatReward()} 奖励。交易哈希: ${txHash.slice(0, 10)}...`,
+        duration: 5000
+      });
+
+      // 等待一段时间后重新获取数据
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } catch (error) {
+      console.error('Claim reward error:', error);
+      toast({
+        title: "领取失败",
+        description: error instanceof Error ? error.message : "奖励领取失败，请重试。",
+        variant: "destructive"
+      });
+    }
+    setIsLoading(false);
+    setCurrentStep('');
   };
 
   const handleShare = () => {
@@ -546,9 +762,8 @@ const QuestDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="participate">Participate</TabsTrigger>
                 <TabsTrigger value="participants">Participants</TabsTrigger>
               </TabsList>
 
@@ -592,16 +807,16 @@ const QuestDetail = () => {
                             </div>
                           ))}
                         </div>
-                        {quest.questConfig.tweetUrl && (
+                        {quest.launch_page && (
                           <div className="mt-3">
                             <h5 className="font-medium mb-1 text-sm">Target Tweet</h5>
                             <a
-                              href={quest.questConfig.tweetUrl}
+                              href={quest.launch_page}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:underline text-sm break-all"
                             >
-                              {quest.questConfig.tweetUrl}
+                              {quest.launch_page}
                             </a>
                           </div>
                         )}
@@ -611,16 +826,16 @@ const QuestDetail = () => {
                     {quest.questType === 'quote-tweet' && (
                       <div>
                         <h4 className="font-semibold mb-2">Quote Tweet Requirements</h4>
-                        {quest.questConfig.quoteTweetUrl && (
+                        {quest.launch_page && (
                           <div className="mb-3">
                             <h5 className="font-medium mb-1 text-sm">Original Tweet to Quote</h5>
                             <a
-                              href={quest.questConfig.quoteTweetUrl}
+                              href={quest.launch_page}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-500 hover:underline text-sm break-all"
                             >
-                              {quest.questConfig.quoteTweetUrl}
+                              {quest.launch_page}
                             </a>
                           </div>
                         )}
@@ -633,130 +848,6 @@ const QuestDetail = () => {
                         )}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="participate" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Participation Steps</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Step 1: Connect Wallet */}
-                    <div className="flex items-start gap-4 p-4 rounded-lg border">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.walletConnected
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {userProgress.walletConnected ? <CheckCircle className="h-4 w-4" /> : '1'}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">Connect Wallet</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Connect your Web3 wallet to verify your identity and track your progress.
-                        </p>
-                        {!userProgress.walletConnected && (
-                          <Button onClick={handleConnectWallet} disabled={isLoading} size="sm">
-                            <Wallet className="h-4 w-4 mr-2" />
-                            {isLoading ? 'Connecting...' : 'Connect Wallet'}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Step 2: Verify Eligibility */}
-                    <div className="flex items-start gap-4 p-4 rounded-lg border">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.eligibilityChecked
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                          : userProgress.walletConnected
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {userProgress.eligibilityChecked ? <CheckCircle className="h-4 w-4" /> : '2'}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">Verify Eligibility</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          We'll check if you meet the quest requirements.
-                        </p>
-                        {userProgress.walletConnected && !userProgress.eligibilityChecked && (
-                          <Button onClick={handleEligibilityCheck} disabled={isLoading} size="sm">
-                            {isLoading ? 'Checking...' : 'Check Eligibility'}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Step 3: Complete Tasks */}
-                    <div className="flex items-start gap-4 p-4 rounded-lg border">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.tasksCompleted
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                          : userProgress.eligibilityChecked
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {userProgress.tasksCompleted ? <CheckCircle className="h-4 w-4" /> : '3'}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">Complete Tasks</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Follow the task requirements and create your educational thread.
-                        </p>
-                        {userProgress.eligibilityChecked && (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              {getQuestTypeIcon()}
-                              <span>
-                                {quest.questType === 'twitter-interaction'
-                                  ? 'Complete the required Twitter interactions'
-                                  : 'Create and publish your quote tweet'
-                                }
-                              </span>
-                              <ExternalLink className="h-3 w-3" />
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setUserProgress(prev => ({ ...prev, tasksCompleted: true }))}
-                            >
-                              Mark as Completed
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Step 4: Submit Proof */}
-                    <div className="flex items-start gap-4 p-4 rounded-lg border">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        userProgress.proofSubmitted
-                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                          : userProgress.tasksCompleted
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {userProgress.proofSubmitted ? <CheckCircle className="h-4 w-4" /> : '4'}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-2">Submit Proof</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {quest.questType === 'twitter-interaction'
-                            ? 'Verify that you completed all required interactions.'
-                            : 'Submit the link to your quote tweet for verification.'
-                          }
-                        </p>
-                        {userProgress.tasksCompleted && !userProgress.proofSubmitted && (
-                          <Button onClick={handleSubmitProof} disabled={isLoading} size="sm">
-                            <Upload className="h-4 w-4 mr-2" />
-                            {isLoading ? 'Submitting...' : 'Submit Proof'}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -798,70 +889,150 @@ const QuestDetail = () => {
             </Tabs>
           </div>
 
-          {/* Action Section - Sidebar on desktop, sticky on mobile */}
+          {/* Participate Section - Right sidebar */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24 bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white border-0">
+            <Card className="sticky top-24">
+              <CardHeader>
+                <CardTitle>How to Participate</CardTitle>
+              </CardHeader>
               <CardContent className="p-6">
-                <div className="text-center space-y-4">
-                  <div className="space-y-2">
-                    <div className="text-2xl font-bold">{formatReward()}</div>
+                <div className="space-y-4">
+                  {/* 奖励信息 */}
+                  <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg">
+                    <div className="text-xl font-bold">{formatReward()}</div>
                     <div className="text-white/80 text-sm">Reward per participant</div>
                   </div>
-                  <Separator className="bg-white/20" />
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-white/80">Participants:</span>
-                      <span>{quest.participants.current}/{quest.participants.max}</span>
+
+                  {/* 当前状态 */}
+                  {isLoading && currentStep && (
+                    <div className="text-center p-3 bg-muted rounded-lg">
+                      <div className="text-sm font-medium">{currentStep}</div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/80">Time left:</span>
-                      <span>{getTimeRemaining()}</span>
+                  )}
+
+                  {/* 步骤 1: 连接钱包 */}
+                  <div className="flex items-start gap-3 p-3 rounded-lg border">
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.walletConnected
+                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                        : 'bg-muted text-muted-foreground'
+                      }`}>
+                      {userProgress.walletConnected ? <CheckCircle className="h-3 w-3" /> : '1'}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">连接钱包</h4>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        连接您的 Web3 钱包以开始参与任务
+                      </p>
+                      {!isConnected ? (
+                        <Button onClick={handleConnectWallet} disabled={isLoading} size="sm" className="w-full">
+                          <Wallet className="h-3 w-3 mr-1" />
+                          连接钱包
+                        </Button>
+                      ) : (
+                        <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
+                          ✅ 已连接: {address?.slice(0, 6)}...{address?.slice(-4)}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <Button
-                    className="w-full bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90"
-                    size="lg"
-                    disabled={isLoading || quest.status !== 'Active'}
-                  >
-                    {userProgress.proofSubmitted
-                      ? 'Proof Submitted'
-                      : userProgress.walletConnected
-                        ? 'Continue Quest'
-                        : 'Start Quest'
-                    }
-                  </Button>
+
+                  {/* 步骤 2: 开始证明 */}
+                  <div className="flex items-start gap-3 p-3 rounded-lg border">
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofStarted
+                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                        : isConnected
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                      {userProgress.zkProofStarted ? <CheckCircle className="h-3 w-3" /> : '2'}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">开始证明</h4>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        获取 ZK 签名并启动证明流程
+                      </p>
+                      {isConnected && !userProgress.zkProofStarted && (
+                        <Button onClick={handleStartProof} disabled={isLoading} size="sm" className="w-full">
+                          {isLoading && currentStep.includes('ZK') ? '启动中...' : '开始证明'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 步骤 3: 生成证明 */}
+                  <div className="flex items-start gap-3 p-3 rounded-lg border">
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofGenerated
+                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                        : userProgress.zkProofStarted
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                      {userProgress.zkProofGenerated ? <CheckCircle className="h-3 w-3" /> : '3'}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">生成证明</h4>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        调用 Primus 生成 ZK 证明
+                      </p>
+                      {userProgress.zkProofStarted && !userProgress.zkProofGenerated && isLoading && (
+                        <div className="text-xs text-muted-foreground">正在生成证明...</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 步骤 4: 验证证明 */}
+                  <div className="flex items-start gap-3 p-3 rounded-lg border">
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.proofVerified
+                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                        : userProgress.zkProofGenerated
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                      {userProgress.proofVerified ? <CheckCircle className="h-3 w-3" /> : '4'}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">验证证明</h4>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        检查证明的有效性
+                      </p>
+                      {userProgress.zkProofGenerated && !userProgress.proofVerified && isLoading && (
+                        <div className="text-xs text-muted-foreground">正在验证证明...</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 步骤 5: 提交奖励 */}
+                  <div className="flex items-start gap-3 p-3 rounded-lg border">
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.rewardClaimed
+                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                        : userProgress.proofVerified
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                      {userProgress.rewardClaimed ? <CheckCircle className="h-3 w-3" /> : '5'}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">领取奖励</h4>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        提交证明并领取任务奖励
+                      </p>
+                      {userProgress.proofVerified && !userProgress.rewardClaimed && (
+                        <Button onClick={handleClaimReward} disabled={isLoading} size="sm" className="w-full">
+                          <Trophy className="h-3 w-3 mr-1" />
+                          {isLoading && currentStep.includes('reward') ? '领取中...' : '领取奖励'}
+                        </Button>
+                      )}
+                      {userProgress.rewardClaimed && (
+                        <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
+                          🎉 奖励已成功领取！
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Mobile Sticky Action Button */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-background/80 backdrop-blur-lg border-t z-50">
-          <Button
-            className="w-full bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white border-0 h-12 text-lg font-semibold shadow-xl"
-            disabled={isLoading || quest.status !== 'Active'}
-            onClick={() => {
-              if (!userProgress.walletConnected) {
-                handleConnectWallet();
-              } else if (!userProgress.eligibilityChecked) {
-                handleEligibilityCheck();
-              } else if (!userProgress.proofSubmitted) {
-                handleSubmitProof();
-              }
-            }}
-          >
-            {userProgress.proofSubmitted
-              ? 'Proof Submitted ✓'
-              : userProgress.tasksCompleted
-                ? 'Submit Proof'
-                : userProgress.eligibilityChecked
-                  ? 'Complete Tasks'
-                  : userProgress.walletConnected
-                    ? 'Check Eligibility'
-                    : 'Start Quest'
-            }
-          </Button>
         </div>
       </div>
     </div>

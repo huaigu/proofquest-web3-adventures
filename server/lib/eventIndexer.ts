@@ -29,7 +29,7 @@ const QUEST_CONTRACT_ABI = [
   "event RemainingRewardsWithdrawn(uint256 indexed questId, address indexed sponsor, uint256 amount)",
 
   // View functions for fetching quest data
-  "function getQuest(uint256 _questId) external view returns (tuple(uint256 id, address sponsor, string title, string description, uint8 questType, uint8 status, tuple(string apiUrlPattern, string apiEndpointHash, uint256 proofValidityPeriod, string targetLikeRetweetId, string favoritedJsonPath, string retweetedJsonPath, bool requireFavorite, bool requireRetweet, string targetQuotedTweetId, string quotedStatusIdJsonPath, string userIdJsonPath, string quoteTweetIdJsonPath) verificationParams, uint256 totalRewards, uint256 rewardPerUser, uint256 maxParticipants, uint256 participantCount, uint256 startTime, uint256 endTime, uint256 claimEndTime, bool isVesting, uint256 vestingDuration) quest)"
+  "function getQuest(uint256 _questId) external view returns (tuple(uint256 id, address sponsor, string title, string description, string launch_page, uint8 questType, uint8 status, tuple(string apiUrlPattern, string apiEndpointHash, uint256 proofValidityPeriod, string targetLikeRetweetId, string favoritedJsonPath, string retweetedJsonPath, bool requireFavorite, bool requireRetweet, string targetQuotedTweetId, string quotedStatusIdJsonPath, string userIdJsonPath, string quoteTweetIdJsonPath) verificationParams, uint256 totalRewards, uint256 rewardPerUser, uint256 maxParticipants, uint256 participantCount, uint256 startTime, uint256 endTime, uint256 claimEndTime, bool isVesting, uint256 vestingDuration) quest)"
 ];
 
 export class EventIndexer {
@@ -306,6 +306,7 @@ export class EventIndexer {
         sponsor: questData.sponsor,
         title: questData.title,
         description: questData.description,
+        launch_page: questData.launch_page,
         questType: getQuestTypeString(questData.questType),
         totalRewards: questData.totalRewards.toString(),
         rewardPerUser: questData.rewardPerUser.toString(),
@@ -318,18 +319,18 @@ export class EventIndexer {
         isVesting: questData.isVesting,
         vestingDuration: Number(questData.vestingDuration),
         metadata: {
-          apiUrlPattern: questData.verificationParams[0],
-          apiEndpointHash: questData.verificationParams[1],
-          proofValidityPeriod: questData.verificationParams[2],
-          targetLikeRetweetId: questData.verificationParams[3],
-          favoritedJsonPath: questData.verificationParams[4],
-          retweetedJsonPath: questData.verificationParams[5],
-          requireFavorite: questData.verificationParams[6],
-          requireRetweet: questData.verificationParams[7],
-          targetQuotedTweetId: questData.verificationParams[8],
-          quotedStatusIdJsonPath: questData.verificationParams[9],
-          userIdJsonPath: questData.verificationParams[10],
-          quoteTweetIdJsonPath: questData.verificationParams[11],
+          apiUrlPattern: questData.verificationParams.apiUrlPattern,
+          apiEndpointHash: questData.verificationParams.apiEndpointHash,
+          proofValidityPeriod: Number(questData.verificationParams.proofValidityPeriod),
+          targetLikeRetweetId: questData.verificationParams.targetLikeRetweetId,
+          favoritedJsonPath: questData.verificationParams.favoritedJsonPath,
+          retweetedJsonPath: questData.verificationParams.retweetedJsonPath,
+          requireFavorite: questData.verificationParams.requireFavorite,
+          requireRetweet: questData.verificationParams.requireRetweet,
+          targetQuotedTweetId: questData.verificationParams.targetQuotedTweetId,
+          quotedStatusIdJsonPath: questData.verificationParams.quotedStatusIdJsonPath,
+          userIdJsonPath: questData.verificationParams.userIdJsonPath,
+          quoteTweetIdJsonPath: questData.verificationParams.quoteTweetIdJsonPath,
         }, // Store verification params as metadata
         transactionHash: log.transactionHash!,
         blockNumber: log.blockNumber!,
@@ -354,6 +355,7 @@ export class EventIndexer {
         sponsor: args.sponsor,
         title: args.title || `Quest #${questId}`,
         description: args.description || 'Quest created on-chain',
+        launch_page: '', // Default empty launch_page
         questType: 'likeAndRetweet', // Default quest type
         totalRewards: args.totalRewards.toString(),
         rewardPerUser: '0', // Will need to be calculated or set elsewhere
