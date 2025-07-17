@@ -6,7 +6,6 @@ import "forge-std/console.sol";
 import "../src/QuestSystem.sol";
 import "../src/mocks/MockPrimusZKTLS.sol";
 import {IPrimusZKTLS, Attestation} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /**
  * @title QuestSystemTest
@@ -16,9 +15,7 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 contract QuestSystemTest is Test {
     // --- Test Contracts ---
     QuestSystem public questSystem;
-    QuestSystem public questSystemImpl;
     MockPrimusZKTLS public mockZKTLS;
-    ERC1967Proxy public proxy;
     
     // --- Test Accounts ---
     address public owner;
@@ -81,16 +78,8 @@ contract QuestSystemTest is Test {
         // Deploy MockPrimusZKTLS
         mockZKTLS = new MockPrimusZKTLS(verifier);
         
-        // Deploy QuestSystem implementation
-        questSystemImpl = new QuestSystem();
-        
-        // Deploy proxy with initialization
-        bytes memory initData = abi.encodeWithSelector(
-            QuestSystem.initialize.selector,
-            address(mockZKTLS)
-        );
-        proxy = new ERC1967Proxy(address(questSystemImpl), initData);
-        questSystem = QuestSystem(payable(address(proxy)));
+        // Deploy QuestSystem directly
+        questSystem = new QuestSystem(address(mockZKTLS));
         
         // Verify setup
         assertEq(questSystem.owner(), address(this));
@@ -401,7 +390,7 @@ contract QuestSystemTest is Test {
         Attestation memory attestation = mockZKTLS.createLikeRetweetAttestation(user1, TARGET_TWEET_ID, true, true);
         // Set timestamp to be older than validity period (24h default in quest params)
         // The mock ZKTLS will fail first with AttestationVerificationFailed in SimulateRealWorld mode
-        attestation.timestamp = block.timestamp - 25 hours;
+        attestation.timestamp = uint64(block.timestamp - 25 hours);
         
         vm.expectRevert(QuestSystem.QuestSystem__AttestationVerificationFailed.selector);
         vm.prank(user1);
@@ -981,50 +970,8 @@ contract QuestSystemTest is Test {
         }
     }
     
-    // === UUPS UPGRADE TESTS ===
-    
-    function test_UpgradeAuthorization() public {
-        QuestSystem newImpl = new QuestSystem();
-        
-        // Only owner can upgrade
-        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", attacker));
-        vm.prank(attacker);
-        questSystem.upgradeToAndCall(address(newImpl), "");
-        
-        // Owner can upgrade
-        vm.prank(questSystem.owner());
-        questSystem.upgradeToAndCall(address(newImpl), "");
-    }
-    
-    function test_UpgradePreservesState() public {
-        // Create quest before upgrade
-        uint256 questId = _createAndFundQuest();
-        vm.warp(block.timestamp + 1 days);
-        
-        Attestation memory attestation = mockZKTLS.createLikeRetweetAttestation(user1, TARGET_TWEET_ID, true, true);
-        vm.prank(user1);
-        questSystem.claimReward(questId, attestation);
-        
-        // Record state before upgrade
-        QuestSystem.Quest memory questBefore = questSystem.getQuest(questId);
-        uint256 nextQuestIdBefore = questSystem.getNextQuestId();
-        bool hasQualifiedBefore = questSystem.hasUserQualified(questId, user1);
-        
-        // Upgrade contract
-        QuestSystem newImpl = new QuestSystem();
-        vm.prank(questSystem.owner());
-        questSystem.upgradeToAndCall(address(newImpl), "");
-        
-        // Verify state preserved
-        QuestSystem.Quest memory questAfter = questSystem.getQuest(questId);
-        assertEq(questAfter.id, questBefore.id);
-        assertEq(questAfter.sponsor, questBefore.sponsor);
-        assertEq(questAfter.totalRewards, questBefore.totalRewards);
-        assertEq(questAfter.participantCount, questBefore.participantCount);
-        
-        assertEq(questSystem.getNextQuestId(), nextQuestIdBefore);
-        assertEq(questSystem.hasUserQualified(questId, user1), hasQualifiedBefore);
-    }
+    // === UPGRADE TESTS REMOVED ===
+    // Note: UUPS upgrade functionality has been removed from QuestSystem contract
     
     // === VIEW FUNCTION TESTS ===
     
@@ -1165,6 +1112,9 @@ contract QuestSystemTest is Test {
         return QuestSystem.Quest({
             id: 0, // Will be set by contract
             sponsor: address(0), // Will be set by contract
+            title: "Test Quest",
+            description: "Test Description",
+            launch_page: "https://test.com",
             questType: QuestSystem.QuestType.LikeAndRetweet,
             status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
@@ -1199,6 +1149,9 @@ contract QuestSystemTest is Test {
         return QuestSystem.Quest({
             id: 0,
             sponsor: address(0),
+            title: "Test Quote Tweet Quest",
+            description: "Test Quote Tweet Description",
+            launch_page: "https://test.com",
             questType: QuestSystem.QuestType.QuoteTweet,
             status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,

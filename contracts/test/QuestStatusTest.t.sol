@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "../src/QuestSystem.sol";
 import "../src/mocks/MockPrimusZKTLS.sol";
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /**
  * @title QuestStatusTest
@@ -33,13 +32,8 @@ contract QuestStatusTest is Test {
         
         mockZKTLS = new MockPrimusZKTLS(makeAddr("verifier"));
         
-        QuestSystem impl = new QuestSystem();
-        bytes memory initData = abi.encodeWithSelector(
-            QuestSystem.initialize.selector,
-            address(mockZKTLS)
-        );
-        ERC1967Proxy proxy = new ERC1967Proxy(address(impl), initData);
-        questSystem = QuestSystem(payable(address(proxy)));
+        // Deploy QuestSystem directly
+        questSystem = new QuestSystem(address(mockZKTLS));
     }
     
     function test_QuestStatusIsTimeBasedNotStored() public {
@@ -188,6 +182,9 @@ contract QuestStatusTest is Test {
         return QuestSystem.Quest({
             id: 0,
             sponsor: address(0),
+            title: "Test Quest",
+            description: "Test Description",
+            launch_page: "https://test.com",
             questType: QuestSystem.QuestType.LikeAndRetweet,
             status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,

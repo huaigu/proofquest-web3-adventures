@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PrimusZKTLS } from "@primuslabs/zktls-js-sdk";
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { claimRewardWithAttestation } from '@/lib/questContract';
+import { claimRewardWithAttestation,claimReward } from '@/lib/questContract';
 import {
   ArrowLeft,
   Share2,

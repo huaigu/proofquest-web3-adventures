@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import {IPrimusZKTLS, Attestation} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./utils/JsonParser.sol";
 import "./utils/StringUtils.sol";
 
@@ -13,9 +12,9 @@ import "./utils/StringUtils.sol";
  * @notice A decentralized system for creating and verifying quests using Primus zkTLS attestations.
  * It supports various quest types like 'Like & Retweet' and 'Quote Tweet',
  * with direct or vesting reward mechanisms using ETH only.
- * This contract is deployed directly without proxy pattern.
+ * This contract is deployed directly as a standalone contract.
  */
-contract QuestSystem is Ownable, UUPSUpgradeable {
+contract QuestSystem is Ownable {
     using JsonParser for string;
     using StringUtils for string;
 
@@ -912,22 +911,22 @@ contract QuestSystem is Ownable, UUPSUpgradeable {
      * @param _users Array of user addresses
      * @return vestingInfos Array of vesting information for each user
      */
-    // function getMultipleVestingInfo(uint256 _questId, address[] calldata _users) external view returns (
-    //     VestingInfo[] memory vestingInfos
-    // ) {
-    //     vestingInfos = new VestingInfo[](_users.length);
+    function getMultipleVestingInfo(uint256 _questId, address[] calldata _users) external view returns (
+        VestingInfo[] memory vestingInfos
+    ) {
+        vestingInfos = new VestingInfo[](_users.length);
 
-    //     for (uint256 i = 0; i < _users.length; i++) {
-    //         (uint256 vestedAmount, uint256 claimedAmount, uint256 claimableAmount) = this.getVestingInfo(_questId, _users[i]);
-    //         vestingInfos[i] = VestingInfo({
-    //             user: _users[i],
-    //             vestedAmount: vestedAmount,
-    //             claimedAmount: claimedAmount,
-    //             claimableAmount: claimableAmount,
-    //             isQualified: hasQualified[_questId][_users[i]]
-    //         });
-    //     }
-    // }
+        for (uint256 i = 0; i < _users.length; i++) {
+            (uint256 vestedAmount, uint256 claimedAmount, uint256 claimableAmount) = this.getVestingInfo(_questId, _users[i]);
+            vestingInfos[i] = VestingInfo({
+                user: _users[i],
+                vestedAmount: vestedAmount,
+                claimedAmount: claimedAmount,
+                claimableAmount: claimableAmount,
+                isQualified: hasQualified[_questId][_users[i]]
+            });
+        }
+    }
 
     /**
      * @notice Check if user can claim rewards for a quest
@@ -1011,11 +1010,4 @@ contract QuestSystem is Ownable, UUPSUpgradeable {
 
     fallback() external payable {}
 
-    // --- UUPS Upgrade Authorization ---
-
-    /**
-     * @notice Authorize contract upgrade (only owner)
-     * @param newImplementation Address of new implementation
-     */
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

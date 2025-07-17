@@ -319,6 +319,9 @@ contract DemoQuestSystemScript is Script {
         return QuestSystem.Quest({
             id: 0,
             sponsor: sponsor,
+            title: "Like and Retweet Quest",
+            description: "Like and retweet the target tweet to earn rewards",
+            launch_page: "https://x.com/target_tweet",
             questType: QuestSystem.QuestType.LikeAndRetweet,
             status: QuestSystem.QuestStatus.Pending,
             verificationParams: params,
@@ -353,6 +356,9 @@ contract DemoQuestSystemScript is Script {
         return QuestSystem.Quest({
             id: 0,
             sponsor: sponsor,
+            title: "Quote Tweet Quest",
+            description: "Quote the target tweet to earn rewards",
+            launch_page: "https://x.com/target_quote_tweet",
             questType: QuestSystem.QuestType.QuoteTweet,
             status: QuestSystem.QuestStatus.Pending,
             verificationParams: params,

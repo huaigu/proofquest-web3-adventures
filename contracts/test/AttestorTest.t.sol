@@ -9,16 +9,16 @@ import {IPrimusZKTLS, Attestation, AttNetworkRequest, AttNetworkResponseResolve,
 contract MockPrimusZKTLS is IPrimusZKTLS {
     mapping(bytes32 => bool) private usedIds;
     
-    function verifyAttestation(Attestation calldata) external pure override returns (bool) {
-        // Mock implementation - always returns true for testing
-        return true;
+    function verifyAttestation(Attestation calldata) external pure override {
+        // Mock implementation - always succeeds for testing
+        return;
     }
     
-    function getVerifier() external view override returns (address) {
+    function getVerifier() external view returns (address) {
         return address(this);
     }
     
-    function isUsed(bytes32 id) external view override returns (bool) {
+    function isUsed(bytes32 id) external view returns (bool) {
         return usedIds[id];
     }
     

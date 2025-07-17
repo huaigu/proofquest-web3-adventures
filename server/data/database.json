@@ -33,15 +33,15 @@
       },
       "transactionHash": "0x86a1eb43133524b56fc083f09dc6b6d34935a2bc8a2eef40949039a064d09f7f",
       "blockNumber": 8782659,
-      "createdAt": 1752746883368,
-      "updatedAt": 1752746883368
+      "createdAt": 1752758694053,
+      "updatedAt": 1752758694053
     }
   ],
   "participations": [],
   "users": [],
   "indexerState": {
-    "lastProcessedBlock": 8783507,
-    "lastUpdated": 1752757059201,
+    "lastProcessedBlock": 8784402,
+    "lastUpdated": 1752767811198,
     "contractAddress": "0x79356A53405A1eC0324851f8C39044639fCFBb01",
     "contractDeployBlock": 8782181
   }

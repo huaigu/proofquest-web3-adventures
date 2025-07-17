@@ -4,11 +4,10 @@ pragma solidity ^0.8.20;
 import {Script, console} from "forge-std/Script.sol";
 import {QuestSystem} from "../src/QuestSystem.sol";
 import {MockPrimusZKTLS} from "../src/mocks/MockPrimusZKTLS.sol";
-import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /**
  * @title DeployQuestSystem Script
- * @dev Deploys the complete QuestSystem with UUPS proxy pattern
+ * @dev Deploys the complete QuestSystem directly (no proxy pattern)
  * @notice Run with: forge script script/DeployQuestSystem.s.sol --rpc-url <RPC_URL> --broadcast --verify
  */
 contract DeployQuestSystemScript is Script {
@@ -22,7 +21,7 @@ contract DeployQuestSystemScript is Script {
 
     function setUp() public {}
 
-    function run() public returns (address questSystemProxy, address primusZKTLS) {
+    function run() public returns (address questSystemAddress, address primusZKTLS) {
         // Load deployment configuration
         DeployConfig memory config = _loadConfig();
         
@@ -48,43 +47,29 @@ contract DeployQuestSystemScript is Script {
             console.log("Using existing PrimusZKTLS:", primusZKTLS);
         }
 
-        // Deploy QuestSystem implementation
-        console.log("Deploying QuestSystem implementation...");
-        QuestSystem implementation = new QuestSystem();
-        console.log("QuestSystem implementation:", address(implementation));
-
-        // Prepare initialization data
-        bytes memory initData = abi.encodeWithSelector(
-            QuestSystem.initialize.selector,
-            primusZKTLS
-        );
-
-        // Deploy UUPS Proxy
-        console.log("Deploying UUPS Proxy...");
-        ERC1967Proxy proxy = new ERC1967Proxy(
-            address(implementation),
-            initData
-        );
-        questSystemProxy = address(proxy);
-        console.log("QuestSystem Proxy (Main Contract):", questSystemProxy);
+        // Deploy QuestSystem directly
+        console.log("Deploying QuestSystem...");
+        QuestSystem questSystem = new QuestSystem(primusZKTLS);
+        questSystemAddress = address(questSystem);
+        console.log("QuestSystem deployed:", questSystemAddress);
 
         // Transfer ownership if specified
         if (config.owner != address(0) && config.owner != deployer) {
             console.log("Transferring ownership to:", config.owner);
-            QuestSystem(payable(questSystemProxy)).transferOwnership(config.owner);
+            questSystem.transferOwnership(config.owner);
         }
 
         vm.stopBroadcast();
 
         // Verify contracts if not on local network
         if (block.chainid != 31337) { // Not Anvil
-            _verifyContracts(questSystemProxy, address(implementation), primusZKTLS, config);
+            _verifyContracts(questSystemAddress, primusZKTLS, config);
         }
 
         // Log deployment summary
-        _logDeploymentSummary(questSystemProxy, primusZKTLS, config);
+        _logDeploymentSummary(questSystemAddress, primusZKTLS, config);
         
-        return (questSystemProxy, primusZKTLS);
+        return (questSystemAddress, primusZKTLS);
     }
 
     function _loadConfig() internal view returns (DeployConfig memory config) {
@@ -100,7 +85,7 @@ contract DeployQuestSystemScript is Script {
         }
     }
 
-    function _verifyContracts(address questSystemProxy, address implementation, address primusZKTLS, DeployConfig memory config) internal {
+    function _verifyContracts(address questSystemAddress, address primusZKTLS, DeployConfig memory config) internal {
         console.log("\n=== Starting Contract Verification ===");
         
         // Verify MockPrimusZKTLS if deployed
@@ -128,17 +113,12 @@ contract DeployQuestSystemScript is Script {
         
         // Log verification commands for manual execution
         console.log("\n=== Manual Verification Commands ===");
-        console.log("1. Verify QuestSystem Implementation:");
-        console.log("forge verify-contract", implementation, "src/QuestSystem.sol:QuestSystem");
-        
-        console.log("\n2. Verify ERC1967Proxy:");
-        console.log("forge verify-contract", questSystemProxy);
-        console.log("  @openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy");
-        console.log("  --constructor-args $(cast abi-encode \"constructor(address,bytes)\"", implementation);
-        console.log("    $(cast abi-encode \"initialize(address)\"", primusZKTLS, "))");
+        console.log("1. Verify QuestSystem:");
+        console.log("forge verify-contract", questSystemAddress, "src/QuestSystem.sol:QuestSystem");
+        console.log("  --constructor-args $(cast abi-encode \"constructor(address)\"", primusZKTLS, ")");
         
         if (config.useMockZKTLS) {
-            console.log("\n3. Verify MockPrimusZKTLS:");
+            console.log("\n2. Verify MockPrimusZKTLS:");
             console.log("forge verify-contract", primusZKTLS, "src/mocks/MockPrimusZKTLS.sol:MockPrimusZKTLS");
             console.log("  --constructor-args $(cast abi-encode \"constructor(address)\"", config.verifier, ")");
         }
@@ -147,9 +127,9 @@ contract DeployQuestSystemScript is Script {
         console.log("Note: Add --rpc-url <RPC_URL> to each command if needed");
     }
 
-    function _logDeploymentSummary(address questSystemProxy, address primusZKTLS, DeployConfig memory config) internal view {
+    function _logDeploymentSummary(address questSystemAddress, address primusZKTLS, DeployConfig memory config) internal view {
         console.log("\n=== Deployment Summary ===");
-        console.log("QuestSystem Proxy:", questSystemProxy);
+        console.log("QuestSystem:", questSystemAddress);
         console.log("PrimusZKTLS:", primusZKTLS);
         console.log("Owner:", config.owner == address(0) ? "Deployer" : "Custom");
         console.log("Chain ID:", block.chainid);
@@ -163,11 +143,11 @@ contract DeployQuestSystemScript is Script {
         console.log("1. Save contract addresses to your .env file");
         console.log("2. Run demo script:");
         console.log("   forge script script/DemoQuestSystem.s.sol --rpc-url <RPC_URL> --broadcast");
-        console.log("3. Integrate with frontend using the proxy address:", questSystemProxy);
+        console.log("3. Integrate with frontend using the contract address:", questSystemAddress);
         
         console.log("");
         console.log("=== Environment Variables to Set ===");
-        console.log("QUEST_SYSTEM_ADDRESS=", questSystemProxy);
+        console.log("QUEST_SYSTEM_ADDRESS=", questSystemAddress);
         console.log("PRIMUS_ZKTLS_ADDRESS=", primusZKTLS);
     }
 }
@@ -187,22 +167,13 @@ contract DeployAnvilScript is Script {
             address(0x1234567890123456789012345678901234567890)
         );
 
-        // Deploy QuestSystem
-        QuestSystem implementation = new QuestSystem();
-        bytes memory initData = abi.encodeWithSelector(
-            QuestSystem.initialize.selector,
-            address(mockZKTLS)
-        );
-        
-        ERC1967Proxy proxy = new ERC1967Proxy(
-            address(implementation),
-            initData
-        );
+        // Deploy QuestSystem directly
+        QuestSystem questSystem = new QuestSystem(address(mockZKTLS));
 
         vm.stopBroadcast();
 
         console.log("=== Anvil Local Deployment ===");
-        console.log("QuestSystem:", address(proxy));
+        console.log("QuestSystem:", address(questSystem));
         console.log("MockPrimusZKTLS:", address(mockZKTLS));
         console.log("Ready for testing!");
     }

@@ -201,8 +201,8 @@ contract MockPrimusZKTLSExampleTest is Test {
         assertTrue(debugSteps[4]); // Signatures should match attestors
         assertTrue(debugSteps[5]); // Data should not be empty
         
-        // Overall verification should pass
-        assertTrue(mockZKTLS.verifyAttestation(attestation));
+        // Overall verification should pass (not revert)
+        mockZKTLS.verifyAttestation(attestation);
     }
 
     // --- Helper Functions ---

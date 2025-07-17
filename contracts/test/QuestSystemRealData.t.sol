@@ -6,7 +6,6 @@ import {QuestSystem} from "../src/QuestSystem.sol";
 import {MockPrimusZKTLS} from "../src/mocks/MockPrimusZKTLS.sol";
 import {IPrimusZKTLS, Attestation, AttNetworkRequest, AttNetworkResponseResolve, Attestor} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
 import {JsonParser} from "../src/utils/JsonParser.sol";
-import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /**
  * @title QuestSystemRealData Test
@@ -44,20 +43,8 @@ contract QuestSystemRealDataTest is Test {
         // Deploy mock zkTLS
         mockZKTLS = new MockPrimusZKTLS(address(0x1234)); // Provide verifier address
         
-        // Deploy QuestSystem with proxy
-        QuestSystem implementation = new QuestSystem();
-        
-        bytes memory initData = abi.encodeWithSelector(
-            QuestSystem.initialize.selector,
-            address(mockZKTLS)
-        );
-        
-        ERC1967Proxy proxy = new ERC1967Proxy(
-            address(implementation),
-            initData
-        );
-        
-        questSystem = QuestSystem(payable(address(proxy)));
+        // Deploy QuestSystem directly
+        questSystem = new QuestSystem(address(mockZKTLS));
         
         // Setup accounts with ETH
         vm.deal(sponsor, 10 ether);
@@ -101,7 +88,7 @@ contract QuestSystemRealDataTest is Test {
             reponseResolve: responseResolve,
             data: REAL_FAV_RETWEET_DATA,
             attConditions: "[{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.favorited\"},{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.retweeted\"}]",
-            timestamp: REAL_FAV_RETWEET_TIMESTAMP,
+            timestamp: uint64(REAL_FAV_RETWEET_TIMESTAMP),
             additionParams: "{\"algorithmType\":\"proxytls\"}",
             attestors: attestors,
             signatures: signatures,
@@ -147,7 +134,7 @@ contract QuestSystemRealDataTest is Test {
             reponseResolve: responseResolve,
             data: REAL_QUOTE_TWEET_DATA,
             attConditions: "[{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.quoted_status_id_str\"},{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.user_id_str\"},{\"op\":\"REVEAL_STRING\",\"field\":\"$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.id_str\"}]",
-            timestamp: REAL_QUOTE_TWEET_TIMESTAMP,
+            timestamp: uint64(REAL_QUOTE_TWEET_TIMESTAMP),
             additionParams: "{\"algorithmType\":\"proxytls\"}",
             attestors: attestors,
             signatures: signatures,
@@ -214,6 +201,9 @@ contract QuestSystemRealDataTest is Test {
         QuestSystem.Quest memory quest = QuestSystem.Quest({
             id: 0,
             sponsor: sponsor,
+            title: "Test Quest",
+            description: "Test Description",
+            launch_page: "https://x.com/test",
             questType: QuestSystem.QuestType.LikeAndRetweet,
             status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
@@ -241,7 +231,7 @@ contract QuestSystemRealDataTest is Test {
         
         // Adjust timestamp to be recent for validity check
         // Use current timestamp since block.timestamp might be small in test environment
-        realAttestation.timestamp = block.timestamp > 300 ? block.timestamp - 300 : block.timestamp;
+        realAttestation.timestamp = uint64(block.timestamp > 300 ? block.timestamp - 300 : block.timestamp);
         
         uint256 balanceBefore = user1.balance;
         console.log("User balance before claim:", balanceBefore);
@@ -283,6 +273,9 @@ contract QuestSystemRealDataTest is Test {
         QuestSystem.Quest memory quest = QuestSystem.Quest({
             id: 0,
             sponsor: sponsor,
+            title: "Quote Tweet Quest",
+            description: "Quote Tweet Description",
+            launch_page: "https://x.com/quote",
             questType: QuestSystem.QuestType.QuoteTweet,
             status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
@@ -310,7 +303,7 @@ contract QuestSystemRealDataTest is Test {
         
         // Adjust timestamp to be recent for validity check
         // Use current timestamp since block.timestamp might be small in test environment
-        realAttestation.timestamp = block.timestamp > 300 ? block.timestamp - 300 : block.timestamp;
+        realAttestation.timestamp = uint64(block.timestamp > 300 ? block.timestamp - 300 : block.timestamp);
         
         uint256 balanceBefore = user1.balance;
         console.log("User balance before claim:", balanceBefore);

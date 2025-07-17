@@ -5,7 +5,6 @@ import {Test, console} from "forge-std/Test.sol";
 import {QuestSystem} from "../src/QuestSystem.sol";
 import {MockPrimusZKTLS} from "../src/mocks/MockPrimusZKTLS.sol";
 import {IPrimusZKTLS, Attestation} from "../lib/zktls-contracts/src/IPrimusZKTLS.sol";
-import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /**
  * @title QuestSystemViewFunctions Test
@@ -28,18 +27,8 @@ contract QuestSystemViewFunctionsTest is Test {
         // Deploy contracts
         mockZKTLS = new MockPrimusZKTLS(address(0x9999));
         
-        QuestSystem implementation = new QuestSystem();
-        bytes memory initData = abi.encodeWithSelector(
-            QuestSystem.initialize.selector,
-            address(mockZKTLS)
-        );
-        
-        ERC1967Proxy proxy = new ERC1967Proxy(
-            address(implementation),
-            initData
-        );
-        
-        questSystem = QuestSystem(payable(address(proxy)));
+        // Deploy QuestSystem directly
+        questSystem = new QuestSystem(address(mockZKTLS));
         
         // Fund accounts
         vm.deal(sponsor1, 10 ether);
@@ -120,6 +109,9 @@ contract QuestSystemViewFunctionsTest is Test {
         return QuestSystem.Quest({
             id: 0,
             sponsor: address(0),
+            title: "Test Like & Retweet Quest",
+            description: "Test Description",
+            launch_page: "https://test.com",
             questType: QuestSystem.QuestType.LikeAndRetweet,
             status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,
@@ -154,6 +146,9 @@ contract QuestSystemViewFunctionsTest is Test {
         return QuestSystem.Quest({
             id: 0,
             sponsor: address(0),
+            title: "Test Quote Tweet Quest",
+            description: "Test Quote Tweet Description",
+            launch_page: "https://test.com",
             questType: QuestSystem.QuestType.QuoteTweet,
             status: QuestSystem.QuestStatus.Pending, // Will be determined by time
             verificationParams: params,

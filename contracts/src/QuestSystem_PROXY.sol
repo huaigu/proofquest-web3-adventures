@@ -294,7 +294,9 @@ contract QuestSystem is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         }
 
         // Verify zkTLS attestation
-        if (!primusZKTLS.verifyAttestation(_attestation)) {
+        try primusZKTLS.verifyAttestation(_attestation) {
+            // Verification successful
+        } catch {
             revert QuestSystem__AttestationVerificationFailed();
         }
 

@@ -162,6 +162,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         attestation.data = _jsonData.getString("data");
         attestation.timestamp = uint64(_timestamp);
         attestation.additionParams = _jsonData.getString("additionParams");
+        attestation.attConditions = _jsonData.getString("attConditions");
         attestation.extendedData = _jsonData.getString("extendedData");
 
         // Create attestor array (simplified)
@@ -243,6 +244,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         bytes32 hash = keccak256(abi.encode(attestation.data, attestation.timestamp));
         attestation.signatures[0] = abi.encodePacked(hash, hash, uint8(27)); // 32 + 32 + 1 = 65 bytes
 
+        attestation.attConditions = "";
         attestation.extendedData = attestation.data;
 
         return attestation;
@@ -318,6 +320,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         bytes32 hash = keccak256(abi.encode(attestation.data, attestation.timestamp));
         attestation.signatures[0] = abi.encodePacked(hash, hash, uint8(27)); // 32 + 32 + 1 = 65 bytes
 
+        attestation.attConditions = "";
         attestation.extendedData = attestation.data;
 
         return attestation;
@@ -328,38 +331,44 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
     /**
      * @inheritdoc IPrimusZKTLS
      */
-    function verifyAttestation(Attestation calldata _attestation) external view override returns (bool) {
+    function verifyAttestation(Attestation calldata _attestation) external view override {
         if (verificationMode == VerificationMode.AlwaysPass) {
-            return true;
+            return;
         }
         
         if (verificationMode == VerificationMode.AlwaysFail) {
-            return false;
+            revert("Attestation verification failed");
         }
         
         if (verificationMode == VerificationMode.Configurable) {
             bytes32 attestationId = _getAttestationId(_attestation);
-            return attestationResults[attestationId];
+            if (!attestationResults[attestationId]) {
+                revert("Attestation verification failed");
+            }
+            return;
         }
         
         if (verificationMode == VerificationMode.SimulateRealWorld) {
-            return _simulateRealWorldVerification(_attestation);
+            if (!_simulateRealWorldVerification(_attestation)) {
+                revert("Attestation verification failed");
+            }
+            return;
         }
         
-        return false;
+        revert("Attestation verification failed");
     }
 
     /**
-     * @inheritdoc IPrimusZKTLS
+     * @notice Get the verifier address (not part of interface)
      */
-    function getVerifier() external view override returns (address) {
+    function getVerifier() external view returns (address) {
         return verifier;
     }
 
     /**
-     * @inheritdoc IPrimusZKTLS
+     * @notice Check if an attestation ID is used (not part of interface)
      */
-    function isUsed(bytes32 _id) external view override returns (bool) {
+    function isUsed(bytes32 _id) external view returns (bool) {
         return usedAttestationIds[_id];
     }
 
@@ -377,14 +386,19 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         }
         
         // Check timestamp (not too old, not in future)
-        if (_attestation.timestamp == 0 || _attestation.timestamp > block.timestamp) {
+        // Convert attestation timestamp from milliseconds to seconds for comparison
+        uint256 attestationTimestampSeconds = _attestation.timestamp > 1e10 
+            ? _attestation.timestamp / 1000 
+            : _attestation.timestamp;
+            
+        if (_attestation.timestamp == 0 || attestationTimestampSeconds > block.timestamp) {
             return false;
         }
         
         // Check if timestamp is reasonable (within last 24 hours)
         // In testing environment (block.timestamp < 1000), be more lenient
         uint256 maxAge = block.timestamp < 1000 ? block.timestamp : 24 hours;
-        if (_attestation.timestamp > block.timestamp || block.timestamp - _attestation.timestamp > maxAge) {
+        if (attestationTimestampSeconds > block.timestamp || block.timestamp - attestationTimestampSeconds > maxAge) {
             return false;
         }
         
@@ -467,11 +481,15 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         steps[0] = _attestation.recipient != address(0);
         
         // Step 1: Check timestamp not zero and not future
-        steps[1] = _attestation.timestamp != 0 && _attestation.timestamp <= block.timestamp;
+        // Convert attestation timestamp from milliseconds to seconds for comparison
+        uint256 attestationTimestampSeconds = _attestation.timestamp > 1e10 
+            ? _attestation.timestamp / 1000 
+            : _attestation.timestamp;
+        steps[1] = _attestation.timestamp != 0 && attestationTimestampSeconds <= block.timestamp;
         
         // Step 2: Check timestamp not too old
         uint256 maxAge = block.timestamp < 1000 ? block.timestamp : 24 hours;
-        steps[2] = _attestation.timestamp <= block.timestamp && block.timestamp - _attestation.timestamp <= maxAge;
+        steps[2] = attestationTimestampSeconds <= block.timestamp && block.timestamp - attestationTimestampSeconds <= maxAge;
         
         // Step 3: Check attestor array not empty
         steps[3] = _attestation.attestors.length > 0;

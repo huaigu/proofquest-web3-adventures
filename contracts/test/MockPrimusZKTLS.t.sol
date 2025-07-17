@@ -95,7 +95,7 @@ contract MockPrimusZKTLSTest is Test {
         assertTrue(attestation.request.url.contains("1942933687978365289"));
         assertTrue(attestation.data.contains("favorited"));
         assertTrue(attestation.data.contains("retweeted"));
-        assertEq(attestation.responseResolve.length, 2);
+        assertEq(attestation.reponseResolve.length, 2);
         assertEq(attestation.attestors.length, 1);
         assertEq(attestation.signatures.length, 1);
     }
@@ -114,7 +114,7 @@ contract MockPrimusZKTLSTest is Test {
         assertTrue(attestation.data.contains("user_id_str"));
         assertTrue(attestation.data.contains("quoted_status_id_str"));
         assertTrue(attestation.data.contains("id_str"));
-        assertEq(attestation.responseResolve.length, 3);
+        assertEq(attestation.reponseResolve.length, 3);
         assertEq(attestation.attestors.length, 1);
         assertEq(attestation.signatures.length, 1);
     }
@@ -127,7 +127,8 @@ contract MockPrimusZKTLSTest is Test {
         // Create a completely invalid attestation
         Attestation memory invalidAttestation;
         
-        assertTrue(mockZKTLS.verifyAttestation(invalidAttestation));
+        // Should not revert in AlwaysPass mode
+        mockZKTLS.verifyAttestation(invalidAttestation);
     }
 
     function test_AlwaysFailMode() public {
@@ -141,7 +142,9 @@ contract MockPrimusZKTLSTest is Test {
             true
         );
         
-        assertFalse(mockZKTLS.verifyAttestation(validAttestation));
+        // Should revert in AlwaysFail mode
+        vm.expectRevert("Attestation verification failed");
+        mockZKTLS.verifyAttestation(validAttestation);
     }
 
     function test_ConfigurableMode() public {
@@ -157,15 +160,15 @@ contract MockPrimusZKTLSTest is Test {
         bytes32 attestationId = mockZKTLS.getAttestationId(attestation);
         
         // Initially should return false (default)
-        assertFalse(mockZKTLS.verifyAttestation(attestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(attestation));
         
         // Configure to return true
         mockZKTLS.setAttestationResult(attestationId, true);
-        assertTrue(mockZKTLS.verifyAttestation(attestation));
+        // Should not revert\n        mockZKTLS.verifyAttestation(attestation));
         
         // Configure to return false
         mockZKTLS.setAttestationResult(attestationId, false);
-        assertFalse(mockZKTLS.verifyAttestation(attestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(attestation));
     }
 
     function test_SimulateRealWorldMode() public {
@@ -179,34 +182,34 @@ contract MockPrimusZKTLSTest is Test {
             true
         );
         
-        assertTrue(mockZKTLS.verifyAttestation(validAttestation));
+        // Should not revert\n        mockZKTLS.verifyAttestation(validAttestation));
         
         // Test invalid attestation (zero recipient)
         Attestation memory invalidAttestation = validAttestation;
         invalidAttestation.recipient = address(0);
-        assertFalse(mockZKTLS.verifyAttestation(invalidAttestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(invalidAttestation));
         
         // Test invalid attestation (future timestamp)
         invalidAttestation = validAttestation;
-        invalidAttestation.timestamp = block.timestamp + 1 days;
-        assertFalse(mockZKTLS.verifyAttestation(invalidAttestation));
+        invalidAttestation.timestamp = uint64(block.timestamp + 1 days);
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(invalidAttestation));
         
         // Test invalid attestation (old timestamp)
         invalidAttestation = validAttestation;
         // Only test old timestamp if block.timestamp is large enough
         if (block.timestamp > 25 hours) {
-            invalidAttestation.timestamp = block.timestamp - 25 hours;
-            assertFalse(mockZKTLS.verifyAttestation(invalidAttestation));
+            invalidAttestation.timestamp = uint64(block.timestamp - 25 hours);
+            // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(invalidAttestation));
         } else {
             // In test environment, set timestamp to 0 (which should fail)
             invalidAttestation.timestamp = 0;
-            assertFalse(mockZKTLS.verifyAttestation(invalidAttestation));
+            // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(invalidAttestation));
         }
         
         // Test invalid URL
         invalidAttestation = validAttestation;
         invalidAttestation.request.url = "https://invalid.com/api";
-        assertFalse(mockZKTLS.verifyAttestation(invalidAttestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(invalidAttestation));
     }
 
     // --- Signature Verification Tests ---
@@ -238,8 +241,8 @@ contract MockPrimusZKTLSTest is Test {
         
         mockZKTLS.batchSetAttestationResults(ids, results);
         
-        assertTrue(mockZKTLS.verifyAttestation(attestation1));
-        assertFalse(mockZKTLS.verifyAttestation(attestation2));
+        // Should not revert\n        mockZKTLS.verifyAttestation(attestation1));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(attestation2));
     }
 
     function test_BatchSetAttestationResults_RevertOnMismatch() public {
@@ -270,7 +273,7 @@ contract MockPrimusZKTLSTest is Test {
         Attestation memory attestation = mockZKTLS.createLikeRetweetAttestation(user, "123", true, true);
         attestation.data = ""; // Empty data
         
-        assertFalse(mockZKTLS.verifyAttestation(attestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(attestation));
     }
 
     function test_NoAttestorsAttestation() public {
@@ -281,7 +284,7 @@ contract MockPrimusZKTLSTest is Test {
         // Create new arrays with zero length
         attestation.attestors = new Attestor[](0);
         
-        assertFalse(mockZKTLS.verifyAttestation(attestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(attestation));
     }
 
     function test_MismatchedSignatureLength() public {
@@ -295,7 +298,7 @@ contract MockPrimusZKTLSTest is Test {
         newSignatures[1] = attestation.signatures[0];
         attestation.signatures = newSignatures;
         
-        assertFalse(mockZKTLS.verifyAttestation(attestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(attestation));
     }
 
     // --- Integration Tests ---
@@ -314,13 +317,13 @@ contract MockPrimusZKTLSTest is Test {
         
         // Test in different modes
         mockZKTLS.setVerificationMode(MockPrimusZKTLS.VerificationMode.SimulateRealWorld);
-        assertTrue(mockZKTLS.verifyAttestation(attestation));
+        // Should not revert\n        mockZKTLS.verifyAttestation(attestation));
         
         mockZKTLS.setVerificationMode(MockPrimusZKTLS.VerificationMode.AlwaysFail);
-        assertFalse(mockZKTLS.verifyAttestation(attestation));
+        // Should revert\n        vm.expectRevert();\n        mockZKTLS.verifyAttestation(attestation));
         
         mockZKTLS.setVerificationMode(MockPrimusZKTLS.VerificationMode.AlwaysPass);
-        assertTrue(mockZKTLS.verifyAttestation(attestation));
+        // Should not revert\n        mockZKTLS.verifyAttestation(attestation));
     }
 
     function test_QuoteTweetWorkflow() public {
@@ -336,13 +339,13 @@ contract MockPrimusZKTLSTest is Test {
         );
         
         // Verify structure
-        assertEq(attestation.responseResolve.length, 3);
-        assertEq(attestation.responseResolve[0].keyName, "quoted_status_id_str");
-        assertEq(attestation.responseResolve[1].keyName, "user_id_str");
-        assertEq(attestation.responseResolve[2].keyName, "id_str");
+        assertEq(attestation.reponseResolve.length, 3);
+        assertEq(attestation.reponseResolve[0].keyName, "quoted_status_id_str");
+        assertEq(attestation.reponseResolve[1].keyName, "user_id_str");
+        assertEq(attestation.reponseResolve[2].keyName, "id_str");
         
         // Test verification
         mockZKTLS.setVerificationMode(MockPrimusZKTLS.VerificationMode.SimulateRealWorld);
-        assertTrue(mockZKTLS.verifyAttestation(attestation));
+        // Should not revert\n        mockZKTLS.verifyAttestation(attestation));
     }
 }
