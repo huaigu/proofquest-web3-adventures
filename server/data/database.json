@@ -40,8 +40,8 @@
   "participations": [],
   "users": [],
   "indexerState": {
-    "lastProcessedBlock": 8784402,
-    "lastUpdated": 1752767811198,
+    "lastProcessedBlock": 8784532,
+    "lastUpdated": 1752769371043,
     "contractAddress": "0x79356A53405A1eC0324851f8C39044639fCFBb01",
     "contractDeployBlock": 8782181
   }
