@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PrimusZKTLS } from "@primuslabs/zktls-js-sdk";
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { claimRewardWithAttestation,claimReward } from '@/lib/questContract';
+import { claimRewardWithAttestation, claimReward } from '@/lib/questContract';
 import {
   ArrowLeft,
   Share2,
@@ -30,7 +30,8 @@ import {
   Twitter,
   Heart,
   Repeat2,
-  Hash
+  Hash,
+  Loader2
 } from "lucide-react";
 
 // 扩展 window 对象类型
@@ -199,22 +200,32 @@ const QuestDetail = () => {
   const [currentStep, setCurrentStep] = useState<string>('');
   const [zkProofData, setZkProofData] = useState<any>(null);
   const [primusZKTLS, setPrimusZKTLS] = useState<any>(null);
+  const [zkInitializing, setZkInitializing] = useState(true);
+  const [zkInitialized, setZkInitialized] = useState(false);
+  const [quoteTweetUrl, setQuoteTweetUrl] = useState<string>('');
+  const [quoteTweetUrlError, setQuoteTweetUrlError] = useState<string>('');
 
   // 初始化 Primus ZKTLS SDK
   useEffect(() => {
     const initializePrimus = async () => {
       try {
+        setZkInitializing(true);
         const primus = new PrimusZKTLS();
         const appId = import.meta.env.VITE_PRIMUS_APP_ID;
         if (!appId) {
           console.error('VITE_PRIMUS_APP_ID not found in environment');
+          setZkInitializing(false);
           return;
         }
         const initResult = await primus.init(appId);
         console.log("Primus ZKTLS initialized:", initResult);
         setPrimusZKTLS(primus);
+        setZkInitialized(true);
       } catch (error) {
         console.error("Failed to initialize Primus ZKTLS:", error);
+        setZkInitialized(false);
+      } finally {
+        setZkInitializing(false);
       }
     };
     initializePrimus();
@@ -241,12 +252,12 @@ const QuestDetail = () => {
   useEffect(() => {
     const checkParticipation = async () => {
       if (!isConnected || !address || !quest?.id) return;
-      
+
       try {
         const apiBase = import.meta.env.VITE_API_URL || '';
         const response = await fetch(`${apiBase}/api/participations/check/${quest.id}/${address}`);
         const result = await response.json();
-        
+
         if (result.success && result.data.hasParticipated) {
           setHasAlreadyParticipated(true);
           setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
@@ -257,7 +268,7 @@ const QuestDetail = () => {
         console.error('Failed to check participation:', error);
       }
     };
-    
+
     checkParticipation();
   }, [isConnected, address, quest?.id]);
 
@@ -394,6 +405,21 @@ const QuestDetail = () => {
     }
   };
 
+  const validateQuoteTweetUrl = (url: string): boolean => {
+    // Regex to validate Twitter/X URLs
+    const twitterUrlRegex = /^https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/\d+/;
+    return twitterUrlRegex.test(url);
+  };
+
+  const handleQuoteTweetUrlChange = (url: string) => {
+    setQuoteTweetUrl(url);
+    if (url && !validateQuoteTweetUrl(url)) {
+      setQuoteTweetUrlError('Please enter a valid Twitter/X URL (e.g., https://twitter.com/user/status/123)');
+    } else {
+      setQuoteTweetUrlError('');
+    }
+  };
+
   const handleStartProof = async () => {
     setCurrentStep('启动 ZK 证明中...');
     setIsLoading(true);
@@ -406,10 +432,22 @@ const QuestDetail = () => {
         throw new Error('Wallet not connected');
       }
 
+      // For QuoteTweet quests, validate the quote tweet URL
+      if (quest.questType === 'quote-tweet') {
+        if (!quoteTweetUrl) {
+          throw new Error('Please enter your quote tweet URL');
+        }
+        if (!validateQuoteTweetUrl(quoteTweetUrl)) {
+          throw new Error('Please enter a valid Twitter/X URL');
+        }
+      }
+
       let attTemplateID = ""
       // 使用固定的 Template ID
       if (quest.questType == "twitter-interaction") {
         attTemplateID = "60ca2736-b331-4321-b78e-a2495956700c";
+      } else {
+        attTemplateID = "32b16b38-9eab-41e0-96b1-218dd63be7a5"
       }
 
       const userAddress = address;
@@ -417,9 +455,9 @@ const QuestDetail = () => {
       // 生成证明请求
       const request = primusZKTLS.generateRequestParams(attTemplateID, userAddress);
 
-      // 设置额外参数 - 使用quest的launch_page
+      // 设置额外参数 - 对于QuoteTweet使用用户的quote tweet URL，对于其他类型使用quest的launch_page
       const additionParams = {
-        "launch_page": quest.launch_page,
+        "launch_page": quest.questType === 'quote-tweet' ? quoteTweetUrl : quest.launch_page,
       };
       request.setAdditionParams(JSON.stringify(additionParams));
 
@@ -476,6 +514,13 @@ const QuestDetail = () => {
       // 自动进入下一步
       setTimeout(() => handleVerifyProof(attestation), 1000);
     } catch (error) {
+      // Reset progress states when proof generation fails
+      setUserProgress(prev => ({ 
+        ...prev, 
+        zkProofStarted: false, 
+        zkProofGenerated: false,
+        proofVerified: false 
+      }));
       toast({
         title: "生成失败",
         description: "证明生成失败，请重试。",
@@ -507,6 +552,13 @@ const QuestDetail = () => {
         description: "证明验证成功，可以提交领取奖励。"
       });
     } catch (error) {
+      // Reset progress states when verification fails
+      setUserProgress(prev => ({ 
+        ...prev, 
+        zkProofStarted: false, 
+        zkProofGenerated: false,
+        proofVerified: false 
+      }));
       toast({
         title: "验证失败",
         description: "证明验证失败，请重试。",
@@ -542,12 +594,43 @@ const QuestDetail = () => {
 
       console.log('Transaction submitted:', txHash);
 
-      setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
+      // 更新步骤状态为等待交易确认
+      setCurrentStep('等待交易确认...');
+      
       toast({
-        title: "奖励领取成功！",
-        description: `恭喜！您已成功领取 ${formatReward()} 奖励。交易哈希: ${txHash.slice(0, 10)}...`,
-        duration: 5000
+        title: "交易已提交",
+        description: `交易已提交到区块链，等待确认中... 交易哈希: ${txHash.slice(0, 10)}...`,
+        duration: 3000
       });
+
+      // 等待交易被确认
+      if (window.ethereum) {
+        try {
+          const receipt = await window.ethereum.request({
+            method: 'eth_waitForTransactionReceipt',
+            params: [txHash]
+          });
+          
+          if (receipt && receipt.status === '0x1') {
+            // 交易成功确认
+            setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
+            toast({
+              title: "奖励领取成功！",
+              description: `恭喜！您已成功领取 ${formatReward()} 奖励。交易已确认！`,
+              duration: 5000
+            });
+          } else {
+            throw new Error('交易失败或被回滚');
+          }
+        } catch (waitError) {
+          console.warn('等待交易确认时出错，使用轮询方式:', waitError);
+          // 降级到轮询方式
+          await waitForTransactionConfirmation(txHash);
+        }
+      } else {
+        // 如果没有 window.ethereum 或不支持 eth_waitForTransactionReceipt，使用轮询方式
+        await waitForTransactionConfirmation(txHash);
+      }
 
       // 等待一段时间后重新获取数据
       setTimeout(() => {
@@ -555,14 +638,116 @@ const QuestDetail = () => {
       }, 3000);
     } catch (error) {
       console.error('Claim reward error:', error);
+      const errorMessage = parseContractError(error);
       toast({
         title: "领取失败",
-        description: error instanceof Error ? error.message : "奖励领取失败，请重试。",
+        description: errorMessage,
         variant: "destructive"
       });
     }
     setIsLoading(false);
     setCurrentStep('');
+  };
+
+  // 解析合约错误信息
+  const parseContractError = (error: any): string => {
+    console.log('Parsing contract error:', error);
+    
+    // 检查错误消息中是否包含合约错误
+    const errorMessage = error?.message || error?.reason || error?.data?.message || '';
+    
+    // 定义合约错误映射
+    const contractErrors = {
+      'QuestSystem__QuoteTweetAlreadyUsed': '该推特已被其他用户使用，请使用不同的推特链接',
+      'QuestSystem__UserAlreadyParticipated': '您已经参与过此任务，无法重复参与',
+      'QuestSystem__QuestNotActive': '任务当前不可用或已结束',
+      'QuestSystem__QuestFull': '任务参与人数已满',
+      'QuestSystem__InvalidProof': '证明无效，请重新生成证明',
+      'QuestSystem__ProofExpired': '证明已过期，请重新生成证明',
+      'QuestSystem__InvalidAttestation': '无效的证明数据',
+      'QuestSystem__InsufficientFunds': '合约余额不足，请联系管理员',
+      'QuestSystem__QuestEnded': '任务已结束，无法继续参与',
+      'QuestSystem__InvalidQuestId': '无效的任务ID',
+    };
+    
+    // 检查是否包含特定的合约错误
+    for (const [contractError, userMessage] of Object.entries(contractErrors)) {
+      if (errorMessage.includes(contractError)) {
+        return userMessage;
+      }
+    }
+    
+    // 检查其他常见错误
+    if (errorMessage.includes('User denied transaction') || errorMessage.includes('user rejected')) {
+      return '用户取消了交易';
+    }
+    
+    if (errorMessage.includes('insufficient funds')) {
+      return '账户余额不足，请确保有足够的 ETH 支付 Gas 费用';
+    }
+    
+    if (errorMessage.includes('gas')) {
+      return 'Gas 费用不足或 Gas 限制过低';
+    }
+    
+    if (errorMessage.includes('nonce')) {
+      return '交易 nonce 错误，请重试';
+    }
+    
+    if (errorMessage.includes('reverted')) {
+      return '交易被回滚，请检查交易条件';
+    }
+    
+    // 如果没有匹配的错误，返回通用错误信息
+    return errorMessage || '奖励领取失败，请重试';
+  };
+
+  // 轮询等待交易确认的辅助函数
+  const waitForTransactionConfirmation = async (txHash: string) => {
+    const maxAttempts = 30; // 最多等待30次，每次3秒
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+      try {
+        const receipt = await window.ethereum?.request({
+          method: 'eth_getTransactionReceipt',
+          params: [txHash]
+        });
+        
+        if (receipt) {
+          if (receipt.status === '0x1') {
+            // 交易成功确认
+            setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
+            toast({
+              title: "奖励领取成功！",
+              description: `恭喜！您已成功领取 ${formatReward()} 奖励。交易已确认！`,
+              duration: 5000
+            });
+            return;
+          } else {
+            throw new Error('交易失败或被回滚');
+          }
+        }
+        
+        // 等待3秒后重试
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        attempts++;
+        
+        // 更新等待状态
+        setCurrentStep(`等待交易确认... (${attempts}/${maxAttempts})`);
+      } catch (error) {
+        console.error('检查交易状态时出错:', error);
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+    
+    // 如果超时仍未确认，显示警告但不算失败
+    toast({
+      title: "交易确认超时",
+      description: "交易可能仍在处理中，请稍后检查您的余额。",
+      variant: "destructive"
+    });
   };
 
   const handleShare = () => {
@@ -910,132 +1095,178 @@ const QuestDetail = () => {
                     </div>
                   )}
 
-                  {/* 步骤 1: 连接钱包 */}
-                  <div className="flex items-start gap-3 p-3 rounded-lg border">
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.walletConnected
-                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                        : 'bg-muted text-muted-foreground'
-                      }`}>
-                      {userProgress.walletConnected ? <CheckCircle className="h-3 w-3" /> : '1'}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">连接钱包</h4>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        连接您的 Web3 钱包以开始参与任务
-                      </p>
-                      {!isConnected ? (
-                        <Button onClick={handleConnectWallet} disabled={isLoading} size="sm" className="w-full">
-                          <Wallet className="h-3 w-3 mr-1" />
-                          连接钱包
-                        </Button>
-                      ) : (
-                        <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
-                          ✅ 已连接: {address?.slice(0, 6)}...{address?.slice(-4)}
+                  {/* 如果已参与活动，隐藏所有步骤 */}
+                  {!hasAlreadyParticipated && (
+                    <>
+                      {/* 步骤 1: 连接钱包 */}
+                      <div className="flex items-start gap-3 p-3 rounded-lg border">
+                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.walletConnected
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : 'bg-muted text-muted-foreground'
+                          }`}>
+                          {userProgress.walletConnected ? <CheckCircle className="h-3 w-3" /> : '1'}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">连接钱包</h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            连接您的 Web3 钱包以开始参与任务
+                          </p>
+                          {!isConnected ? (
+                            <Button onClick={handleConnectWallet} disabled={isLoading} size="sm" className="w-full">
+                              <Wallet className="h-3 w-3 mr-1" />
+                              连接钱包
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {/* 步骤 2: Quote Tweet URL Input (for quote-tweet quests) */}
+                      {quest.questType === 'quote-tweet' && (
+                        <div className="flex items-start gap-3 p-3 rounded-lg border">
+                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${quoteTweetUrl && !quoteTweetUrlError
+                            ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                            : isConnected && !hasAlreadyParticipated
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground'
+                            }`}>
+                            {quoteTweetUrl && !quoteTweetUrlError ? <CheckCircle className="h-3 w-3" /> : '2'}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-sm mb-1">Quote Tweet URL</h4>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              First, quote tweet the target tweet, then paste your quote tweet URL here
+                            </p>
+                            <div className="mb-2">
+                              <a
+                                href={quest.launch_page}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-500 hover:underline block mb-2"
+                              >
+                                📝 Quote this tweet: {quest.launch_page}
+                              </a>
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="https://twitter.com/your_username/status/123..."
+                              value={quoteTweetUrl}
+                              onChange={(e) => handleQuoteTweetUrlChange(e.target.value)}
+                              className="w-full text-xs border border-border rounded px-2 py-1 mb-1 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                              disabled={!isConnected || hasAlreadyParticipated}
+                            />
+                            {quoteTweetUrlError && (
+                              <p className="text-xs text-red-500 mb-1">{quoteTweetUrlError}</p>
+                            )}
+                          </div>
                         </div>
                       )}
-                    </div>
-                  </div>
 
-                  {/* 步骤 2: 开始证明 */}
-                  <div className="flex items-start gap-3 p-3 rounded-lg border">
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofStarted
-                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                        : isConnected && !hasAlreadyParticipated
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                      {userProgress.zkProofStarted ? <CheckCircle className="h-3 w-3" /> : '2'}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">开始证明</h4>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        获取 ZK 签名并启动证明流程
-                      </p>
-                      {hasAlreadyParticipated ? (
-                        <div className="text-xs text-muted-foreground">
-                          您已经参与过此活动
+                      {/* 步骤 3: 开始证明 */}
+                      <div className="flex items-start gap-3 p-3 rounded-lg border">
+                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofStarted
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : isConnected && !hasAlreadyParticipated && (quest.questType !== 'quote-tweet' || (quoteTweetUrl && !quoteTweetUrlError))
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground'
+                          }`}>
+                          {userProgress.zkProofStarted ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '3' : '2'}
                         </div>
-                      ) : isConnected && !userProgress.zkProofStarted ? (
-                        <Button onClick={handleStartProof} disabled={isLoading} size="sm" className="w-full">
-                          {isLoading && currentStep.includes('ZK') ? '启动中...' : '开始证明'}
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {/* 步骤 3: 生成证明 */}
-                  <div className="flex items-start gap-3 p-3 rounded-lg border">
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofGenerated
-                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                        : userProgress.zkProofStarted
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                      {userProgress.zkProofGenerated ? <CheckCircle className="h-3 w-3" /> : '3'}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">生成证明</h4>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        调用 Primus 生成 ZK 证明
-                      </p>
-                      {userProgress.zkProofStarted && !userProgress.zkProofGenerated && isLoading && (
-                        <div className="text-xs text-muted-foreground">正在生成证明...</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 步骤 4: 验证证明 */}
-                  <div className="flex items-start gap-3 p-3 rounded-lg border">
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.proofVerified
-                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                        : userProgress.zkProofGenerated
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                      {userProgress.proofVerified ? <CheckCircle className="h-3 w-3" /> : '4'}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">验证证明</h4>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        检查证明的有效性
-                      </p>
-                      {userProgress.zkProofGenerated && !userProgress.proofVerified && isLoading && (
-                        <div className="text-xs text-muted-foreground">正在验证证明...</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 步骤 5: 提交奖励 */}
-                  <div className="flex items-start gap-3 p-3 rounded-lg border">
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.rewardClaimed
-                        ? 'bg-[hsl(var(--vibrant-green))] text-white'
-                        : userProgress.proofVerified
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                      {userProgress.rewardClaimed ? <CheckCircle className="h-3 w-3" /> : '5'}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">领取奖励</h4>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        提交证明并领取任务奖励
-                      </p>
-                      {hasAlreadyParticipated ? (
-                        <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
-                          🎉 您已经成功领取过奖励！
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">开始证明</h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            获取 ZK 签名并启动证明流程
+                          </p>
+                          {zkInitializing && (
+                            <div className="text-xs text-blue-500 mb-2">
+                              ⏳ ZKTLS 系统初始化中...
+                            </div>
+                          )}
+                          {isConnected && !userProgress.zkProofStarted && (quest.questType !== 'quote-tweet' || (quoteTweetUrl && !quoteTweetUrlError)) ? (
+                            <Button onClick={handleStartProof} disabled={isLoading || !zkInitialized} size="sm" className="w-full">
+                              {isLoading && currentStep.includes('ZK') ? '启动中...' : !zkInitialized ? 'ZKTLS 初始化中...' : '开始证明'}
+                            </Button>
+                          ) : null}
                         </div>
-                      ) : userProgress.proofVerified && !userProgress.rewardClaimed ? (
-                        <Button onClick={handleClaimReward} disabled={isLoading} size="sm" className="w-full">
-                          <Trophy className="h-3 w-3 mr-1" />
-                          {isLoading && currentStep.includes('reward') ? '领取中...' : '领取奖励'}
-                        </Button>
-                      ) : userProgress.rewardClaimed ? (
-                        <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
-                          🎉 奖励已成功领取！
+                      </div>
+
+                      {/* 步骤 4: 生成证明 */}
+                      <div className="flex items-start gap-3 p-3 rounded-lg border">
+                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofGenerated
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : userProgress.zkProofStarted
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground'
+                          }`}>
+                          {userProgress.zkProofGenerated ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '4' : '3'}
                         </div>
-                      ) : null}
-                    </div>
-                  </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">生成证明</h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            调用 Primus 生成 ZK 证明
+                          </p>
+                          {userProgress.zkProofStarted && !userProgress.zkProofGenerated && isLoading && (
+                            <div className="text-xs text-muted-foreground">正在生成证明...</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 步骤 5: 验证证明 */}
+                      <div className="flex items-start gap-3 p-3 rounded-lg border">
+                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.proofVerified
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : userProgress.zkProofGenerated
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground'
+                          }`}>
+                          {userProgress.proofVerified ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '5' : '4'}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">验证证明</h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            检查证明的有效性
+                          </p>
+                          {userProgress.zkProofGenerated && !userProgress.proofVerified && isLoading && (
+                            <div className="text-xs text-muted-foreground">正在验证证明...</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 步骤 6: 提交奖励 */}
+                      <div className="flex items-start gap-3 p-3 rounded-lg border">
+                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.rewardClaimed
+                          ? 'bg-[hsl(var(--vibrant-green))] text-white'
+                          : userProgress.proofVerified
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground'
+                          }`}>
+                          {userProgress.rewardClaimed ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '6' : '5'}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm mb-1">领取奖励</h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            提交证明并领取任务奖励
+                          </p>
+                          {userProgress.proofVerified && !userProgress.rewardClaimed ? (
+                            <Button onClick={handleClaimReward} disabled={isLoading} size="sm" className="w-full">
+                              {isLoading ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Trophy className="h-3 w-3 mr-1" />
+                              )}
+                              {isLoading 
+                                ? (currentStep.includes('等待交易确认') ? '等待确认...' : '领取中...') 
+                                : '领取奖励'
+                              }
+                            </Button>
+                          ) : userProgress.rewardClaimed ? (
+                            <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
+                              🎉 奖励已成功领取！
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

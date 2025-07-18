@@ -276,10 +276,11 @@ export class EventIndexer {
       console.log(questData)
 
       // Map quest type enum to string
-      const getQuestTypeString = (questType: number): string => {
-        switch (questType) {
+      const getQuestTypeString = (questType: bigint | number): string => {
+        const typeNum = Number(questType);
+        switch (typeNum) {
           case 0: return 'likeAndRetweet';
-          case 1: return 'Quoted';
+          case 1: return 'quote-tweet';
           default: return 'likeAndRetweet';
         }
       };
