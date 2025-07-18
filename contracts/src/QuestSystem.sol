@@ -119,6 +119,7 @@ contract QuestSystem is Ownable {
     error QuestSystem__RewardPoolDepleted();
     error QuestSystem__AttestationVerificationFailed();
     error QuestSystem__ContentVerificationFailed();
+    error QuestSystem__QuoteTweetAlreadyUsed();
     error QuestSystem__NotVestingQuest();
     error QuestSystem__UserNotQualified();
     error QuestSystem__NoRewardsToClaim();
@@ -266,9 +267,8 @@ contract QuestSystem is Ownable {
         Attestation calldata _attestation
     ) external virtual {
         Quest storage q = quests[_questId];
-        _updateQuestStatus(_questId);
-
-        if (q.status != QuestStatus.Active) {
+        
+        if (q.status == QuestStatus.Canceled || _getQuestStatusByTime(q.startTime, q.endTime, q.claimEndTime) != QuestStatus.Active) {
             revert QuestSystem__QuestNotActive();
         }
         if (hasQualified[_questId][msg.sender]) {
@@ -278,12 +278,8 @@ contract QuestSystem is Ownable {
             revert QuestSystem__RewardPoolDepleted();
         }
 
-        // Verify zkTLS attestation
-        try primusZKTLS.verifyAttestation(_attestation) {
-            // Verification successful
-        } catch {
-            revert QuestSystem__AttestationVerificationFailed();
-        }
+        //Verify zkTLS attestation
+        primusZKTLS.verifyAttestation(_attestation);
 
         // Verify quest-specific content
         if (!_verifyQuestContent(_questId, _attestation)) {
@@ -294,12 +290,12 @@ contract QuestSystem is Ownable {
         hasQualified[_questId][msg.sender] = true;
         q.participantCount++;
 
-        // For quote tweet, mark the tweet as used
+        // For quote tweet, mark the user as used
         if (q.questType == QuestType.QuoteTweet) {
-            string memory userQuoteTweetId = _attestation.data.getString(
+            string memory userTwitterId = _attestation.data.getString(
                 "user_id_str"
             );
-            isQuoteTweetUsed[_questId][userQuoteTweetId] = true;
+            isQuoteTweetUsed[_questId][userTwitterId] = true;
         }
 
         if (!q.isVesting) {
@@ -307,6 +303,7 @@ contract QuestSystem is Ownable {
             _transferETH(msg.sender, q.rewardPerUser);
             emit RewardClaimed(_questId, msg.sender, q.rewardPerUser);
         }
+
         // For vesting, qualification is complete. User calls claimVestingReward separately.
     }
 
@@ -322,8 +319,6 @@ contract QuestSystem is Ownable {
         if (!hasQualified[_questId][msg.sender]) {
             revert QuestSystem__UserNotQualified();
         }
-
-        _updateQuestStatus(_questId);
 
         uint256 vestedAmount = _calculateVestedAmount(_questId, msg.sender);
         uint256 alreadyClaimed = amountClaimedVesting[_questId][msg.sender];
@@ -357,6 +352,12 @@ contract QuestSystem is Ownable {
         // Convert attestation timestamp from milliseconds to seconds
         uint256 attestationTimestampSeconds = _attestation.timestamp / 1000;
         
+        // Check if attestation timestamp is in the future (invalid)
+        if (attestationTimestampSeconds > block.timestamp) {
+            return false;
+        }
+        
+        // Check if attestation is too old
         if (
             block.timestamp - attestationTimestampSeconds >
             params.proofValidityPeriod
@@ -365,9 +366,9 @@ contract QuestSystem is Ownable {
         }
 
         // Check recipient matches sender
-        if (_attestation.recipient != msg.sender) {
-            return false;
-        }
+        // if (_attestation.recipient != msg.sender) {
+        //     return false;
+        // }
 
         if (q.questType == QuestType.LikeAndRetweet) {
             return _verifyLikeAndRetweet(q, _attestation);
@@ -418,18 +419,19 @@ contract QuestSystem is Ownable {
         string memory dataJson = _attestation.data;
 
         string memory userQuoteTweetId = dataJson.getString("id_str");
+        string memory userTwitterId = dataJson.getString("user_id_str");
         string memory quotedStatusId = dataJson.getString(
             "quoted_status_id_str"
         );
 
         // Check required fields exist
-        if (bytes(userQuoteTweetId).length == 0) {
+        if (bytes(userQuoteTweetId).length == 0 || bytes(userTwitterId).length == 0) {
             return false;
         }
 
-        // Check if quote tweet already used
-        if (isQuoteTweetUsed[_quest.id][userQuoteTweetId]) {
-            return false;
+        // Check if this Twitter user already participated in this quest
+        if (isQuoteTweetUsed[_quest.id][userTwitterId]) {
+            revert QuestSystem__QuoteTweetAlreadyUsed();
         }
 
         // Check URL matches user's tweet
@@ -443,22 +445,6 @@ contract QuestSystem is Ownable {
         }
 
         return true;
-    }
-
-    /**
-     * @notice Update quest status based on current time
-     * @dev Only updates status if quest is not canceled
-     */
-    function _updateQuestStatus(uint256 _questId) internal {
-        Quest storage q = quests[_questId];
-        // Only update status if quest is not canceled
-        if (q.status != QuestStatus.Canceled) {
-            q.status = _getQuestStatusByTime(
-                q.startTime,
-                q.endTime,
-                q.claimEndTime
-            );
-        }
     }
 
     /**
