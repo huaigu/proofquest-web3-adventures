@@ -24,7 +24,8 @@ import {
   Coins,
   RefreshCw,
   AlertCircle,
-  Database
+  Database,
+  Eye
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuests } from "@/hooks/useQuests";
@@ -49,9 +50,9 @@ const QuestList = () => {
     const filters: QuestFilters = {};
     
     if (searchQuery) filters.search = searchQuery;
-    if (statusFilter !== "all") filters.status = [statusFilter as any];
-    if (rewardTypeFilter !== "all") filters.rewardType = [rewardTypeFilter as any];
-    if (questTypeFilter !== "all") filters.questType = [questTypeFilter as any];
+    if (statusFilter !== "all") filters.status = [statusFilter as string];
+    if (rewardTypeFilter !== "all") filters.rewardType = [rewardTypeFilter as string];
+    if (questTypeFilter !== "all") filters.questType = [questTypeFilter as string];
     if (categoryFilter !== "all") filters.category = [categoryFilter];
     if (rewardRange[0] > 0 || rewardRange[1] < 1) {
       filters.rewardRange = [rewardRange[0], rewardRange[1]];
@@ -87,7 +88,7 @@ const QuestList = () => {
 
   // Sort and paginate quests
   const sortedQuests = useMemo(() => {
-    let sorted = [...quests];
+    const sorted = [...quests];
 
     switch (sortBy) {
       case "created-newest":
@@ -159,12 +160,88 @@ const QuestList = () => {
         return "bg-green-500/20 text-green-400 border-green-500/50";
       case "claiming":
         return "bg-blue-500/20 text-blue-400 border-blue-500/50";
+      case "pending":
+        return "bg-orange-500/20 text-orange-400 border-orange-500/50";
+      case "ended":
       case "completed":
         return "bg-gray-500/20 text-gray-400 border-gray-500/50";
+      case "cancelled":
+      case "cancel":
+        return "bg-red-500/20 text-red-400 border-red-500/50";
       case "paused":
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
+      default:
+        return "bg-gray-500/20 text-gray-400 border-gray-500/50";
+    }
+  };
+
+  const getCardBackgroundStyle = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "bg-gradient-to-br from-green-500/5 to-green-500/10";
+      case "claiming":
+        return "bg-gradient-to-br from-blue-500/5 to-blue-500/10";
+      case "pending":
+        return "bg-gradient-to-br from-orange-500/5 to-orange-500/10";
+      case "ended":
+      case "completed":
+        return "bg-gradient-to-br from-gray-500/5 to-gray-500/10";
       case "cancelled":
-        return "bg-red-500/20 text-red-400 border-red-500/50";
+      case "cancel":
+        return "bg-gradient-to-br from-red-500/5 to-red-500/10";
+      case "paused":
+        return "bg-gradient-to-br from-yellow-500/5 to-yellow-500/10";
+      default:
+        return "bg-gradient-to-br from-card/50 to-card/30";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "Active";
+      case "claiming":
+        return "Claiming";
+      case "pending":
+        return "Pending";
+      case "ended":
+      case "completed":
+        return "Ended";
+      case "cancelled":
+      case "cancel":
+        return "Cancelled";
+      case "paused":
+        return "Paused";
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
+  const getQuestTypeText = (questType: string) => {
+    switch (questType) {
+      case "twitter-interaction":
+      case "likeAndRetweet":
+        return "Like & Retweet";
+      case "quote-tweet":
+      case "Quoted":
+        return "Quote Tweet";
+      case "send-tweet":
+        return "Send Tweet";
+      default:
+        return questType;
+    }
+  };
+
+  const getQuestTypeStyle = (questType: string) => {
+    switch (questType) {
+      case "twitter-interaction":
+      case "likeAndRetweet":
+        return "bg-purple-500/20 text-purple-400 border-purple-500/50";
+      case "quote-tweet":
+      case "Quoted":
+        return "bg-cyan-500/20 text-cyan-400 border-cyan-500/50";
+      case "send-tweet":
+        return "bg-pink-500/20 text-pink-400 border-pink-500/50";
       default:
         return "bg-gray-500/20 text-gray-400 border-gray-500/50";
     }
@@ -237,7 +314,7 @@ const QuestList = () => {
           {/* Sidebar Filters */}
           {showSidebar && (
             <div className="lg:w-80 space-y-6">
-              <Card className="p-6 bg-gradient-to-br from-card/50 to-card/30 border-border/50 backdrop-blur">
+              <Card className="p-6 bg-gradient-to-br from-card/50 to-card/30 border-border/50 shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Filter className="w-4 h-4" />
@@ -278,9 +355,10 @@ const QuestList = () => {
                       <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="claiming">Claiming</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="paused">Paused</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="ended">Ended</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="paused">Paused</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -405,7 +483,7 @@ const QuestList = () => {
                 <span className="text-sm text-muted-foreground">
                   {sortedQuests.length} quests found
                 </span>
-                {quests.some(q => (q as any)._source) && (
+                {quests.some(q => (q as QuestListItem & { _source?: string })._source) && (
                   <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/50">
                     <Database className="w-3 h-3 mr-1" />
                     Live Data
@@ -434,7 +512,7 @@ const QuestList = () => {
 
             {/* Loading State */}
             {isLoading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {[...Array(6)].map((_, i) => (
                   <Card key={i} className="p-6">
                     <Skeleton className="h-4 w-3/4 mb-2" />
@@ -468,186 +546,104 @@ const QuestList = () => {
             {!isLoading && paginatedQuests.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {paginatedQuests.map((quest) => {
-                  const isMock = (quest as any)._source === 'mock';
+                  const isMock = (quest as QuestListItem & { _source?: string })._source === 'mock';
                   
-                  if (isMock) {
-                    return (
-                      <div key={quest.id}>
-                        <Card className="h-full transition-all duration-200 bg-gradient-to-br from-card/50 to-card/30 border-border/50 backdrop-blur group opacity-75 cursor-not-allowed">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-lg mb-2 transition-colors line-clamp-2 text-muted-foreground">
-                                {quest.title}
-                              </h3>
-                              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                                <Avatar className="w-6 h-6">
-                                  <AvatarImage src={quest.creator.avatar} />
-                                  <AvatarFallback className="text-xs bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white">
-                                    {quest.creator.name.slice(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span>{quest.creator.name}</span>
-                                <Badge variant="outline" className="text-xs bg-orange-500/20 text-orange-400 border-orange-500/50">
-                                  Mock
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end space-y-1">
-                              <Badge variant="outline" className={getStatusBadgeStyle(quest.status)}>
-                                {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
-                              </Badge>
-                              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                                {getQuestIcon(quest.questType)}
-                                <span>{quest.category}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </CardHeader>
-
-                        <CardContent className="py-3">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-2">
-                              {getRewardIcon(quest.reward.type)}
-                              <span className="font-semibold text-[hsl(var(--vibrant-blue))]">
-                                {quest.reward.amount} {quest.reward.type}
+                  return (
+                    <div key={quest.id} className="w-full max-w-lg mx-auto">
+                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-2 shadow-2xl border border-slate-700/50">
+                        
+                        {/* Bento Grid Layout */}
+                        <div className="grid grid-cols-6 gap-2">
+                          
+                          {/* Title + Tags */}
+                          <div className="col-span-6 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-3 border border-[hsl(var(--vibrant-blue))]/20 text-white relative overflow-hidden">
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              <span className={`px-2.5 py-0.5 rounded-lg text-xs font-medium border ${
+                                quest.questType.includes('quote') ? 'bg-cyan-500/30 text-cyan-300 border-cyan-500/30' :
+                                quest.questType.includes('like') ? 'bg-purple-500/30 text-purple-300 border-purple-500/30' :
+                                'bg-pink-500/30 text-pink-300 border-pink-500/30'
+                              }`}>
+                                {getQuestTypeText(quest.questType)}
                               </span>
-                              {quest.reward.type !== 'ETH' && (
-                                <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
-                                  Coming Soon
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                              <Users className="w-4 h-4" />
-                              <span>
-                                {quest.participants.current}
-                                {quest.participants.max && `/${quest.participants.max}`}
+                              <span className={`px-2.5 py-0.5 rounded-lg text-xs font-medium border ${
+                                quest.status === 'active' ? 'bg-green-500/30 text-green-300 border-green-500/30' :
+                                quest.status === 'claiming' ? 'bg-blue-500/30 text-blue-300 border-blue-500/30' :
+                                quest.status === 'pending' ? 'bg-orange-500/30 text-orange-300 border-orange-500/30' :
+                                quest.status === 'ended' || quest.status === 'completed' ? 'bg-gray-500/30 text-gray-300 border-gray-500/30' :
+                                'bg-red-500/30 text-red-300 border-red-500/30'
+                              }`}>
+                                {getStatusText(quest.status)}
                               </span>
                             </div>
-                            <div className="flex items-center space-x-1">
-                              <Clock className="w-4 h-4" />
-                              <span>{quest.timeRemaining}</span>
+                            <h2 className="text-xl font-bold text-white leading-tight h-12 overflow-hidden">{quest.title}</h2>
+                          </div>
+
+                          {/* User Info */}
+                          <div className="col-span-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-2.5 border border-[hsl(var(--vibrant-blue))]/20 flex items-center gap-2.5">
+                            <div className="w-10 h-10 bg-[hsl(var(--vibrant-blue))]/20 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                              {quest.creator.name.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0 flex-1 text-white">
+                              <div className="text-xs text-gray-300 mb-1 font-medium">User</div>
+                              <div className="text-sm font-medium truncate">{quest.creator.name}</div>
                             </div>
                           </div>
 
-                          {quest.participants.max && (
-                            <div className="mt-3">
-                              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                                <span>Progress</span>
-                                <span>{Math.round((quest.participants.current / quest.participants.max) * 100)}%</span>
+                          {/* Reward */}
+                          <div className="col-span-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-2.5 border border-[hsl(var(--vibrant-blue))]/20 flex flex-col justify-center">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <Coins className="w-4 h-4 text-gray-300" />
+                              <span className="text-xs text-gray-300 font-medium">Reward</span>
+                            </div>
+                            <div className="text-lg font-bold text-white">{quest.reward.amount} {quest.reward.type}</div>
+                          </div>
+
+                          {/* Progress */}
+                          <div className="col-span-4 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-3 border border-[hsl(var(--vibrant-blue))]/20 flex flex-col">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium text-gray-300">Progress</span>
+                              <span className="text-lg font-bold text-white">
+                                {quest.participants.max ? Math.round((quest.participants.current / quest.participants.max) * 100) : 0}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-white/20 rounded-full h-2 mb-3">
+                              <div 
+                                className="bg-white h-2 rounded-full transition-all duration-500" 
+                                style={{ width: `${quest.participants.max ? Math.min((quest.participants.current / quest.participants.max) * 100, 100) : 0}%` }}
+                              ></div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-gray-300">
+                              <div className="flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                <span>{quest.participants.current}{quest.participants.max && `/${quest.participants.max}`}</span>
                               </div>
-                              <div className="w-full bg-secondary rounded-full h-2">
-                                <div 
-                                  className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-2 rounded-full transition-all duration-500"
-                                  style={{ width: `${Math.min((quest.participants.current / quest.participants.max) * 100, 100)}%` }}
-                                />
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{quest.timeRemaining}</span>
                               </div>
                             </div>
-                          )}
-                        </CardContent>
+                          </div>
 
-                        <CardFooter className="pt-3">
-                          <Button 
-                            className="w-full text-white bg-gray-500 cursor-not-allowed"
-                            disabled={true}
-                          >
-                            Mock Data
-                          </Button>
-                        </CardFooter>
-                      </Card>
+                          {/* Action Button */}
+                          <div className={`col-span-2 ${isMock ? 'bg-gradient-to-br from-gray-600 to-gray-700 cursor-not-allowed' : 'bg-gradient-to-br from-green-500 to-green-600 cursor-pointer hover:from-green-400 hover:to-green-500'} rounded-lg p-2.5 flex flex-col items-center justify-center text-white transition-all duration-200 shadow-lg`}>
+                            {isMock ? (
+                              <>
+                                <div className="w-2 h-2 bg-gray-400 rounded-full mb-1.5"></div>
+                                <span className="text-xs font-medium text-center leading-tight">Mock Data</span>
+                              </>
+                            ) : (
+                              <Link to={`/quest/${quest.id}`} className="flex flex-col items-center justify-center h-full w-full">
+                                <Eye className="w-4 h-4 mb-1.5" />
+                                <span className="text-xs font-medium text-center leading-tight">View Quest</span>
+                              </Link>
+                            )}
+                          </div>
+
+                        </div>
+                      </div>
                     </div>
                   );
-                } else {
-                  return (
-                    <Link key={quest.id} to={`/quest/${quest.id}`}>
-                      <Card className="h-full transition-all duration-200 bg-gradient-to-br from-card/50 to-card/30 border-border/50 backdrop-blur group hover:scale-[1.02] hover:shadow-xl cursor-pointer">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-lg mb-2 transition-colors line-clamp-2 group-hover:text-[hsl(var(--vibrant-blue))]">
-                                {quest.title}
-                              </h3>
-                              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                                <Avatar className="w-6 h-6">
-                                  <AvatarImage src={quest.creator.avatar} />
-                                  <AvatarFallback className="text-xs bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white">
-                                    {quest.creator.avatar}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span>{quest.creator.name}</span>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end space-y-1">
-                              <Badge variant="outline" className={getStatusBadgeStyle(quest.status)}>
-                                {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
-                              </Badge>
-                              <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                                {getQuestIcon(quest.questType)}
-                                <span>{quest.category}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </CardHeader>
-
-                        <CardContent className="py-3">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-2">
-                              {getRewardIcon(quest.reward.type)}
-                              <span className="font-semibold text-[hsl(var(--vibrant-blue))]">
-                                {quest.reward.amount} {quest.reward.type}
-                              </span>
-                              {quest.reward.type !== 'ETH' && (
-                                <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
-                                  Coming Soon
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                              <Users className="w-4 h-4" />
-                              <span>
-                                {quest.participants.current}
-                                {quest.participants.max && `/${quest.participants.max}`}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Clock className="w-4 h-4" />
-                              <span>{quest.timeRemaining}</span>
-                            </div>
-                          </div>
-
-                          {quest.participants.max && (
-                            <div className="mt-3">
-                              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                                <span>Progress</span>
-                                <span>{Math.round((quest.participants.current / quest.participants.max) * 100)}%</span>
-                              </div>
-                              <div className="w-full bg-secondary rounded-full h-2">
-                                <div 
-                                  className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-2 rounded-full transition-all duration-500"
-                                  style={{ width: `${Math.min((quest.participants.current / quest.participants.max) * 100, 100)}%` }}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-
-                        <CardFooter className="pt-3">
-                          <Button className="w-full text-white bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] hover:from-[hsl(var(--vibrant-blue))]/90 hover:to-[hsl(var(--vibrant-purple))]/90">
-                            View Quest
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    </Link>
-                  );
-                }
-              })}
+                })}
               </div>
             )}
 

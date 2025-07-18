@@ -36,6 +36,7 @@ const getMockQuestData = (): QuestListItem[] => {
     {
       id: "mock-1",
       title: "Follow @CryptoInfluencer for Alpha",
+      description: "Follow our Twitter account and like/retweet our latest post about cryptocurrency market trends and investment strategies.",
       creator: {
         name: "AlphaSeekerDAO",
         avatar: "",
@@ -51,7 +52,7 @@ const getMockQuestData = (): QuestListItem[] => {
         max: 2000
       },
       timeRemaining: "2d 14h",
-      questType: "twitter-interaction" as const,
+      questType: "likeAndRetweet" as const,
       category: "Social",
       createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
@@ -59,6 +60,7 @@ const getMockQuestData = (): QuestListItem[] => {
     {
       id: "mock-2",
       title: "Quote Tweet Web3 Innovation Thread",
+      description: "Quote tweet our comprehensive thread about the latest Web3 innovations and share your thoughts on decentralized technology.",
       creator: {
         name: "TechVanguard",
         avatar: "",
@@ -68,12 +70,12 @@ const getMockQuestData = (): QuestListItem[] => {
         amount: 0.01,
         type: "ETH" as const
       },
-      status: "active" as const,
+      status: "claiming" as const,
       participants: {
         current: 589,
         max: 1000
       },
-      timeRemaining: "1d 8h",
+      timeRemaining: "3h left to claim",
       questType: "quote-tweet" as const,
       category: "Content",
       createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
@@ -82,6 +84,7 @@ const getMockQuestData = (): QuestListItem[] => {
     {
       id: "mock-3",
       title: "Share Your DeFi Experience",
+      description: "Share your personal experience with DeFi protocols and help educate the community about decentralized finance opportunities.",
       creator: {
         name: "DeFiEducator",
         avatar: "",
@@ -91,16 +94,64 @@ const getMockQuestData = (): QuestListItem[] => {
         amount: 0.02,
         type: "ETH" as const
       },
-      status: "claiming" as const,
+      status: "pending" as const,
       participants: {
-        current: 2500,
-        max: 2500
+        current: 25,
+        max: 100
       },
-      timeRemaining: "Ended",
-      questType: "send-tweet" as const,
+      timeRemaining: "Starts in 6h",
+      questType: "likeAndRetweet" as const,
       category: "Education",
       createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-      endDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // 1 day ago (ended)
+      endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days from now
+    },
+    {
+      id: "mock-4",
+      title: "Promote ProofQuest Platform",
+      description: "Help spread the word about ProofQuest by quote tweeting our announcement and adding your own thoughts about Web3 quest platforms.",
+      creator: {
+        name: "ProofQuestTeam",
+        avatar: "",
+        handle: "@proofquest"
+      },
+      reward: {
+        amount: 0.015,
+        type: "ETH" as const
+      },
+      status: "ended" as const,
+      participants: {
+        current: 1500,
+        max: 1500
+      },
+      timeRemaining: "Ended",
+      questType: "quote-tweet" as const,
+      category: "Marketing",
+      createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
+      endDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago (ended)
+    },
+    {
+      id: "mock-5",
+      title: "NFT Collection Launch Announcement",
+      description: "Support our upcoming NFT collection by liking and retweeting our launch announcement. Get early access to exclusive digital art.",
+      creator: {
+        name: "DigitalArtCollective",
+        avatar: "",
+        handle: "@digitalartcollective"
+      },
+      reward: {
+        amount: 0.008,
+        type: "ETH" as const
+      },
+      status: "cancelled" as const,
+      participants: {
+        current: 150,
+        max: 500
+      },
+      timeRemaining: "Cancelled",
+      questType: "likeAndRetweet" as const,
+      category: "Art",
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+      endDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) // 1 day from now
     }
   ]
 }

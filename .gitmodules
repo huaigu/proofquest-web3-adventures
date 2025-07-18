@@ -7,3 +7,6 @@
 [submodule "contracts/lib/zktls-contracts"]
 	path = contracts/lib/zktls-contracts
 	url = https://github.com/primus-labs/zktls-contracts
+[submodule "contracts/lib/zktls-js-sdk"]
+	path = contracts/lib/zktls-js-sdk
+	url = https://github.com/primus-labs/zktls-js-sdk

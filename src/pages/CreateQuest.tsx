@@ -144,7 +144,7 @@ const CreateQuest = () => {
       distributionMethod: "immediate",
       unlockTime: undefined,
 
-      startDate: new Date(),
+      startDate: new Date(), // Default to current UTC time
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       rewardClaimDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
       maxParticipants: 10,
@@ -1043,7 +1043,25 @@ const CreateQuest = () => {
                                 <Calendar
                                   mode="single"
                                   selected={field.value}
-                                  onSelect={field.onChange}
+                                  onSelect={(selectedDate) => {
+                                    if (selectedDate) {
+                                      const now = new Date();
+                                      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                      const selectedDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+                                      
+                                      if (selectedDay.getTime() === today.getTime()) {
+                                        // If user selects today, set time to 00:00 UTC
+                                        const startOfDay = new Date(selectedDate);
+                                        startOfDay.setUTCHours(0, 0, 0, 0);
+                                        field.onChange(startOfDay);
+                                      } else {
+                                        // If user selects a future date, set time to 00:00 UTC
+                                        const startOfDay = new Date(selectedDate);
+                                        startOfDay.setUTCHours(0, 0, 0, 0);
+                                        field.onChange(startOfDay);
+                                      }
+                                    }
+                                  }}
                                   initialFocus
                                   className="p-3 pointer-events-auto"
                                 />

@@ -14,7 +14,7 @@
       "startTime": 1752763977000,
       "endTime": 1752850377000,
       "claimEndTime": 1752936777000,
-      "status": "active",
+      "status": "ended",
       "isVesting": false,
       "vestingDuration": 0,
       "metadata": {
@@ -31,25 +31,61 @@
         "userIdJsonPath": "",
         "quoteTweetIdJsonPath": ""
       },
-      "transactionHash": "0x1958c7d5aa3a82e50602c8978148af70ee260c6b8f34e489e9588848106b8cb5",
-      "blockNumber": 8790021,
-      "createdAt": 1752835423564,
-      "updatedAt": 1752835423564
+      "transactionHash": "0xace843a07e0fb5ca698cee843bad6e0341bdc14174ef46fd6d66dc0fe2247a04",
+      "blockNumber": 8791280,
+      "createdAt": 1752850616716,
+      "updatedAt": 1752850616716
     },
     {
       "id": "2",
-      "sponsor": "0xcA3c580751a27c04208AeBD70fa7e88509711270",
-      "title": "转发",
-      "description": "转发转发转发转发",
+      "sponsor": "0x170A6bBee5a0Baa90012D9C5cA541f27aFb43b9A",
+      "title": "转发monad",
+      "description": "转发每人给1MON",
+      "launch_page": "https://x.com/monad/status/1945849453912490192",
+      "questType": "quote-tweet",
+      "totalRewards": "10000000000000000",
+      "rewardPerUser": "1000000000000000",
+      "maxParticipants": 10,
+      "participantCount": 0,
+      "startTime": 1752150840000,
+      "endTime": 1752755640000,
+      "claimEndTime": 1753360440000,
+      "status": "ended",
+      "isVesting": false,
+      "vestingDuration": 0,
+      "metadata": {
+        "apiUrlPattern": "https://x.com/i/api/graphql/",
+        "apiEndpointHash": "FJGOFKfjA67MmT4I9p1qZg",
+        "proofValidityPeriod": 3600,
+        "targetLikeRetweetId": "",
+        "favoritedJsonPath": "",
+        "retweetedJsonPath": "",
+        "requireFavorite": false,
+        "requireRetweet": false,
+        "targetQuotedTweetId": "1945849453912490192",
+        "quotedStatusIdJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.quoted_status_id_str",
+        "userIdJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.user_id_str",
+        "quoteTweetIdJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.id_str"
+      },
+      "transactionHash": "0xacedc42cf244be490a7639895546af6696f341c705f2ef1957788c49fa2c08d5",
+      "blockNumber": 8791302,
+      "createdAt": 1752850708518,
+      "updatedAt": 1752850708518
+    },
+    {
+      "id": "3",
+      "sponsor": "0x170A6bBee5a0Baa90012D9C5cA541f27aFb43b9A",
+      "title": "转发monad",
+      "description": "转发有奖",
       "launch_page": "https://x.com/monad/status/1945849453912490192",
       "questType": "quote-tweet",
       "totalRewards": "10000000000000000",
       "rewardPerUser": "1000000000000000",
       "maxParticipants": 10,
       "participantCount": 1,
-      "startTime": 1752835464000,
-      "endTime": 1753440264000,
-      "claimEndTime": 1754045064000,
+      "startTime": 1752851015000,
+      "endTime": 1753455815000,
+      "claimEndTime": 1754060615000,
       "status": "active",
       "isVesting": false,
       "vestingDuration": 0,
@@ -67,29 +103,29 @@
         "userIdJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.user_id_str",
         "quoteTweetIdJsonPath": "$.data.threaded_conversation_with_injections_v2.instructions[0].entries[0].content.itemContent.tweet_results.result.legacy.id_str"
       },
-      "transactionHash": "0x5e0c59b35a07fed3e9693033fb96cfb664acfc069ac21e5890e8370533dd19a3",
-      "blockNumber": 8790038,
-      "createdAt": 1752835515031,
-      "updatedAt": 1752835624893
+      "transactionHash": "0x898d14426eba7e2e5c3b3d6648a2d8d4c4997a96eef54c6b87875593e5309b44",
+      "blockNumber": 8791335,
+      "createdAt": 1752851104110,
+      "updatedAt": 1752851307939
     }
   ],
   "participations": [
     {
-      "id": "2-0xcA3c580751a27c04208AeBD70fa7e88509711270",
-      "questId": "2",
-      "userAddress": "0xcA3c580751a27c04208AeBD70fa7e88509711270",
+      "id": "3-0x170A6bBee5a0Baa90012D9C5cA541f27aFb43b9A",
+      "questId": "3",
+      "userAddress": "0x170A6bBee5a0Baa90012D9C5cA541f27aFb43b9A",
       "claimedAmount": "1000000000000000",
-      "claimedAt": 1752835624871,
-      "transactionHash": "0x7318b152b738c8fd29b00e85bc386af497276e855711db7ebf1759c5e8db8a5d",
-      "blockNumber": 8790047,
-      "createdAt": 1752835624871
+      "claimedAt": 1752851307937,
+      "transactionHash": "0x8ef96aa7fc5f12125164f0eaf79a72bc6dae6b2c6665079a4c4e81676456b0c8",
+      "blockNumber": 8791352,
+      "createdAt": 1752851307937
     }
   ],
   "users": [],
   "indexerState": {
-    "lastProcessedBlock": 8791188,
-    "lastUpdated": 1752849340565,
-    "contractAddress": "0xE085010F60c600b40cDa1408c75e094862399818",
-    "contractDeployBlock": 8789148
+    "lastProcessedBlock": 8791859,
+    "lastUpdated": 1752857391551,
+    "contractAddress": "0x1939Da0aEFb67B63FB11efE39beFE8fB0595fF14",
+    "contractDeployBlock": 8791280
   }
 }

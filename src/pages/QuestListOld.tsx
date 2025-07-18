@@ -137,7 +137,7 @@ const QuestList = () => {
 
   // Filter and sort quests
   const filteredQuests = useMemo(() => {
-    let filtered = quests.filter(quest => {
+    const filtered = quests.filter(quest => {
       // Search filter
       if (searchQuery && !quest.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
           !quest.creator.name.toLowerCase().includes(searchQuery.toLowerCase())) {

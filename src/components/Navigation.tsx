@@ -20,7 +20,7 @@ export const Navigation = () => {
     { label: "Explore", href: "/quests" },
     { label: "Create", href: "/create" },
     { label: "Profile", href: "/profile" },
-    { label: "Test", href: "/test" },
+    // { label: "Test", href: "/test" },
   ];
 
   const isActive = (path: string) => {

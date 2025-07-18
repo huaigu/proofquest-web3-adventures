@@ -141,7 +141,7 @@ export async function participationRoutes(fastify: FastifyInstance) {
       }
 
       // Get quest participations
-      let participations = await database.getParticipationsByQuest(questId);
+      const participations = await database.getParticipationsByQuest(questId);
 
       // Sort by claim date (newest first)
       participations.sort((a, b) => b.claimedAt - a.claimedAt);
