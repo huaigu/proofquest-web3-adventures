@@ -28,7 +28,7 @@ export class AuthService {
     const request: NonceRequest = {
       address: address, // Send the address as-is, backend will normalize it
       domain: window.location.host,
-      chainId: 41454 // Monad testnet
+      chainId: 10143 // Monad testnet
     }
     
     const response = await apiClient.requestNonce(request)

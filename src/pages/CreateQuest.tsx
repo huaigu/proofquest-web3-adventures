@@ -42,7 +42,7 @@ import { Progress } from "@/components/ui/progress";
 import { useCreateQuest } from "@/hooks/useQuests";
 import { useAuthUI } from "@/hooks/useAuth";
 import type { QuestFormData } from "@/types";
-import { createLikeAndRetweetQuest } from "@/lib/questContract";
+import { createLikeAndRetweetQuest, createQuoteTweetQuest } from "@/lib/questContract";
 import { useAccount, useChainId, useSwitchChain } from 'wagmi';
 import { parseEther } from 'viem';
 
@@ -58,6 +58,7 @@ const questSchema = z.object({
   tweetUrl: z.string().optional(),
   // Quote tweet specific
   quoteTweetUrl: z.string().optional(),
+  quoteRequirements: z.string().optional(),
   // Send tweet specific
   tweetContent: z.string().optional(),
   requiredHashtags: z.array(z.string()).optional(),
@@ -67,8 +68,9 @@ const questSchema = z.object({
   rewardType: z.enum(["ETH", "ERC20", "NFT"]),
   totalRewardPool: z.number().min(0.001, "Reward pool must be greater than 0"),
   rewardPerParticipant: z.number().optional(),
-  distributionMethod: z.enum(["immediate", "manual", "scheduled", "linear"]),
+  distributionMethod: z.enum(["immediate", "manual", "scheduled"]),
   linearPeriod: z.number().optional(),
+  unlockTime: z.date().optional(),
   // Step 3 - Time and settings configuration
   startDate: z.date(),
   endDate: z.date(),
@@ -132,6 +134,7 @@ const CreateQuest = () => {
       targetAccount: "",
       tweetUrl: "",
       quoteTweetUrl: "",
+      quoteRequirements: "",
       tweetContent: "",
       requiredHashtags: [],
 
@@ -139,6 +142,7 @@ const CreateQuest = () => {
       totalRewardPool: 0.1,
       rewardPerParticipant: undefined,
       distributionMethod: "immediate",
+      unlockTime: undefined,
 
       startDate: new Date(),
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
@@ -169,13 +173,46 @@ const CreateQuest = () => {
     if (savedDraft) {
       try {
         const draft = JSON.parse(savedDraft);
+        let hasValidData = false;
+        
         Object.keys(draft).forEach(key => {
           if (draft[key] !== undefined) {
-            setValue(key as keyof QuestFormData, draft[key]);
+            let value = draft[key];
+            
+            // Handle date fields that may have been serialized as strings
+            if (key === 'startDate' || key === 'endDate' || key === 'rewardClaimDeadline' || key === 'unlockTime') {
+              if (typeof value === 'string') {
+                const parsedDate = new Date(value);
+                // Only use the parsed date if it's valid
+                if (!isNaN(parsedDate.getTime())) {
+                  value = parsedDate;
+                  hasValidData = true;
+                } else {
+                  // Skip invalid dates, keep the default values
+                  return;
+                }
+              } else if (value instanceof Date && !isNaN(value.getTime())) {
+                hasValidData = true;
+              } else {
+                // Skip non-date values for date fields
+                return;
+              }
+            } else {
+              hasValidData = true;
+            }
+            
+            setValue(key as keyof QuestFormData, value);
           }
         });
+        
+        // If no valid data was found, clear the draft
+        if (!hasValidData) {
+          localStorage.removeItem('questDraft');
+        }
       } catch (error) {
         console.error('Failed to load draft:', error);
+        // Clear corrupted draft
+        localStorage.removeItem('questDraft');
       }
     }
   }, [setValue]);
@@ -212,15 +249,15 @@ const CreateQuest = () => {
       return;
     }
 
-    // Check if on correct network (Sepolia for testing)
-    const targetChainId = 11155111; // Sepolia
+    // Check if on correct network (Monad testnet)
+    const targetChainId = import.meta.env.VITE_CHAIN_ID ? parseInt(import.meta.env.VITE_CHAIN_ID) : 10143; // Monad testnet
     if (chainId !== targetChainId) {
       try {
         await switchChain({ chainId: targetChainId });
       } catch (error) {
         toast({
           title: "Network Switch Required",
-          description: "Please switch to Sepolia network to deploy the quest.",
+          description: "Please switch to Monad testnet to deploy the quest.",
           variant: "destructive"
         });
         return;
@@ -236,30 +273,57 @@ const CreateQuest = () => {
       const endTime = Math.floor(data.endDate.getTime() / 1000);
       const claimEndTime = Math.floor(data.rewardClaimDeadline.getTime() / 1000);
 
-      // For LikeAndRetweet quest, we need to determine required actions
-      // Default to both like and retweet for now
-      const requireFavorite = true;
-      const requireRetweet = true;
+      console.log('📝 Quest Type:', data.questType);
+      console.log('📝 Launch Page:', data.launch_page);
 
-      const contractParams = {
-        title: data.title,
-        launch_page: data.launch_page,
-        description: data.description,
-        totalRewards: data.totalRewardPool.toString(),
-        rewardPerUser: rewardPerParticipant.toString(),
-        startTime,
-        endTime,
-        claimEndTime,
-        requireFavorite,
-        requireRetweet,
-        isVesting: false, // Simplified for now
-        vestingDuration: 0 // No vesting for now
-      };
+      let hash;
 
-      console.log('📝 Contract parameters:', contractParams);
+      if (data.questType === 'quote-tweet') {
+        // QuoteTweet quest parameters
+        const contractParams = {
+          title: data.title,
+          launch_page: data.launch_page, // This should contain the tweet URL to be quoted
+          description: data.description,
+          totalRewards: data.totalRewardPool.toString(),
+          rewardPerUser: rewardPerParticipant.toString(),
+          startTime,
+          endTime,
+          claimEndTime,
+          isVesting: false, // Simplified for now
+          vestingDuration: 0 // No vesting for now
+        };
 
-      // Call the smart contract
-      const hash = await createLikeAndRetweetQuest(contractParams);
+        console.log('📝 QuoteTweet Contract parameters:', contractParams);
+
+        // Call the smart contract for QuoteTweet
+        hash = await createQuoteTweetQuest(contractParams);
+      } else {
+        // LikeAndRetweet quest parameters
+        // For LikeAndRetweet quest, we need to determine required actions
+        // Default to both like and retweet for now
+        const requireFavorite = true;
+        const requireRetweet = true;
+
+        const contractParams = {
+          title: data.title,
+          launch_page: data.launch_page,
+          description: data.description,
+          totalRewards: data.totalRewardPool.toString(),
+          rewardPerUser: rewardPerParticipant.toString(),
+          startTime,
+          endTime,
+          claimEndTime,
+          requireFavorite,
+          requireRetweet,
+          isVesting: false, // Simplified for now
+          vestingDuration: 0 // No vesting for now
+        };
+
+        console.log('📝 LikeAndRetweet Contract parameters:', contractParams);
+
+        // Call the smart contract for LikeAndRetweet
+        hash = await createLikeAndRetweetQuest(contractParams);
+      }
 
       console.log('✅ Quest deployed successfully! Transaction hash:', hash);
 
@@ -411,7 +475,7 @@ const CreateQuest = () => {
         </div>
 
         {/* Authentication Notice */}
-        {!isAuthenticated && (
+        {/* {!isAuthenticated && (
           <div className="mb-6">
             <Card className="border-yellow-500/50 bg-yellow-500/10">
               <CardContent className="pt-4">
@@ -435,7 +499,7 @@ const CreateQuest = () => {
               </CardContent>
             </Card>
           </div>
-        )}
+        )} */}
 
         {/* Step Indicator */}
         <div className="mb-8">
@@ -917,49 +981,30 @@ const CreateQuest = () => {
                                     </div>
                                   </div>
                                 </Label>
-                                <Label className="cursor-pointer">
-                                  <RadioGroupItem value="linear" className="sr-only" />
-                                  <div className={cn(
-                                    "border rounded-lg p-3 transition-all h-full min-h-[90px] flex flex-col justify-center",
-                                    field.value === "linear" 
-                                      ? "border-[hsl(var(--vibrant-blue))] bg-[hsl(var(--vibrant-blue))]/5" 
-                                      : "border-border"
-                                  )}>
+                                
+                                {/* Disabled Linear Vesting Option */}
+                                <div className="opacity-50 cursor-not-allowed">
+                                  <div className="border rounded-lg p-3 border-border bg-muted/30 h-full min-h-[90px] flex flex-col justify-center">
                                     <div className="flex items-center gap-3">
-                                      <TrendingUp className="h-4 w-4 text-[hsl(var(--vibrant-purple))]" />
+                                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                       <div>
-                                        <div className="font-medium">Linear Vesting</div>
+                                        <div className="font-medium text-muted-foreground flex items-center gap-2">
+                                          Linear Vesting
+                                          <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                        </div>
                                         <div className="text-sm text-muted-foreground">
                                           Rewards are vested linearly over time
                                         </div>
                                       </div>
                                     </div>
                                   </div>
-                                </Label>
+                                </div>
                               </div>
                             </RadioGroup>
                           )}
                         />
                       </div>
 
-                      {/* Linear Vesting Period */}
-                      {formData.distributionMethod === "linear" && (
-                        <div className="space-y-2">
-                          <Label htmlFor="linearPeriod">Vesting Period (days)</Label>
-                          <Controller
-                            name="linearPeriod"
-                            control={control}
-                            render={({ field }) => (
-                              <Input
-                                type="number"
-                                placeholder="30"
-                                value={field.value?.toString() || ""}
-                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                              />
-                            )}
-                          />
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -991,7 +1036,7 @@ const CreateQuest = () => {
                                   )}
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                  {field.value && field.value instanceof Date && !isNaN(field.value.getTime()) ? format(field.value, "PPP") : "Pick a date"}
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-0" align="start">
@@ -1025,7 +1070,7 @@ const CreateQuest = () => {
                                   )}
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                  {field.value && field.value instanceof Date && !isNaN(field.value.getTime()) ? format(field.value, "PPP") : "Pick a date"}
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-0" align="start">
@@ -1082,45 +1127,6 @@ const CreateQuest = () => {
                         Participants must claim their rewards before this date
                       </p>
                     </div>
-                    
-                    {/* Unlock Time for Linear Vesting */}
-                    {formData.distributionMethod === "linear" && (
-                      <div className="space-y-2">
-                        <Label>Unlock Start Time</Label>
-                        <Controller
-                          name="unlockTime"
-                          control={control}
-                          render={({ field }) => (
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  initialFocus
-                                  className="p-3 pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          )}
-                        />
-                        <p className="text-sm text-muted-foreground">
-                          When linear vesting should begin
-                        </p>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               )}
@@ -1149,15 +1155,15 @@ const CreateQuest = () => {
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">Start Date</Label>
-                          <p className="font-medium">{format(formData.startDate, "PPP")}</p>
+                          <p className="font-medium">{formData.startDate && formData.startDate instanceof Date && !isNaN(formData.startDate.getTime()) ? format(formData.startDate, "PPP") : "Invalid date"}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">End Date</Label>
-                          <p className="font-medium">{format(formData.endDate, "PPP")}</p>
+                          <p className="font-medium">{formData.endDate && formData.endDate instanceof Date && !isNaN(formData.endDate.getTime()) ? format(formData.endDate, "PPP") : "Invalid date"}</p>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">Claim Deadline</Label>
-                          <p className="font-medium">{format(formData.rewardClaimDeadline, "PPP")}</p>
+                          <p className="font-medium">{formData.rewardClaimDeadline && formData.rewardClaimDeadline instanceof Date && !isNaN(formData.rewardClaimDeadline.getTime()) ? format(formData.rewardClaimDeadline, "PPP") : "Invalid date"}</p>
                         </div>
                       </div>
                       <div>
@@ -1306,18 +1312,6 @@ const CreateQuest = () => {
                             (Calculated: {formData.totalRewardPool} ÷ {formData.maxParticipants})
                           </p>
                         </div>
-                        {formData.distributionMethod === "linear" && formData.linearPeriod && (
-                          <div>
-                            <Label className="text-sm font-medium text-muted-foreground">Vesting Period</Label>
-                            <p className="font-medium">{formData.linearPeriod} days</p>
-                          </div>
-                        )}
-                        {formData.distributionMethod === "linear" && formData.unlockTime && (
-                          <div>
-                            <Label className="text-sm font-medium text-muted-foreground">Unlock Start</Label>
-                            <p className="font-medium">{format(formData.unlockTime, "PPP")}</p>
-                          </div>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1340,17 +1334,17 @@ const CreateQuest = () => {
                           <span>Estimated Gas Fee</span>
                           <span className="font-medium">0.005 ETH</span>
                         </div>
-                        <div className="flex justify-between">
+                        {/* <div className="flex justify-between">
                           <span>Platform Fee (2%)</span>
                           <span className="font-medium">
                             {((formData.totalRewardPool || 0) * 0.02).toFixed(4)} {formData.rewardType}
                           </span>
-                        </div>
+                        </div> */}
                         <div className="border-t pt-3">
                           <div className="flex justify-between font-bold">
                             <span>Total Cost</span>
                             <span className="text-[hsl(var(--vibrant-blue))]">
-                              {((formData.totalRewardPool || 0) * 1.02).toFixed(4)} {formData.rewardType} + 0.005 ETH
+                              {((formData.totalRewardPool || 0) * 1).toFixed(4)} {formData.rewardType} + 0.005 ETH
                             </span>
                           </div>
                         </div>

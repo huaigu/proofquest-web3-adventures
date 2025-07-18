@@ -4,7 +4,7 @@ import { sepolia } from 'viem/chains';
 
 // Define Monad testnet chain
 export const monadTestnet = defineChain({
-  id: 41454, // Monad testnet chain ID
+  id: 10143, // Monad testnet chain ID
   name: 'Monad Testnet',
   nativeCurrency: {
     decimals: 18,

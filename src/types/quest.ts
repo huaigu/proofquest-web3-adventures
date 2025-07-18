@@ -26,6 +26,7 @@ export interface QuestFormData {
   
   // Quote tweet specific
   quoteTweetUrl?: string
+  quoteRequirements?: string
   
   // Send tweet specific
   tweetContent?: string
@@ -42,6 +43,7 @@ export interface QuestFormData {
   
   // Linear vesting specific
   linearPeriod?: number
+  unlockTime?: Date
   
   // Timing
   startDate: Date

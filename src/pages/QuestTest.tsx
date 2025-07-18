@@ -33,8 +33,7 @@ import {
   claimRewardWithAttestation,
   getAllQuests,
   hasUserQualified,
-  QUEST_SYSTEM_ADDRESS,
-  MOCK_ATTESTATION
+  QUEST_SYSTEM_ADDRESS
 } from '@/lib/questContract';
 
 // Verification contract ABI
@@ -1148,7 +1147,7 @@ const QuestTest = () => {
           </CardHeader>
           <CardContent>
             <div className="bg-muted rounded-lg p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Original Recipient</Label>
                   <p className="font-mono text-xs">{MOCK_ATTESTATION.recipient}</p>
@@ -1165,7 +1164,7 @@ const QuestTest = () => {
                   <Label className="text-sm font-medium text-muted-foreground">Tweet ID</Label>
                   <p className="font-mono text-xs">1942933687978365289</p>
                 </div>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>

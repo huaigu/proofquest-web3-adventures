@@ -163,7 +163,7 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         attestation.timestamp = uint64(_timestamp);
         attestation.additionParams = _jsonData.getString("additionParams");
         attestation.attConditions = _jsonData.getString("attConditions");
-        attestation.extendedData = _jsonData.getString("extendedData");
+        // attestation.extendedData = _jsonData.getString("extendedData");
 
         // Create attestor array (simplified)
         attestation.attestors = new Attestor[](1);
@@ -245,8 +245,6 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         attestation.signatures[0] = abi.encodePacked(hash, hash, uint8(27)); // 32 + 32 + 1 = 65 bytes
 
         attestation.attConditions = "";
-        attestation.extendedData = attestation.data;
-
         return attestation;
     }
 
@@ -321,7 +319,6 @@ contract MockPrimusZKTLS is IPrimusZKTLS {
         attestation.signatures[0] = abi.encodePacked(hash, hash, uint8(27)); // 32 + 32 + 1 = 65 bytes
 
         attestation.attConditions = "";
-        attestation.extendedData = attestation.data;
 
         return attestation;
     }

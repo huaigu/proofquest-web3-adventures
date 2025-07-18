@@ -87,10 +87,11 @@ export const Navigation = () => {
                   Authenticated
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
-                  <User className="w-3 h-3 mr-1" />
-                  Sign In Required
-                </Badge>
+                // <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
+                //   <User className="w-3 h-3 mr-1" />
+                //   Sign In Required
+                // </Badge>
+                null
               )}
             </div>
           )}
@@ -101,7 +102,7 @@ export const Navigation = () => {
           </div>
           
           {/* SIWE Authentication Button */}
-          {isWalletConnected && !isAuthenticated && (
+          {/* {isWalletConnected && !isAuthenticated && (
             <Button
               variant={authButtonState.variant}
               size="sm"
@@ -112,7 +113,7 @@ export const Navigation = () => {
               <Shield className="w-4 h-4" />
               <span>{authButtonState.text}</span>
             </Button>
-          )}
+          )} */}
           
 
           {/* Mobile Menu */}
@@ -140,10 +141,11 @@ export const Navigation = () => {
                           Authenticated as {userDisplayName}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
-                          <User className="w-3 h-3 mr-1" />
-                          Sign In Required
-                        </Badge>
+                        // <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
+                        //   <User className="w-3 h-3 mr-1" />
+                        //   Sign In Required
+                        // </Badge>
+                        null
                       )}
                     </div>
                     
