@@ -21,7 +21,9 @@ import {
   ArrowRight,
   Bot,
   Activity,
-  Layers
+  Layers,
+  Twitter,
+  Mail
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -406,6 +408,29 @@ const Guide = () => {
                     <Target className="h-5 w-5 ml-2" />
                   </Button>
                 </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Contact Section */}
+        <div className="mt-20 text-center">
+          <Card className="border-0 bg-gradient-to-br from-muted/50 to-background">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-bold mb-4">Get in Touch</h2>
+              <p className="text-muted-foreground mb-6">
+                Have questions or feedback? Feel free to reach out!
+              </p>
+              <div className="flex justify-center">
+                <a 
+                  href="https://x.com/coder_chao" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
+                >
+                  <Twitter className="h-5 w-5" />
+                  Follow @coder_chao
+                </a>
               </div>
             </CardContent>
           </Card>
