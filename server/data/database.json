@@ -123,8 +123,8 @@
   ],
   "users": [],
   "indexerState": {
-    "lastProcessedBlock": 8797095,
-    "lastUpdated": 1752924158731,
+    "lastProcessedBlock": 8798003,
+    "lastUpdated": 1752935774523,
     "contractAddress": "0x1939Da0aEFb67B63FB11efE39beFE8fB0595fF14",
     "contractDeployBlock": 8791280
   }

@@ -371,6 +371,133 @@ const Guide = () => {
           </div>
         </div>
 
+        {/* Platform Partners Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">{t('partners.title')}</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              {t('partners.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            {/* Primus Section */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-[hsl(var(--vibrant-blue))]/5 to-[hsl(var(--vibrant-purple))]/5">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white">
+                    <Bot className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Primus Labs</h3>
+                    <p className="text-muted-foreground">{t('partners.primus.tagline')}</p>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <p className="text-foreground leading-relaxed">
+                    {t('partners.primus.description')}
+                  </p>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <h4 className="font-semibold text-lg">{t('partners.primus.keyFeatures')}</h4>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-[hsl(var(--vibrant-blue))]" />
+                      <span>{t('partners.primus.feature1')}</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-[hsl(var(--vibrant-blue))]" />
+                      <span>{t('partners.primus.feature2')}</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-[hsl(var(--vibrant-blue))]" />
+                      <span>{t('partners.primus.feature3')}</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <a 
+                  href="https://primuslabs.xyz/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {t('partners.primus.visitWebsite')}
+                </a>
+              </CardContent>
+            </Card>
+
+            {/* Monad Section */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-[hsl(var(--vibrant-green))]/5 to-[hsl(var(--vibrant-teal))]/5">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-teal))] text-white">
+                    <Layers className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Monad</h3>
+                    <p className="text-muted-foreground">{t('partners.monad.tagline')}</p>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <p className="text-foreground leading-relaxed">
+                    {t('partners.monad.description')}
+                  </p>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <h4 className="font-semibold text-lg">{t('partners.monad.keyFeatures')}</h4>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-[hsl(var(--vibrant-green))]" />
+                      <span>{t('partners.monad.feature1')}</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-[hsl(var(--vibrant-green))]" />
+                      <span>{t('partners.monad.feature2')}</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-[hsl(var(--vibrant-green))]" />
+                      <span>{t('partners.monad.feature3')}</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <a 
+                  href="https://www.monad.xyz/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {t('partners.monad.visitWebsite')}
+                </a>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Dependency Note */}
+          <Card className="border-0 bg-gradient-to-r from-[hsl(var(--vibrant-orange))]/10 to-[hsl(var(--vibrant-yellow))]/10 border-[hsl(var(--vibrant-orange))]/20">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-2 rounded-lg bg-gradient-to-r from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] text-white">
+                  <Activity className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-lg mb-2">{t('partners.dependency.title')}</h4>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {t('partners.dependency.description')}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* FAQ Section */}
         <div className="mt-20">
           <div className="text-center mb-12">

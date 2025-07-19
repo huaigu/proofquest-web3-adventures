@@ -162,5 +162,31 @@
   "primus": {
     "installButton": "Install Primus Extension",
     "chromeStoreUrl": "https://chromewebstore.google.com/detail/primus/oeiomhmbaapihbilkfkhmlajkeegnjhe"
+  },
+  "partners": {
+    "title": "Platform Partners",
+    "subtitle": "ProofQuest is built on cutting-edge infrastructure provided by our trusted partners, enabling seamless Web2-to-Web3 task verification and blockchain rewards.",
+    "primus": {
+      "tagline": "Zero-Knowledge Proof Infrastructure",
+      "description": "Primus Labs provides the core zero-knowledge proof infrastructure that powers ProofQuest's task verification system. Their cutting-edge technology enables users to prove completion of Web2 tasks without revealing sensitive personal data.",
+      "keyFeatures": "Key Features:",
+      "feature1": "Privacy-preserving task verification",
+      "feature2": "Automated proof generation",
+      "feature3": "Cross-platform integration",
+      "visitWebsite": "Visit Primus Labs"
+    },
+    "monad": {
+      "tagline": "High-Performance Blockchain",
+      "description": "Monad is a high-performance, EVM-compatible blockchain that serves as the foundation for ProofQuest's reward distribution system. Built for speed and scalability, Monad enables instant, low-cost transactions for quest rewards.",
+      "keyFeatures": "Key Features:",
+      "feature1": "10,000+ TPS throughput",
+      "feature2": "Sub-second finality",
+      "feature3": "EVM compatibility",
+      "visitWebsite": "Visit Monad"
+    },
+    "dependency": {
+      "title": "Platform Dependencies",
+      "description": "ProofQuest's functionality depends on both Primus Labs for zero-knowledge proof generation and verification, and Monad blockchain for secure, fast reward distribution. These partnerships ensure users can complete Web2 tasks with privacy while receiving Web3 rewards efficiently."
+    }
   }
 }
