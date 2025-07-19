@@ -202,6 +202,7 @@ const QuestDetail = () => {
   const [primusZKTLS, setPrimusZKTLS] = useState<any>(null);
   const [zkInitializing, setZkInitializing] = useState(true);
   const [zkInitialized, setZkInitialized] = useState(false);
+  const [pluginNotInstalled, setPluginNotInstalled] = useState(false);
   const [quoteTweetUrl, setQuoteTweetUrl] = useState<string>('');
   const [quoteTweetUrlError, setQuoteTweetUrlError] = useState<string>('');
 
@@ -210,6 +211,7 @@ const QuestDetail = () => {
     const initializePrimus = async () => {
       try {
         setZkInitializing(true);
+        setPluginNotInstalled(false);
         const primus = new PrimusZKTLS();
         const appId = import.meta.env.VITE_PRIMUS_APP_ID;
         if (!appId) {
@@ -221,8 +223,25 @@ const QuestDetail = () => {
         console.log("Primus ZKTLS initialized:", initResult);
         setPrimusZKTLS(primus);
         setZkInitialized(true);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to initialize Primus ZKTLS:", error);
+        
+        // 检查是否是插件未安装错误
+        if (error?.code === "00006" || error?.message?.includes("00006")) {
+          setPluginNotInstalled(true);
+          toast({
+            title: "需要安装 Primus 插件",
+            description: "请先安装 Primus Chrome 插件才能参与任务",
+            variant: "destructive",
+            duration: 8000
+          });
+        } else {
+          toast({
+            title: "ZKTLS 初始化失败",
+            description: "无法初始化零知识证明系统，请刷新页面重试",
+            variant: "destructive"
+          });
+        }
         setZkInitialized(false);
       } finally {
         setZkInitializing(false);
@@ -1074,11 +1093,40 @@ const QuestDetail = () => {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {/* 已参与提示 */}
+                  {/* Already participated notice */}
                   {hasAlreadyParticipated && (
                     <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] text-white rounded-lg mb-4">
-                      <div className="text-lg font-bold">✅ 您已参与此活动</div>
-                      <div className="text-white/80 text-sm">奖励已成功领取</div>
+                      <div className="text-lg font-bold">✅ You have already participated</div>
+                      <div className="text-white/80 text-sm">Reward successfully claimed</div>
+                    </div>
+                  )}
+
+                  {/* Plugin not installed notice */}
+                  {pluginNotInstalled && (
+                    <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))] text-white rounded-lg mb-4">
+                      <div className="text-lg font-bold">🔌 Primus Plugin Required</div>
+                      <div className="text-white/80 text-sm mb-3">
+                        Please install the Primus Chrome plugin to participate in this quest
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                          onClick={() => window.open('https://chromewebstore.google.com/detail/oeiomhmbaapihbilkfkhmlajkeegnjhe', '_blank')}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Install Plugin
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                          onClick={() => window.location.reload()}
+                        >
+                          🔄 Retry
+                        </Button>
+                      </div>
                     </div>
                   )}
 
@@ -1107,14 +1155,14 @@ const QuestDetail = () => {
                           {userProgress.walletConnected ? <CheckCircle className="h-3 w-3" /> : '1'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">连接钱包</h4>
+                          <h4 className="font-semibold text-sm mb-1">Connect Wallet</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            连接您的 Web3 钱包以开始参与任务
+                            Connect your Web3 wallet to start participating in quests
                           </p>
                           {!isConnected ? (
                             <Button onClick={handleConnectWallet} disabled={isLoading} size="sm" className="w-full">
                               <Wallet className="h-3 w-3 mr-1" />
-                              连接钱包
+                              Connect Wallet
                             </Button>
                           ) : null}
                         </div>
@@ -1172,18 +1220,30 @@ const QuestDetail = () => {
                           {userProgress.zkProofStarted ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '3' : '2'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">开始证明</h4>
+                          <h4 className="font-semibold text-sm mb-1">Start Proof</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            获取 ZK 签名并启动证明流程
+                            Get ZK signature and start the proof process
                           </p>
                           {zkInitializing && (
                             <div className="text-xs text-blue-500 mb-2">
-                              ⏳ ZKTLS 系统初始化中...
+                              ⏳ Initializing ZKTLS system...
                             </div>
                           )}
                           {isConnected && !userProgress.zkProofStarted && (quest.questType !== 'quote-tweet' || (quoteTweetUrl && !quoteTweetUrlError)) ? (
-                            <Button onClick={handleStartProof} disabled={isLoading || !zkInitialized} size="sm" className="w-full">
-                              {isLoading && currentStep.includes('ZK') ? '启动中...' : !zkInitialized ? 'ZKTLS 初始化中...' : '开始证明'}
+                            <Button 
+                              onClick={handleStartProof} 
+                              disabled={isLoading || !zkInitialized || pluginNotInstalled} 
+                              size="sm" 
+                              className="w-full"
+                            >
+                              {pluginNotInstalled 
+                                ? 'Install plugin first' 
+                                : isLoading && currentStep.includes('ZK') 
+                                  ? 'Starting...' 
+                                  : !zkInitialized 
+                                    ? 'Initializing ZKTLS...' 
+                                    : 'Start Proof'
+                              }
                             </Button>
                           ) : null}
                         </div>
@@ -1200,12 +1260,12 @@ const QuestDetail = () => {
                           {userProgress.zkProofGenerated ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '4' : '3'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">生成证明</h4>
+                          <h4 className="font-semibold text-sm mb-1">Generate Proof</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            调用 Primus 生成 ZK 证明
+                            Call Primus to generate ZK proof
                           </p>
                           {userProgress.zkProofStarted && !userProgress.zkProofGenerated && isLoading && (
-                            <div className="text-xs text-muted-foreground">正在生成证明...</div>
+                            <div className="text-xs text-muted-foreground">Generating proof...</div>
                           )}
                         </div>
                       </div>
@@ -1221,12 +1281,12 @@ const QuestDetail = () => {
                           {userProgress.proofVerified ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '5' : '4'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">验证证明</h4>
+                          <h4 className="font-semibold text-sm mb-1">Verify Proof</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            检查证明的有效性
+                            Check the validity of the proof
                           </p>
                           {userProgress.zkProofGenerated && !userProgress.proofVerified && isLoading && (
-                            <div className="text-xs text-muted-foreground">正在验证证明...</div>
+                            <div className="text-xs text-muted-foreground">Verifying proof...</div>
                           )}
                         </div>
                       </div>
@@ -1242,9 +1302,9 @@ const QuestDetail = () => {
                           {userProgress.rewardClaimed ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '6' : '5'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">领取奖励</h4>
+                          <h4 className="font-semibold text-sm mb-1">Claim Reward</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            提交证明并领取任务奖励
+                            Submit proof and claim quest reward
                           </p>
                           {userProgress.proofVerified && !userProgress.rewardClaimed ? (
                             <Button onClick={handleClaimReward} disabled={isLoading} size="sm" className="w-full">
@@ -1254,13 +1314,13 @@ const QuestDetail = () => {
                                 <Trophy className="h-3 w-3 mr-1" />
                               )}
                               {isLoading 
-                                ? (currentStep.includes('等待交易确认') ? '等待确认...' : '领取中...') 
-                                : '领取奖励'
+                                ? (currentStep.includes('Waiting for transaction') ? 'Confirming...' : 'Claiming...') 
+                                : 'Claim Reward'
                               }
                             </Button>
                           ) : userProgress.rewardClaimed ? (
                             <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
-                              🎉 奖励已成功领取！
+                              🎉 Reward successfully claimed!
                             </div>
                           ) : null}
                         </div>
