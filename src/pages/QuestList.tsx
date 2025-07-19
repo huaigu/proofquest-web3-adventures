@@ -81,7 +81,7 @@ const QuestList = () => {
     if (questTypeFilter !== "all") filters.push({ key: "questType", value: questTypeFilter });
     if (categoryFilter !== "all") filters.push({ key: "category", value: categoryFilter });
     if (rewardRange[0] > 0 || rewardRange[1] < 1) {
-      filters.push({ key: "reward", value: `${rewardRange[0].toFixed(2)} - ${rewardRange[1].toFixed(2)} ETH` });
+      filters.push({ key: "reward", value: `${rewardRange[0].toFixed(2)} - ${rewardRange[1].toFixed(2)} MON` });
     }
     return filters;
   }, [statusFilter, rewardTypeFilter, questTypeFilter, categoryFilter, rewardRange]);
@@ -264,7 +264,7 @@ const QuestList = () => {
 
   const getRewardIcon = (rewardType: string) => {
     switch (rewardType) {
-      case "ETH":
+      case "MON":
         return <Coins className="w-4 h-4 text-blue-400" />;
       case "ERC20":
         return <Coins className="w-4 h-4 text-green-400" />;
@@ -372,7 +372,7 @@ const QuestList = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="ETH">ETH</SelectItem>
+                      <SelectItem value="MON">MON</SelectItem>
                       <SelectItem value="ERC20">ERC20 Tokens</SelectItem>
                       <SelectItem value="NFT">NFT</SelectItem>
                     </SelectContent>
@@ -419,7 +419,7 @@ const QuestList = () => {
                 {/* Reward Range */}
                 <div className="space-y-2 mb-4">
                   <label className="text-sm font-medium">
-                    Reward Range: {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)} ETH
+                    Reward Range: {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)} MON
                   </label>
                   <Slider
                     value={rewardRange}

@@ -56,7 +56,7 @@ interface QuestDetail {
   };
   reward: {
     amount: number;
-    type: 'ETH' | 'ERC20' | 'NFT';
+    type: 'MON' | 'ERC20' | 'NFT';
     distribution: 'Pool' | 'Per participant';
   };
   status: 'Active' | 'Claiming' | 'Cancelled' | 'Paused' | 'Completed';
@@ -97,7 +97,7 @@ const getMockQuest = (id: string): QuestDetail => {
         tweetUrl: "https://twitter.com/proofquest/status/1234567890",
         requiredActions: ["like", "retweet"]
       },
-      reward: { amount: 0.01, type: 'ETH' as const, distribution: 'Per participant' as const },
+      reward: { amount: 0.01, type: 'MON' as const, distribution: 'Per participant' as const },
       participants: { current: 234, max: 500 }
     },
     'quest-2': {
@@ -109,7 +109,7 @@ const getMockQuest = (id: string): QuestDetail => {
         quoteTweetUrl: "https://twitter.com/proofquest/status/1234567891",
         requiredHashtag: "#Web3Journey"
       },
-      reward: { amount: 0.05, type: 'ETH' as const, distribution: 'Per participant' as const },
+      reward: { amount: 0.05, type: 'MON' as const, distribution: 'Per participant' as const },
       participants: { current: 67, max: 200 }
     },
     'quest-3': {
@@ -133,7 +133,7 @@ const getMockQuest = (id: string): QuestDetail => {
         quoteTweetUrl: "https://twitter.com/proofquest/status/1234567893",
         requiredHashtag: "#ProofQuest"
       },
-      reward: { amount: 0.03, type: 'ETH' as const, distribution: 'Per participant' as const },
+      reward: { amount: 0.03, type: 'MON' as const, distribution: 'Per participant' as const },
       participants: { current: 89, max: 150 }
     }
   };
@@ -297,7 +297,7 @@ const QuestDetail = () => {
           },
           reward: {
             amount: data.rewardPerUser ? Number(data.rewardPerUser) / 1e18 : 0,
-            type: "ETH",
+            type: "MON",
             distribution: "Per participant"
           },
           status: data.status ? (data.status.charAt(0).toUpperCase() + data.status.slice(1)) : 'Active',
@@ -383,7 +383,7 @@ const QuestDetail = () => {
 
   const formatReward = () => {
     if (quest.reward.type === 'NFT') return 'NFT Badge';
-    return `${quest.reward.amount.toFixed(quest.reward.type === 'ETH' ? 3 : 0)} ${quest.reward.type}`;
+    return `${quest.reward.amount.toFixed(quest.reward.type === 'MON' ? 3 : 0)} ${quest.reward.type}`;
   };
 
   const formatAddress = (address: string) => {
@@ -683,7 +683,7 @@ const QuestDetail = () => {
     }
     
     if (errorMessage.includes('insufficient funds')) {
-      return '账户余额不足，请确保有足够的 ETH 支付 Gas 费用';
+      return '账户余额不足，请确保有足够的 MON 支付 Gas 费用';
     }
     
     if (errorMessage.includes('gas')) {

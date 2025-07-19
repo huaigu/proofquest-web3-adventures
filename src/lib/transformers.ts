@@ -282,7 +282,7 @@ export function transformBackendQuestToResponse(backendQuest: any): QuestRespons
       nickname: backendQuest.sponsor,
       avatarUrl: ''
     },
-    rewardType: 'ETH' as const,
+    rewardType: 'MON' as const,
     totalRewardPool: parseFloat(backendQuest.totalRewards) / 1e18, // Convert from wei
     rewardPerParticipant: parseFloat(backendQuest.rewardPerUser) / 1e18, // Convert from wei
     distributionMethod: 'immediate' as const,
@@ -345,7 +345,7 @@ export function transformBackendQuestToListItem(backendQuest: any): QuestListIte
     },
     reward: {
       amount: parseFloat(backendQuest.rewardPerUser) / 1e18, // Convert from wei
-      type: 'ETH' as const
+      type: 'MON' as const
     },
     status: mapBackendStatusToFrontend(backendQuest.status),
     participants: {

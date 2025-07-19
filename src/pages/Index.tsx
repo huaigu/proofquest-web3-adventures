@@ -54,7 +54,7 @@ const Index = () => {
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
                   ProofQuest
                 </h1>
-                <p className="text-sm text-white/90 mb-6 leading-relaxed">
+                <p className="text-sm text-white/90 mb-4 leading-relaxed">
                   Complete Web2 tasks, earn Web3 rewards with zero-knowledge proof verification
                 </p>
               </div>
@@ -87,7 +87,7 @@ const Index = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 ETH'}</div>
+                  <div className="text-xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 MON'}</div>
                   <div className="text-xs text-white/80">Rewards</div>
                 </div>
                 <Trophy className="h-4 w-4 text-white/60" />
@@ -351,7 +351,7 @@ const Index = () => {
                 <Wallet className="h-5 w-5" />
                 <h3 className="font-bold text-white">Top Earners</h3>
               </div>
-              <div className="text-2xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 ETH'}</div>
+              <div className="text-2xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 MON'}</div>
               <div className="text-xs text-white/80">Total Distributed</div>
             </div>
 

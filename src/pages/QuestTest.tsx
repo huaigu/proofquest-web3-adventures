@@ -690,7 +690,7 @@ const QuestTest = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="totalRewards">Total Rewards (ETH)</Label>
+                  <Label htmlFor="totalRewards">Total Rewards (MON)</Label>
                   <Input
                     id="totalRewards"
                     type="number"
@@ -701,7 +701,7 @@ const QuestTest = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="rewardPerUser">Reward Per User (ETH)</Label>
+                  <Label htmlFor="rewardPerUser">Reward Per User (MON)</Label>
                   <Input
                     id="rewardPerUser"
                     type="number"
@@ -800,7 +800,7 @@ const QuestTest = () => {
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Reward Per User</Label>
-                      <p className="font-mono text-sm">{(Number(questData.rewardPerUser) / 1e18).toFixed(4)} ETH</p>
+                      <p className="font-mono text-sm">{(Number(questData.rewardPerUser) / 1e18).toFixed(4)} MON</p>
                     </div>
                   </div>
 
@@ -983,7 +983,7 @@ const QuestTest = () => {
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Reward Per User</Label>
-                      <p className="font-mono text-sm">{(Number(questData.rewardPerUser) / 1e18).toFixed(4)} ETH</p>
+                      <p className="font-mono text-sm">{(Number(questData.rewardPerUser) / 1e18).toFixed(4)} MON</p>
                     </div>
                   </div>
 

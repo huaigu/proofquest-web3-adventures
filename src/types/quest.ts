@@ -7,7 +7,7 @@
 // Quest Types
 export type QuestType = 'twitter-interaction' | 'quote-tweet' | 'send-tweet'
 export type InteractionType = 'like' | 'retweet' | 'comment' | 'follow'
-export type RewardType = 'ETH' | 'ERC20' | 'NFT'
+export type RewardType = 'MON' | 'ERC20' | 'NFT'
 export type DistributionMethod = 'immediate' | 'manual' | 'scheduled' | 'linear'
 export type QuestStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled'
 export type ParticipationStatus = 'pending' | 'completed' | 'verified' | 'rewarded' | 'rejected'

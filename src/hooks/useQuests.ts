@@ -44,7 +44,7 @@ const getMockQuestData = (): QuestListItem[] => {
       },
       reward: {
         amount: 0.005,
-        type: "ETH" as const
+        type: "MON" as const
       },
       status: "active" as const,
       participants: {
@@ -68,7 +68,7 @@ const getMockQuestData = (): QuestListItem[] => {
       },
       reward: {
         amount: 0.01,
-        type: "ETH" as const
+        type: "MON" as const
       },
       status: "claiming" as const,
       participants: {
@@ -92,7 +92,7 @@ const getMockQuestData = (): QuestListItem[] => {
       },
       reward: {
         amount: 0.02,
-        type: "ETH" as const
+        type: "MON" as const
       },
       status: "pending" as const,
       participants: {
@@ -116,7 +116,7 @@ const getMockQuestData = (): QuestListItem[] => {
       },
       reward: {
         amount: 0.015,
-        type: "ETH" as const
+        type: "MON" as const
       },
       status: "ended" as const,
       participants: {
@@ -140,7 +140,7 @@ const getMockQuestData = (): QuestListItem[] => {
       },
       reward: {
         amount: 0.008,
-        type: "ETH" as const
+        type: "MON" as const
       },
       status: "cancelled" as const,
       participants: {
@@ -555,25 +555,25 @@ export function useTopEarners(limit: number = 10) {
           {
             userAddress: '0x1234...5678',
             totalParticipations: 12,
-            totalRewardsEarned: '2500000000000000000', // 2.5 ETH in wei
+            totalRewardsEarned: '2500000000000000000', // 2.5 MON in wei
             completionRate: 1.0,
-            averageRewardPerParticipation: '208333333333333333', // ~0.208 ETH
+            averageRewardPerParticipation: '208333333333333333', // ~0.208 MON
             rank: 1
           },
           {
             userAddress: '0xabcd...efgh',
             totalParticipations: 8,
-            totalRewardsEarned: '1800000000000000000', // 1.8 ETH in wei
+            totalRewardsEarned: '1800000000000000000', // 1.8 MON in wei
             completionRate: 1.0,
-            averageRewardPerParticipation: '225000000000000000', // 0.225 ETH
+            averageRewardPerParticipation: '225000000000000000', // 0.225 MON
             rank: 2
           },
           {
             userAddress: '0x9876...4321',
             totalParticipations: 6,
-            totalRewardsEarned: '1200000000000000000', // 1.2 ETH in wei
+            totalRewardsEarned: '1200000000000000000', // 1.2 MON in wei
             completionRate: 1.0,
-            averageRewardPerParticipation: '200000000000000000', // 0.2 ETH
+            averageRewardPerParticipation: '200000000000000000', // 0.2 MON
             rank: 3
           }
         ]

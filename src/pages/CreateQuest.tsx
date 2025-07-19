@@ -65,7 +65,7 @@ const questSchema = z.object({
   // Smart contract integration
   requiredActions: z.array(z.string()).optional(),
   // Step 2 - Reward configuration
-  rewardType: z.enum(["ETH", "ERC20", "NFT"]),
+  rewardType: z.enum(["MON", "ERC20", "NFT"]),
   totalRewardPool: z.number().min(0.001, "Reward pool must be greater than 0"),
   rewardPerParticipant: z.number().optional(),
   distributionMethod: z.enum(["immediate", "manual", "scheduled"]),
@@ -138,7 +138,7 @@ const CreateQuest = () => {
       tweetContent: "",
       requiredHashtags: [],
 
-      rewardType: "ETH",
+      rewardType: "MON",
       totalRewardPool: 0.1,
       rewardPerParticipant: undefined,
       distributionMethod: "immediate",
@@ -855,20 +855,20 @@ const CreateQuest = () => {
                           render={({ field }) => (
                             <RadioGroup value={field.value} onValueChange={field.onChange}>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* ETH Option - Enabled */}
+                                {/* MON Option - Enabled */}
                                 <Label className="cursor-pointer">
-                                  <RadioGroupItem value="ETH" className="sr-only" />
+                                  <RadioGroupItem value="MON" className="sr-only" />
                                   <div className={cn(
                                     "border rounded-lg p-4 transition-all hover:border-[hsl(var(--vibrant-blue))]/50 h-full min-h-[80px] flex flex-col",
-                                    field.value === "ETH" 
+                                    field.value === "MON" 
                                       ? "border-[hsl(var(--vibrant-blue))] bg-[hsl(var(--vibrant-blue))]/5" 
                                       : "border-border"
                                   )}>
                                     <div className="flex items-center gap-3 mb-2">
                                       <Coins className="h-5 w-5 text-[hsl(var(--vibrant-blue))]" />
-                                      <h4 className="font-medium">ETH</h4>
+                                      <h4 className="font-medium">MON</h4>
                                     </div>
-                                    <p className="text-sm text-muted-foreground flex-1">Native Ethereum token</p>
+                                    <p className="text-sm text-muted-foreground flex-1">Native Monad token</p>
                                   </div>
                                 </Label>
 
@@ -1350,7 +1350,7 @@ const CreateQuest = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>Estimated Gas Fee</span>
-                          <span className="font-medium">0.005 ETH</span>
+                          <span className="font-medium">0.005 MON</span>
                         </div>
                         {/* <div className="flex justify-between">
                           <span>Platform Fee (2%)</span>
@@ -1362,7 +1362,7 @@ const CreateQuest = () => {
                           <div className="flex justify-between font-bold">
                             <span>Total Cost</span>
                             <span className="text-[hsl(var(--vibrant-blue))]">
-                              {((formData.totalRewardPool || 0) * 1).toFixed(4)} {formData.rewardType} + 0.005 ETH
+                              {((formData.totalRewardPool || 0) * 1).toFixed(4)} {formData.rewardType} + 0.005 MON
                             </span>
                           </div>
                         </div>

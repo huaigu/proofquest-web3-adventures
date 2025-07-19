@@ -64,7 +64,7 @@ const generateMockQuests = (): Quest[] => {
   const statuses: Quest['status'][] = ['Active', 'Claiming', 'Cancelled', 'Paused', 'Completed'];
   const questTypes: Quest['questType'][] = ['twitter-interaction', 'quote-tweet', 'send-tweet'];
   const categories: Quest['category'][] = ['Social', 'Content', 'DeFi', 'Gaming', 'Education'];
-  const rewardTypes: Quest['reward']['type'][] = ['ETH', 'ERC20', 'NFT'];
+  const rewardTypes: Quest['reward']['type'][] = ['MON', 'ERC20', 'NFT'];
 
   return Array.from({ length: 15 }, (_, i) => {
     const creator = creators[i % creators.length];
@@ -77,8 +77,8 @@ const generateMockQuests = (): Quest[] => {
     const createdAt = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
     const endDate = new Date(createdAt.getTime() + (Math.random() * 14 + 1) * 24 * 60 * 60 * 1000);
     
-    // Only use supported types: ETH is fully supported, others coming soon
-    const rewardType = i % 4 === 0 ? 'ETH' : (i % 4 === 1 ? 'ERC20' : 'NFT');
+    // Only use supported types: MON is fully supported, others coming soon
+    const rewardType = i % 4 === 0 ? 'MON' : (i % 4 === 1 ? 'ERC20' : 'NFT');
     const questType = questTypes[i % 2]; // Only twitter-interaction and quote-tweet are supported
 
     return {
@@ -130,7 +130,7 @@ const QuestList = () => {
     if (questTypeFilter !== "all") filters.push({ key: "questType", value: questTypeFilter });
     if (categoryFilter !== "all") filters.push({ key: "category", value: categoryFilter });
     if (rewardRange[0] > 0 || rewardRange[1] < 1) {
-      filters.push({ key: "reward", value: `${rewardRange[0].toFixed(2)} - ${rewardRange[1].toFixed(2)} ETH` });
+      filters.push({ key: "reward", value: `${rewardRange[0].toFixed(2)} - ${rewardRange[1].toFixed(2)} MON` });
     }
     return filters;
   }, [statusFilter, rewardTypeFilter, questTypeFilter, categoryFilter, rewardRange]);
@@ -164,10 +164,10 @@ const QuestList = () => {
         return false;
       }
 
-      // Reward range filter (convert to ETH equivalent for comparison)
-      const questRewardInETH = quest.reward.type === 'ETH' ? quest.reward.amount :
-                               quest.reward.type === 'ERC20' ? quest.reward.amount / 2000 : 0.05; // Assume NFT = 0.05 ETH
-      if (questRewardInETH < rewardRange[0] || questRewardInETH > rewardRange[1]) {
+      // Reward range filter (convert to MON equivalent for comparison)
+      const questRewardInMON = quest.reward.type === 'MON' ? quest.reward.amount :
+                               quest.reward.type === 'ERC20' ? quest.reward.amount / 2000 : 0.05; // Assume NFT = 0.05 MON
+      if (questRewardInMON < rewardRange[0] || questRewardInMON > rewardRange[1]) {
         return false;
       }
 
@@ -178,9 +178,9 @@ const QuestList = () => {
     switch (sortBy) {
       case "highest-reward":
         filtered.sort((a, b) => {
-          const aReward = a.reward.type === 'ETH' ? a.reward.amount :
+          const aReward = a.reward.type === 'MON' ? a.reward.amount :
                          a.reward.type === 'ERC20' ? a.reward.amount / 2000 : 0.05;
-          const bReward = b.reward.type === 'ETH' ? b.reward.amount :
+          const bReward = b.reward.type === 'MON' ? b.reward.amount :
                          b.reward.type === 'ERC20' ? b.reward.amount / 2000 : 0.05;
           return bReward - aReward;
         });
@@ -292,7 +292,7 @@ const QuestList = () => {
 
   const formatReward = (reward: Quest['reward']) => {
     if (reward.type === 'NFT') return 'NFT Badge';
-    return `${reward.amount.toFixed(reward.type === 'ETH' ? 3 : 0)} ${reward.type}`;
+    return `${reward.amount.toFixed(reward.type === 'MON' ? 3 : 0)} ${reward.type}`;
   };
 
   const LoadingSkeleton = () => (
@@ -342,7 +342,7 @@ const QuestList = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-[hsl(var(--vibrant-yellow))] rounded-full"></div>
-                  <span className="text-white/80">Total Rewards: 12.5 ETH</span>
+                  <span className="text-white/80">Total Rewards: 12.5 MON</span>
                 </div>
               </div>
             </div>
@@ -461,7 +461,7 @@ const QuestList = () => {
                           <SelectItem value="eth">
                             <div className="flex items-center gap-2">
                               <Coins className="h-4 w-4" />
-                              <span>ETH</span>
+                              <span>MON</span>
                               <span className="text-xs text-green-500">(Supported)</span>
                             </div>
                           </SelectItem>
@@ -518,7 +518,7 @@ const QuestList = () => {
                     {/* Reward Range */}
                     <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                       <label className="text-sm font-semibold mb-3 block text-white">
-                        Reward Range (ETH): {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)}
+                        Reward Range (MON): {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)}
                       </label>
                       <Slider
                         value={rewardRange}

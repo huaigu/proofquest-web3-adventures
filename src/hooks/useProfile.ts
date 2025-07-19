@@ -112,11 +112,11 @@ export const useProfile = (address: string | undefined) => {
 
 // Helper functions to format data
 export const formatEthAmount = (weiAmount: string): string => {
-  const ethAmount = parseFloat(weiAmount) / Math.pow(10, 18);
-  if (ethAmount >= 1) {
-    return `${ethAmount.toFixed(2)} ETH`;
+  const monAmount = parseFloat(weiAmount) / Math.pow(10, 18);
+  if (monAmount >= 1) {
+    return `${monAmount.toFixed(2)} MON`;
   } else {
-    return `${(ethAmount * 1000).toFixed(0)} mETH`;
+    return `${(monAmount * 1000).toFixed(0)} mMON`;
   }
 };
 
