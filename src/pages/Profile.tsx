@@ -27,14 +27,60 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAccount } from "wagmi";
+import { useProfile, formatEthAmount, formatUserAddress, formatDate, formatTimeAgo, getActivityIcon } from "@/hooks/useProfile";
 
 const Profile = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("my-quests");
   const [questTab, setQuestTab] = useState("active");
+  
+  const { address, isConnected } = useAccount();
+  const { data: profileData, isLoading, error } = useProfile(address);
+  
+  // Show wallet connection prompt if not connected
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Wallet className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Connect Your Wallet</h2>
+          <p className="text-muted-foreground mb-4">Please connect your wallet to view your profile</p>
+        </div>
+      </div>
+    );
+  }
 
-  const walletAddress = "0x1234567890123456789012345678901234567890";
-  const shortAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--vibrant-blue))] mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Failed to load profile data</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const walletAddress = address!;
+  const shortAddress = formatUserAddress(walletAddress);
+  const profile = profileData?.profile;
+  const quests = profileData?.quests;
+  const rewards = profileData?.rewards;
+  const activity = profileData?.activity;
 
   const copyAddress = () => {
     navigator.clipboard.writeText(walletAddress);
@@ -44,138 +90,6 @@ const Profile = () => {
     });
   };
 
-  const mockStats = {
-    totalEarned: "2.45 ETH",
-    questsCompleted: 42,
-    questsCreated: 8,
-    successRate: 95.2
-  };
-
-  const mockActiveQuests = [
-    {
-      id: 1,
-      title: "DeFi Protocol Quest",
-      description: "Follow @DeFiProtocol and retweet their latest announcement",
-      reward: "0.1 ETH",
-      participants: "245/500",
-      progress: 49,
-      status: "active",
-      timeLeft: "3 days left"
-    },
-    {
-      id: 2,
-      title: "ZK Education Thread",
-      description: "Create an educational Twitter thread explaining zero-knowledge proofs",
-      reward: "50 USDC",
-      participants: "89/100",
-      progress: 89,
-      status: "active",
-      timeLeft: "1 day left"
-    }
-  ];
-
-  const mockCompletedQuests = [
-    {
-      id: 3,
-      title: "Discord Community",
-      description: "Join the official Discord server and complete verification",
-      reward: "NFT Badge",
-      completedDate: "2024-01-15",
-      status: "completed"
-    },
-    {
-      id: 4,
-      title: "Web3 Tutorial Series",
-      description: "Complete the 5-part Web3 tutorial series",
-      reward: "0.05 ETH",
-      completedDate: "2024-01-10",
-      status: "completed"
-    }
-  ];
-
-  const mockCreatedQuests = [
-    {
-      id: 5,
-      title: "My Custom Quest",
-      description: "Share knowledge about blockchain development",
-      reward: "100 USDC",
-      participants: "67/200",
-      progress: 33.5,
-      status: "active"
-    }
-  ];
-
-  const mockPendingRewards = [
-    {
-      id: 1,
-      quest: "DeFi Protocol Quest",
-      amount: "0.1 ETH",
-      type: "ETH",
-      claimable: true
-    },
-    {
-      id: 2,
-      quest: "ZK Education Thread",
-      amount: "50 USDC",
-      type: "USDC",
-      claimable: true
-    }
-  ];
-
-  const mockRewardHistory = [
-    {
-      id: 1,
-      quest: "Discord Community",
-      amount: "NFT Badge",
-      type: "NFT",
-      date: "2024-01-15",
-      txHash: "0xabcd...1234"
-    },
-    {
-      id: 2,
-      quest: "Web3 Tutorial Series",
-      amount: "0.05 ETH",
-      type: "ETH",
-      date: "2024-01-10",
-      txHash: "0xefgh...5678"
-    }
-  ];
-
-  const mockVestingRewards = [
-    {
-      id: 1,
-      quest: "Long-term Staking Quest",
-      totalAmount: "1.0 ETH",
-      vestedAmount: "0.3 ETH",
-      claimableAmount: "0.1 ETH",
-      vestingProgress: 30,
-      timeRemaining: "45 days"
-    }
-  ];
-
-  const mockActivityFeed = [
-    {
-      id: 1,
-      type: "quest_completed",
-      description: "Completed 'Discord Community' quest",
-      timestamp: "2 hours ago",
-      icon: CheckCircle2
-    },
-    {
-      id: 2,
-      type: "reward_claimed",
-      description: "Claimed 0.05 ETH reward",
-      timestamp: "1 day ago",
-      icon: DollarSign
-    },
-    {
-      id: 3,
-      type: "quest_joined",
-      description: "Joined 'ZK Education Thread' quest",
-      timestamp: "3 days ago",
-      icon: Star
-    }
-  ];
 
   const claimReward = (rewardId: number) => {
     toast({
@@ -219,7 +133,7 @@ const Profile = () => {
                     {shortAddress}
                   </Button>
                 </div>
-                <p className="text-white/80 text-sm">ProofQuest Member since January 2024</p>
+                <p className="text-white/80 text-sm">ProofQuest Member since {profile?.joinDate ? formatDate(profile.joinDate) : 'Unknown'}</p>
               </div>
             </div>
           </div>
@@ -229,7 +143,7 @@ const Profile = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] rounded-xl p-4 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">{mockStats.totalEarned}</div>
+                  <div className="text-xl font-bold">{profile?.totalEarned ? formatEthAmount(profile.totalEarned) : '0 ETH'}</div>
                   <div className="text-xs text-white/80">Total Earned</div>
                 </div>
                 <DollarSign className="h-5 w-5 text-white/60" />
@@ -239,7 +153,7 @@ const Profile = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] rounded-xl p-4 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">{mockStats.questsCompleted}</div>
+                  <div className="text-xl font-bold">{profile?.questsCompleted || 0}</div>
                   <div className="text-xs text-white/80">Completed</div>
                 </div>
                 <CheckCircle2 className="h-5 w-5 text-white/60" />
@@ -249,7 +163,7 @@ const Profile = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))] rounded-xl p-4 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">{mockStats.questsCreated}</div>
+                  <div className="text-xl font-bold">{profile?.questsCreated || 0}</div>
                   <div className="text-xs text-white/80">Created</div>
                 </div>
                 <Plus className="h-5 w-5 text-white/60" />
@@ -259,7 +173,7 @@ const Profile = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] rounded-xl p-4 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">{mockStats.successRate}%</div>
+                  <div className="text-xl font-bold">{profile?.successRate ? `${profile.successRate}%` : '0%'}</div>
                   <div className="text-xs text-white/80">Success Rate</div>
                 </div>
                 <TrendingUp className="h-5 w-5 text-white/60" />
@@ -288,82 +202,100 @@ const Profile = () => {
                   <CardContent>
                     <Tabs value={questTab} onValueChange={setQuestTab}>
                       <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="active">Active ({mockActiveQuests.length})</TabsTrigger>
-                        <TabsTrigger value="completed">Completed ({mockCompletedQuests.length})</TabsTrigger>
-                        <TabsTrigger value="created">Created ({mockCreatedQuests.length})</TabsTrigger>
+                        <TabsTrigger value="active">Active ({quests?.active?.length || 0})</TabsTrigger>
+                        <TabsTrigger value="completed">Completed ({quests?.completed?.length || 0})</TabsTrigger>
+                        <TabsTrigger value="created">Created ({quests?.created?.length || 0})</TabsTrigger>
                       </TabsList>
 
                       <TabsContent value="active" className="space-y-4">
-                        {mockActiveQuests.map((quest) => (
-                          <div key={quest.id} className="border rounded-lg p-4 space-y-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-semibold">{quest.title}</h4>
-                                <p className="text-sm text-muted-foreground">{quest.description}</p>
+                        {quests?.active && quests.active.length > 0 ? quests.active.map((quest) => (
+                          <Link key={quest.id} to={`/quest/${quest.id}`}>
+                            <div className="border rounded-lg p-4 space-y-3 hover:bg-muted/50 transition-colors cursor-pointer">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold">{quest.title}</h4>
+                                  <p className="text-sm text-muted-foreground line-clamp-2">{quest.description}</p>
+                                </div>
+                                <Badge className="bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))]">
+                                  {quest.status === 'active' ? 'Active' : quest.status}
+                                </Badge>
                               </div>
-                              <Badge className="bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))]">
-                                Active
-                              </Badge>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-[hsl(var(--vibrant-green))]">{formatEthAmount(quest.rewardPerUser)}</span>
+                                <span className="text-muted-foreground">{quest.participantCount}/{quest.maxParticipants}</span>
+                                <span className="text-muted-foreground">{quest.timeRemaining}</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div 
+                                  className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-2 rounded-full transition-all"
+                                  style={{ width: `${quest.participationPercentage}%` }}
+                                />
+                              </div>
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-[hsl(var(--vibrant-green))]">{quest.reward}</span>
-                              <span className="text-muted-foreground">{quest.participants}</span>
-                              <span className="text-muted-foreground">{quest.timeLeft}</span>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-2">
-                              <div 
-                                className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] h-2 rounded-full transition-all"
-                                style={{ width: `${quest.progress}%` }}
-                              />
-                            </div>
+                          </Link>
+                        )) : (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <p>No active quests available</p>
                           </div>
-                        ))}
+                        )}
                       </TabsContent>
 
                       <TabsContent value="completed" className="space-y-4">
-                        {mockCompletedQuests.map((quest) => (
-                          <div key={quest.id} className="border rounded-lg p-4 space-y-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-semibold">{quest.title}</h4>
-                                <p className="text-sm text-muted-foreground">{quest.description}</p>
+                        {quests?.completed && quests.completed.length > 0 ? quests.completed.map((quest) => (
+                          <Link key={quest.id} to={`/quest/${quest.id}`}>
+                            <div className="border rounded-lg p-4 space-y-3 hover:bg-muted/50 transition-colors cursor-pointer">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold">{quest.title}</h4>
+                                  <p className="text-sm text-muted-foreground line-clamp-2">{quest.description}</p>
+                                </div>
+                                <Badge className="bg-[hsl(var(--vibrant-green))]/15 text-[hsl(var(--vibrant-green))]">
+                                  Completed
+                                </Badge>
                               </div>
-                              <Badge className="bg-[hsl(var(--vibrant-green))]/15 text-[hsl(var(--vibrant-green))]">
-                                Completed
-                              </Badge>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-[hsl(var(--vibrant-green))]">{formatEthAmount(quest.rewardEarned)}</span>
+                                <span className="text-muted-foreground">Completed on {formatDate(quest.completedDate)}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-[hsl(var(--vibrant-green))]">{quest.reward}</span>
-                              <span className="text-muted-foreground">Completed on {quest.completedDate}</span>
-                            </div>
+                          </Link>
+                        )) : (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <p>No completed quests yet</p>
                           </div>
-                        ))}
+                        )}
                       </TabsContent>
 
                       <TabsContent value="created" className="space-y-4">
-                        {mockCreatedQuests.map((quest) => (
-                          <div key={quest.id} className="border rounded-lg p-4 space-y-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-semibold">{quest.title}</h4>
-                                <p className="text-sm text-muted-foreground">{quest.description}</p>
+                        {quests?.created && quests.created.length > 0 ? quests.created.map((quest) => (
+                          <Link key={quest.id} to={`/quest/${quest.id}`}>
+                            <div className="border rounded-lg p-4 space-y-3 hover:bg-muted/50 transition-colors cursor-pointer">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold">{quest.title}</h4>
+                                  <p className="text-sm text-muted-foreground line-clamp-2">{quest.description}</p>
+                                </div>
+                                <Badge className="bg-[hsl(var(--vibrant-orange))]/15 text-[hsl(var(--vibrant-orange))]">
+                                  {quest.status}
+                                </Badge>
                               </div>
-                              <Badge className="bg-[hsl(var(--vibrant-orange))]/15 text-[hsl(var(--vibrant-orange))]">
-                                Created
-                              </Badge>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-[hsl(var(--vibrant-green))]">{formatEthAmount(quest.totalRewards)}</span>
+                                <span className="text-muted-foreground">{quest.participantCount}/{quest.maxParticipants} participants</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div 
+                                  className="bg-gradient-to-r from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] h-2 rounded-full transition-all"
+                                  style={{ width: `${quest.participationPercentage}%` }}
+                                />
+                              </div>
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-[hsl(var(--vibrant-green))]">{quest.reward}</span>
-                              <span className="text-muted-foreground">{quest.participants}</span>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-2">
-                              <div 
-                                className="bg-gradient-to-r from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] h-2 rounded-full transition-all"
-                                style={{ width: `${quest.progress}%` }}
-                              />
-                            </div>
+                          </Link>
+                        )) : (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <p>No created quests yet</p>
                           </div>
-                        ))}
+                        )}
                       </TabsContent>
                     </Tabs>
                   </CardContent>
@@ -386,21 +318,26 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {mockPendingRewards.map((reward) => (
-                        <div key={reward.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      {rewards?.pending && rewards.pending.length > 0 ? rewards.pending.map((reward, index) => (
+                        <div key={`${reward.questId}-${index}`} className="flex items-center justify-between p-3 border rounded-lg">
                           <div>
-                            <div className="font-medium">{reward.quest}</div>
-                            <div className="text-sm text-muted-foreground">{reward.amount}</div>
+                            <div className="font-medium">{reward.questTitle}</div>
+                            <div className="text-sm text-muted-foreground">{formatEthAmount(reward.amount)}</div>
                           </div>
                           <Button 
                             size="sm"
-                            onClick={() => claimReward(reward.id)}
-                            className="bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90"
+                            onClick={() => claimReward(parseInt(reward.questId))}
+                            disabled={!reward.claimable}
+                            className="bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90 disabled:opacity-50"
                           >
-                            Claim
+                            {reward.claimable ? 'Claim' : 'Pending'}
                           </Button>
                         </div>
-                      ))}
+                      )) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>No pending rewards</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -413,18 +350,18 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {mockVestingRewards.map((vesting) => (
-                        <div key={vesting.id} className="border rounded-lg p-4 space-y-3">
+                      {rewards?.vesting && rewards.vesting.length > 0 ? rewards.vesting.map((vesting, index) => (
+                        <div key={`${vesting.questId}-${index}`} className="border rounded-lg p-4 space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="font-medium">{vesting.quest}</div>
+                              <div className="font-medium">{vesting.questTitle}</div>
                               <div className="text-sm text-muted-foreground">
-                                {vesting.vestedAmount} / {vesting.totalAmount} vested
+                                {formatEthAmount(vesting.vestedAmount)} / {formatEthAmount(vesting.totalAmount)} vested
                               </div>
                             </div>
                             <div className="text-right">
                               <div className="font-medium text-[hsl(var(--vibrant-green))]">
-                                {vesting.claimableAmount} claimable
+                                {formatEthAmount(vesting.claimableAmount)} claimable
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {vesting.timeRemaining} remaining
@@ -438,7 +375,11 @@ const Profile = () => {
                             />
                           </div>
                         </div>
-                      ))}
+                      )) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>No vesting rewards</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -451,21 +392,25 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {mockRewardHistory.map((reward) => (
-                        <div key={reward.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      {rewards?.history && rewards.history.length > 0 ? rewards.history.map((reward, index) => (
+                        <div key={`${reward.questId}-${index}`} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex-1">
-                            <div className="font-medium">{reward.quest}</div>
-                            <div className="text-sm text-muted-foreground">{reward.date}</div>
+                            <div className="font-medium">{reward.questTitle}</div>
+                            <div className="text-sm text-muted-foreground">{formatDate(reward.date)}</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-medium">{reward.amount}</div>
+                            <div className="font-medium">{formatEthAmount(reward.amount)}</div>
                             <Button variant="ghost" size="sm" className="h-auto p-0 text-[hsl(var(--vibrant-blue))]">
                               <ExternalLink className="h-3 w-3 mr-1" />
-                              {reward.txHash}
+                              {reward.txHash.slice(0, 8)}...{reward.txHash.slice(-6)}
                             </Button>
                           </div>
                         </div>
-                      ))}
+                      )) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>No reward history</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -480,20 +425,25 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {mockActivityFeed.map((activity) => {
-                        const IconComponent = activity.icon;
+                      {activity && activity.length > 0 ? activity.map((activityItem, index) => {
+                        const iconName = getActivityIcon(activityItem.type);
+                        const IconComponent = iconName === 'CheckCircle2' ? CheckCircle2 : iconName === 'Plus' ? Plus : Activity;
                         return (
-                          <div key={activity.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                          <div key={`${activityItem.type}-${index}`} className="flex items-start gap-3 p-3 border rounded-lg">
                             <div className="p-2 bg-[hsl(var(--vibrant-blue))]/10 rounded-full">
                               <IconComponent className="h-4 w-4 text-[hsl(var(--vibrant-blue))]" />
                             </div>
                             <div className="flex-1">
-                              <div className="font-medium">{activity.description}</div>
-                              <div className="text-sm text-muted-foreground">{activity.timestamp}</div>
+                              <div className="font-medium">{activityItem.description}</div>
+                              <div className="text-sm text-muted-foreground">{formatTimeAgo(activityItem.timestamp)}</div>
                             </div>
                           </div>
                         );
-                      })}
+                      }) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>No recent activity</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

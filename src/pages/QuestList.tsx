@@ -544,19 +544,19 @@ const QuestList = () => {
 
             {/* Quest Grid */}
             {!isLoading && paginatedQuests.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
                 {paginatedQuests.map((quest) => {
                   const isMock = (quest as QuestListItem & { _source?: string })._source === 'mock';
                   
                   return (
                     <div key={quest.id} className="w-full max-w-lg mx-auto">
-                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-2 shadow-2xl border border-slate-700/50">
+                      <div className="bg-gradient-to-br from-black-950 to-black-900 rounded-xl p-2 shadow-2xl border border-slate-850">
                         
                         {/* Bento Grid Layout */}
                         <div className="grid grid-cols-6 gap-2">
                           
                           {/* Title + Tags */}
-                          <div className="col-span-6 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-3 border border-[hsl(var(--vibrant-blue))]/20 text-white relative overflow-hidden">
+                          <div className="col-span-6 bg-black rounded-xl p-3 border border-gray-800/50 text-white relative overflow-hidden">
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               <span className={`px-2.5 py-0.5 rounded-lg text-xs font-medium border ${
                                 quest.questType.includes('quote') ? 'bg-cyan-500/30 text-cyan-300 border-cyan-500/30' :
@@ -579,40 +579,40 @@ const QuestList = () => {
                           </div>
 
                           {/* User Info */}
-                          <div className="col-span-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-2.5 border border-[hsl(var(--vibrant-blue))]/20 flex items-center gap-2.5">
-                            <div className="w-10 h-10 bg-[hsl(var(--vibrant-blue))]/20 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                          <div className="col-span-3 bg-black rounded-xl p-2.5 border border-gray-800/50 flex items-center gap-2.5">
+                            <div className="w-10 h-10 bg-gray-700/50 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                               {quest.creator.name.slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0 flex-1 text-white">
-                              <div className="text-xs text-gray-300 mb-1 font-medium">User</div>
+                              <div className="text-xs text-gray-400 mb-1 font-medium">User</div>
                               <div className="text-sm font-medium truncate">{quest.creator.name}</div>
                             </div>
                           </div>
 
                           {/* Reward */}
-                          <div className="col-span-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-2.5 border border-[hsl(var(--vibrant-blue))]/20 flex flex-col justify-center">
+                          <div className="col-span-3 bg-black rounded-xl p-2.5 border border-gray-800/50 flex flex-col justify-center items-end text-right">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <Coins className="w-4 h-4 text-gray-300" />
-                              <span className="text-xs text-gray-300 font-medium">Reward</span>
+                              <Coins className="w-4 h-4 text-gray-400" />
+                              <span className="text-xs text-gray-400 font-medium">Reward</span>
                             </div>
                             <div className="text-lg font-bold text-white">{quest.reward.amount} {quest.reward.type}</div>
                           </div>
 
                           {/* Progress */}
-                          <div className="col-span-4 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-3 border border-[hsl(var(--vibrant-blue))]/20 flex flex-col">
+                          <div className="col-span-4 bg-black rounded-xl p-3 border border-gray-800/50 flex flex-col">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-gray-300">Progress</span>
+                              <span className="text-sm font-medium text-gray-400">Progress</span>
                               <span className="text-lg font-bold text-white">
                                 {quest.participants.max ? Math.round((quest.participants.current / quest.participants.max) * 100) : 0}%
                               </span>
                             </div>
-                            <div className="w-full bg-white/20 rounded-full h-2 mb-3">
+                            <div className="w-full bg-gray-700/30 rounded-full h-2 mb-3">
                               <div 
                                 className="bg-white h-2 rounded-full transition-all duration-500" 
                                 style={{ width: `${quest.participants.max ? Math.min((quest.participants.current / quest.participants.max) * 100, 100) : 0}%` }}
                               ></div>
                             </div>
-                            <div className="flex items-center justify-between text-xs text-gray-300">
+                            <div className="flex items-center justify-between text-xs text-gray-400">
                               <div className="flex items-center gap-1">
                                 <Users className="w-3 h-3" />
                                 <span>{quest.participants.current}{quest.participants.max && `/${quest.participants.max}`}</span>
@@ -625,16 +625,16 @@ const QuestList = () => {
                           </div>
 
                           {/* Action Button */}
-                          <div className={`col-span-2 ${isMock ? 'bg-gradient-to-br from-gray-600 to-gray-700 cursor-not-allowed' : 'bg-gradient-to-br from-green-500 to-green-600 cursor-pointer hover:from-green-400 hover:to-green-500'} rounded-lg p-2.5 flex flex-col items-center justify-center text-white transition-all duration-200 shadow-lg`}>
+                          <div className={`col-span-2 ${isMock ? 'bg-gray-800/50 cursor-not-allowed border border-gray-700/50' : 'bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] cursor-pointer hover:scale-105'} rounded-lg p-1.5 flex flex-col items-center justify-center text-white transition-all duration-200 shadow-lg`}>
                             {isMock ? (
                               <>
-                                <div className="w-2 h-2 bg-gray-400 rounded-full mb-1.5"></div>
-                                <span className="text-xs font-medium text-center leading-tight">Mock Data</span>
+                                <div className="w-1 h-1 bg-gray-400 rounded-full mb-0.5"></div>
+                                <span className="text-xs font-medium text-center leading-tight text-gray-400">Mock</span>
                               </>
                             ) : (
-                              <Link to={`/quest/${quest.id}`} className="flex flex-col items-center justify-center h-full w-full">
-                                <Eye className="w-4 h-4 mb-1.5" />
-                                <span className="text-xs font-medium text-center leading-tight">View Quest</span>
+                              <Link to={`/quest/${quest.id}`} className="flex items-center justify-center gap-1 h-full w-full">
+                                <Eye className="w-3 h-3 text-white" />
+                                <span className="text-sm font-medium text-white">View</span>
                               </Link>
                             )}
                           </div>

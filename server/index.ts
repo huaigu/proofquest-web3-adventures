@@ -5,6 +5,8 @@ import { userRoutes } from './routes/users.js'
 import { participationRoutes } from './routes/participations.js'
 import authRoutes from './routes/auth.js'
 import { zktlsRoutes } from './routes/zktls.js'
+import { dashboardRoutes } from './routes/dashboard.js'
+import { profileRoutes } from './routes/profile.js'
 import { database } from './lib/database.js'
 import { eventIndexer } from './lib/eventIndexer.js'
 
@@ -38,6 +40,8 @@ await fastify.register(async function (fastify) {
   await fastify.register(questRoutes)
   await fastify.register(userRoutes)
   await fastify.register(participationRoutes)
+  await fastify.register(dashboardRoutes)
+  await fastify.register(profileRoutes)
   
   // Register ZKTLS routes
   await fastify.register(zktlsRoutes, { prefix: '/api/zktls' })

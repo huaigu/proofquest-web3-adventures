@@ -41,6 +41,9 @@ export class EventIndexer {
   private isPolling: boolean = false;
   private pollingInterval: NodeJS.Timeout | null = null;
   private readonly POLLING_INTERVAL_MS = 5000; // 5 seconds
+  private readonly MAX_RETRIES = 5;
+  private readonly RETRY_BASE_DELAY = 1000; // 1 second base delay
+  private readonly RETRY_MAX_DELAY = 30000; // 30 seconds max delay
 
   constructor(
     rpcUrl: string,
@@ -179,19 +182,46 @@ export class EventIndexer {
    * Index events in a specific block range
    */
   private async indexBlockRange(fromBlock: number, toBlock: number): Promise<void> {
-    const BATCH_SIZE = 1000; // Process in batches to avoid RPC limits
+    const BATCH_SIZE = 100; // Process in batches to avoid RPC limits
 
     for (let start = fromBlock; start <= toBlock; start += BATCH_SIZE) {
       const end = Math.min(start + BATCH_SIZE - 1, toBlock);
 
       console.log(`Processing blocks ${start} to ${end}`);
 
+      await this.processBlockBatchWithRetry(start, end);
+      await database.updateLastProcessedBlock(end);
+    }
+  }
+
+  /**
+   * Process a batch of blocks with retry logic
+   */
+  private async processBlockBatchWithRetry(fromBlock: number, toBlock: number): Promise<void> {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
       try {
-        await this.processBlockBatch(start, end);
-        await database.updateLastProcessedBlock(end);
+        await this.processBlockBatch(fromBlock, toBlock);
+        return; // Success, exit retry loop
       } catch (error) {
-        console.error(`Error processing blocks ${start} to ${end}:`, error);
-        throw error;
+        lastError = error as Error;
+        console.error(`Error processing blocks ${fromBlock} to ${toBlock} (attempt ${attempt}/${this.MAX_RETRIES}):`, error);
+        
+        if (attempt === this.MAX_RETRIES) {
+          console.error(`Failed to process blocks ${fromBlock} to ${toBlock} after ${this.MAX_RETRIES} attempts. Skipping this batch.`);
+          // Don't throw, just log and continue with next batch
+          return;
+        }
+        
+        // Calculate exponential backoff delay
+        const delay = Math.min(
+          this.RETRY_BASE_DELAY * Math.pow(2, attempt - 1),
+          this.RETRY_MAX_DELAY
+        );
+        
+        console.log(`Retrying in ${delay}ms...`);
+        await this.sleep(delay);
       }
     }
   }
@@ -200,14 +230,14 @@ export class EventIndexer {
    * Process a batch of blocks for events
    */
   private async processBlockBatch(fromBlock: number, toBlock: number): Promise<void> {
-    // Get all events in this block range
+    // Get all events in this block range with retry logic
     const filter = {
       address: this.contractAddress,
       fromBlock,
       toBlock
     };
 
-    const logs = await this.provider.getLogs(filter);
+    const logs = await this.getLogsWithRetry(filter);
 
     for (const log of logs) {
       try {
@@ -217,6 +247,49 @@ export class EventIndexer {
         // Continue processing other events even if one fails
       }
     }
+  }
+
+  /**
+   * Get logs with retry logic and exponential backoff
+   */
+  private async getLogsWithRetry(filter: {
+    address: string;
+    fromBlock: number;
+    toBlock: number;
+  }): Promise<ethers.Log[]> {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        const logs = await this.provider.getLogs(filter);
+        return logs;
+      } catch (error) {
+        lastError = error as Error;
+        console.error(`Error getting logs for blocks ${filter.fromBlock} to ${filter.toBlock} (attempt ${attempt}/${this.MAX_RETRIES}):`, error);
+        
+        if (attempt === this.MAX_RETRIES) {
+          throw lastError;
+        }
+        
+        // Calculate exponential backoff delay
+        const delay = Math.min(
+          this.RETRY_BASE_DELAY * Math.pow(2, attempt - 1),
+          this.RETRY_MAX_DELAY
+        );
+        
+        console.log(`Retrying getLogs in ${delay}ms...`);
+        await this.sleep(delay);
+      }
+    }
+    
+    throw lastError;
+  }
+
+  /**
+   * Sleep utility for retry delays
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

@@ -3,8 +3,39 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, Shield, Layers, Activity, Users, Trophy, Zap, ArrowRight, Sparkles, Star, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useDashboard, formatEthAmount, formatUserAddress, formatTimeAgo } from "@/hooks/useDashboard";
 
 const Index = () => {
+  const { data: dashboardData, isLoading, error } = useDashboard();
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--vibrant-blue))] mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Failed to load dashboard data</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = dashboardData?.statistics;
+  const trendingQuests = dashboardData?.trendingQuests || [];
+  const topEarners = dashboardData?.topEarners || [];
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="mx-auto max-w-7xl">
@@ -47,7 +78,7 @@ const Index = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">1,234</div>
+                  <div className="text-xl font-bold">{stats?.totalQuests || 0}</div>
                   <div className="text-xs text-white/80">Total Quests</div>
                 </div>
                 <Activity className="h-4 w-4 text-white/60" />
@@ -56,7 +87,7 @@ const Index = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">$125K</div>
+                  <div className="text-xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 ETH'}</div>
                   <div className="text-xs text-white/80">Rewards</div>
                 </div>
                 <Trophy className="h-4 w-4 text-white/60" />
@@ -66,12 +97,12 @@ const Index = () => {
 
           <div className="col-span-6 md:col-span-2 grid grid-cols-1 gap-4">
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-red))] rounded-xl p-4 text-white shadow-lg">
-              <div className="text-lg font-bold">8,547</div>
+              <div className="text-lg font-bold">{stats?.totalUsers || 0}</div>
               <div className="text-xs text-white/80">Users</div>
               <Users className="h-4 w-4 text-white/60 mt-1" />
             </div>
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))] rounded-xl p-4 text-white shadow-lg">
-              <div className="text-lg font-bold">15.6K</div>
+              <div className="text-lg font-bold">{stats?.completedQuests || 0}</div>
               <div className="text-xs text-white/80">Complete</div>
               <Zap className="h-4 w-4 text-white/60 mt-1" />
             </div>
@@ -79,10 +110,10 @@ const Index = () => {
 
           <div className="col-span-6 md:col-span-2 bg-gradient-to-br from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))] rounded-xl p-4 text-white shadow-lg">
             <div className="h-full flex flex-col justify-center text-center">
-              <div className="text-2xl font-bold mb-1">99.2%</div>
+              <div className="text-2xl font-bold mb-1">{stats?.averageCompletionRate ? `${stats.averageCompletionRate.toFixed(1)}%` : '0%'}</div>
               <div className="text-xs text-white/80">Success Rate</div>
               <div className="w-full bg-white/20 rounded-full h-1 mt-2">
-                <div className="bg-white h-1 rounded-full" style={{ width: "99%" }}></div>
+                <div className="bg-white h-1 rounded-full" style={{ width: `${stats?.averageCompletionRate || 0}%` }}></div>
               </div>
             </div>
           </div>
@@ -261,86 +292,54 @@ const Index = () => {
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-orange))]/90 to-[hsl(var(--vibrant-yellow))]/90 rounded-xl border border-[hsl(var(--vibrant-orange))]/60 hover:border-[hsl(var(--vibrant-orange))]/80 transition-colors text-white">
-                <Avatar className="h-10 w-10 border-2 border-white/30">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] text-white text-xs font-bold">
-                    DF
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-white">DeFi Protocol Quest</h4>
-                    <Badge className="bg-white/20 text-white text-xs font-medium border-white/30">
-                      Active
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-white/90 mb-2 leading-relaxed">
-                    Follow @DeFiProtocol and retweet their latest announcement about governance updates
-                  </p>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-white font-bold">0.1 ETH</span>
-                    <span className="text-xs text-white/80">245/500 participants</span>
-                  </div>
-                  <div className="w-full bg-white/30 rounded-full h-1.5">
-                    <div className="bg-white h-1.5 rounded-full" style={{ width: "49%" }}></div>
-                  </div>
+              {trendingQuests.length > 0 ? trendingQuests.slice(0, 3).map((quest, index) => {
+                const gradients = [
+                  'from-[hsl(var(--vibrant-orange))]/90 to-[hsl(var(--vibrant-yellow))]/90',
+                  'from-[hsl(var(--vibrant-purple))]/90 to-[hsl(var(--vibrant-blue))]/90',
+                  'from-[hsl(var(--vibrant-green))]/90 to-[hsl(var(--vibrant-blue))]/90'
+                ];
+                const borderColors = [
+                  'border-[hsl(var(--vibrant-orange))]/60 hover:border-[hsl(var(--vibrant-orange))]/80',
+                  'border-[hsl(var(--vibrant-purple))]/60 hover:border-[hsl(var(--vibrant-purple))]/80',
+                  'border-[hsl(var(--vibrant-green))]/60 hover:border-[hsl(var(--vibrant-green))]/80'
+                ];
+                
+                return (
+                  <Link key={quest.id} to={`/quest/${quest.id}`}>
+                    <div className={`flex items-start gap-3 p-4 bg-gradient-to-r ${gradients[index]} rounded-xl border ${borderColors[index]} transition-colors text-white cursor-pointer`}>
+                      <Avatar className="h-10 w-10 border-2 border-white/30">
+                        <AvatarImage src="" />
+                        <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] text-white text-xs font-bold">
+                          {quest.title.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="text-sm font-semibold text-white truncate">{quest.title}</h4>
+                          <Badge className="bg-white/20 text-white text-xs font-medium border-white/30">
+                            {quest.status === 'active' ? 'Active' : quest.status}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-white/90 mb-2 leading-relaxed line-clamp-2">
+                          {quest.description}
+                        </p>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-white font-bold">{formatEthAmount(quest.rewardPerUser)}</span>
+                          <span className="text-xs text-white/80">{quest.participantCount}/{quest.maxParticipants} participants</span>
+                        </div>
+                        <div className="w-full bg-white/30 rounded-full h-1.5">
+                          <div className="bg-white h-1.5 rounded-full transition-all" style={{ width: `${quest.participationPercentage}%` }}></div>
+                        </div>
+                        <div className="mt-1 text-xs text-white/70">{quest.timeRemaining}</div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              }) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No trending quests available</p>
                 </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-purple))]/90 to-[hsl(var(--vibrant-blue))]/90 rounded-xl border border-[hsl(var(--vibrant-purple))]/60 hover:border-[hsl(var(--vibrant-purple))]/80 transition-colors text-white">
-                <Avatar className="h-10 w-10 border-2 border-white/30">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-yellow))] text-white text-xs font-bold">
-                    ZK
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-white">ZK Education Thread</h4>
-                    <Badge className="bg-white/20 text-white text-xs font-medium border-white/30">
-                      Active
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-white/90 mb-2 leading-relaxed">
-                    Create an educational Twitter thread explaining zero-knowledge proofs in simple terms
-                  </p>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-white font-bold">50 USDC</span>
-                    <span className="text-xs text-white/80">89/100 participants</span>
-                  </div>
-                  <div className="w-full bg-white/30 rounded-full h-1.5">
-                    <div className="bg-white h-1.5 rounded-full" style={{ width: "89%" }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-green))]/90 to-[hsl(var(--vibrant-blue))]/90 rounded-xl border border-[hsl(var(--vibrant-green))]/60 text-white">
-                <Avatar className="h-10 w-10 border-2 border-white/30">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] text-white text-xs font-bold">
-                    DC
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-sm font-semibold text-white">Discord Community</h4>
-                    <Badge className="bg-white/20 text-white text-xs border border-white/30">
-                      Completed
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-white/90 mb-2 leading-relaxed">
-                    Join the official Discord server and complete the verification process
-                  </p>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-white font-bold">NFT Badge</span>
-                    <span className="text-xs text-white/80">1,000/1,000 completed</span>
-                  </div>
-                  <div className="w-full bg-white/30 rounded-full h-1.5">
-                    <div className="bg-white h-1.5 rounded-full" style={{ width: "100%" }}></div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -352,64 +351,80 @@ const Index = () => {
                 <Wallet className="h-5 w-5" />
                 <h3 className="font-bold text-white">Top Earners</h3>
               </div>
-              <div className="text-2xl font-bold">$125K+</div>
+              <div className="text-2xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 ETH'}</div>
               <div className="text-xs text-white/80">Total Distributed</div>
             </div>
 
-            {/* Top 3 Bento Cards */}
+            {/* Top Earners Cards */}
             <div className="grid grid-cols-1 gap-3">
-              <div className="bg-gradient-to-r from-[hsl(var(--vibrant-yellow))]/10 to-[hsl(var(--vibrant-orange))]/10 rounded-xl p-4 border border-[hsl(var(--vibrant-yellow))]/30">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Avatar className="h-12 w-12 border-3 border-[hsl(var(--vibrant-yellow))]/50">
-                      <AvatarImage src="" />
-                      <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))] text-white text-sm font-bold">
-                        A1
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[hsl(var(--vibrant-yellow))] rounded-full flex items-center justify-center shadow-md">
-                      <span className="text-white text-xs font-bold">1</span>
+              {topEarners.length > 0 ? topEarners.slice(0, 3).map((earner, index) => {
+                const gradients = [
+                  'from-[hsl(var(--vibrant-yellow))]/10 to-[hsl(var(--vibrant-orange))]/10',
+                  'from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10',
+                  'from-[hsl(var(--vibrant-green))]/10 to-[hsl(var(--vibrant-blue))]/10'
+                ];
+                const borderColors = [
+                  'border-[hsl(var(--vibrant-yellow))]/30',
+                  'border-[hsl(var(--vibrant-blue))]/20',
+                  'border-[hsl(var(--vibrant-green))]/20'
+                ];
+                const rankColors = [
+                  'bg-[hsl(var(--vibrant-yellow))]',
+                  'bg-[hsl(var(--vibrant-blue))]',
+                  'bg-[hsl(var(--vibrant-green))]'
+                ];
+                const textColors = [
+                  'text-[hsl(var(--vibrant-orange))]',
+                  'text-[hsl(var(--vibrant-blue))]',
+                  'text-[hsl(var(--vibrant-green))]'
+                ];
+
+                return (
+                  <div key={earner.userAddress} className={`bg-gradient-to-r ${gradients[index]} rounded-xl p-${index === 0 ? '4' : '3'} border ${borderColors[index]}`}>
+                    <div className="flex items-center gap-3">
+                      {index === 0 && (
+                        <div className="relative">
+                          <Avatar className={`h-12 w-12 border-3 border-[hsl(var(--vibrant-yellow))]/50`}>
+                            <AvatarImage src="" />
+                            <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))] text-white text-sm font-bold">
+                              {formatUserAddress(earner.userAddress).slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={`absolute -top-1 -right-1 w-5 h-5 ${rankColors[index]} rounded-full flex items-center justify-center shadow-md`}>
+                            <span className="text-white text-xs font-bold">{earner.rank}</span>
+                          </div>
+                        </div>
+                      )}
+                      {index > 0 && (
+                        <Avatar className={`h-10 w-10 border-2 ${borderColors[index]}`}>
+                          <AvatarImage src="" />
+                          <AvatarFallback className={`bg-gradient-to-br ${index === 1 ? 'from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]' : 'from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue)))'} text-white text-xs font-bold`}>
+                            {formatUserAddress(earner.userAddress).slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div className="flex-1">
+                        <p className={`text-${index === 0 ? 'sm' : 'xs'} font-${index === 0 ? 'bold' : 'semibold'} text-gray-900`}>
+                          {formatUserAddress(earner.userAddress)}
+                        </p>
+                        <p className={`text-${index === 0 ? 'lg' : 'sm'} font-bold ${textColors[index]}`}>
+                          {formatEthAmount(earner.totalRewardsEarned)}
+                        </p>
+                        {index === 0 && (
+                          <p className="text-xs text-gray-600">{earner.totalParticipations} quests completed</p>
+                        )}
+                      </div>
+                      {index > 0 && (
+                        <div className="text-xs font-semibold text-gray-500">#{earner.rank}</div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-gray-900">0x1234...5678</p>
-                    <p className="text-lg font-bold text-[hsl(var(--vibrant-orange))]">2.5 ETH</p>
-                    <p className="text-xs text-gray-600">12 quests completed</p>
-                  </div>
+                );
+              }) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No earners data available</p>
                 </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 rounded-xl p-3 border border-[hsl(var(--vibrant-blue))]/20">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-blue))]/30">
-                    <AvatarImage src="" />
-                    <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white text-xs font-bold">
-                      B2
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold text-gray-900">0xabcd...efgh</p>
-                    <p className="text-sm font-bold text-[hsl(var(--vibrant-blue))]">1.8 ETH</p>
-                  </div>
-                  <div className="text-xs font-semibold text-gray-500">#2</div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-[hsl(var(--vibrant-green))]/10 to-[hsl(var(--vibrant-blue))]/10 rounded-xl p-3 border border-[hsl(var(--vibrant-green))]/20">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 border-2 border-[hsl(var(--vibrant-green))]/30">
-                    <AvatarImage src="" />
-                    <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] text-white text-xs font-bold">
-                      C3
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="text-xs font-semibold text-gray-900">0x9876...4321</p>
-                    <p className="text-sm font-bold text-[hsl(var(--vibrant-green))]">1.2 ETH</p>
-                  </div>
-                  <div className="text-xs font-semibold text-gray-500">#3</div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
