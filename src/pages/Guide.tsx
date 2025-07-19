@@ -23,12 +23,16 @@ import {
   Activity,
   Layers,
   Twitter,
-  Mail
+  Mail,
+  Download,
+  ExternalLink
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 
 const Guide = () => {
+  const { t } = useTranslation('guide');
   const [activeTab, setActiveTab] = useState("sponsors");
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
@@ -39,30 +43,30 @@ const Guide = () => {
   const sponsorSteps = [
     {
       icon: Wallet,
-      title: "Connect Your Wallet",
-      description: "Connect your Web3 wallet to the Monad testnet to get started with quest creation.",
-      details: ["Ensure you have a Web3 wallet installed", "Switch to Monad testnet", "Connect your wallet to ProofQuest"],
+      title: t('sponsors.steps.connectWallet.title'),
+      description: t('sponsors.steps.connectWallet.description'),
+      details: t('sponsors.steps.connectWallet.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]"
     },
     {
       icon: Target,
-      title: "Define Your Quest",
-      description: "Create engaging quests with clear objectives and attractive rewards.",
-      details: ["Choose quest type (Twitter, GitHub, Custom)", "Set clear completion criteria", "Define reward amount and distribution"],
+      title: t('sponsors.steps.defineQuest.title'),
+      description: t('sponsors.steps.defineQuest.description'),
+      details: t('sponsors.steps.defineQuest.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]"
     },
     {
       icon: Settings,
-      title: "Configure Parameters",
-      description: "Set up quest parameters including duration, participant limits, and verification rules.",
-      details: ["Set maximum participants", "Choose quest duration", "Configure verification requirements"],
+      title: t('sponsors.steps.configureParameters.title'),
+      description: t('sponsors.steps.configureParameters.description'),
+      details: t('sponsors.steps.configureParameters.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-teal))]"
     },
     {
       icon: Eye,
-      title: "Monitor & Verify",
-      description: "Track quest progress and verify participant submissions for reward distribution.",
-      details: ["Monitor real-time participation", "Review submission proofs", "Approve verified completions"],
+      title: t('sponsors.steps.monitorVerify.title'),
+      description: t('sponsors.steps.monitorVerify.description'),
+      details: t('sponsors.steps.monitorVerify.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))]"
     }
   ];
@@ -70,30 +74,30 @@ const Guide = () => {
   const userSteps = [
     {
       icon: Wallet,
-      title: "Connect Your Wallet",
-      description: "Connect your Web3 wallet to start participating in quests and earning rewards.",
-      details: ["Install a Web3 wallet", "Add Monad testnet configuration", "Connect to ProofQuest platform"],
+      title: t('users.steps.connectWallet.title'),
+      description: t('users.steps.connectWallet.description'),
+      details: t('users.steps.connectWallet.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]"
     },
     {
       icon: Search,
-      title: "Discover Quests",
-      description: "Browse available quests and find ones that match your interests and skills.",
-      details: ["Filter quests by reward amount", "Check quest requirements", "View completion deadlines"],
+      title: t('users.steps.discoverQuests.title'),
+      description: t('users.steps.discoverQuests.description'),
+      details: t('users.steps.discoverQuests.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]"
     },
     {
       icon: CheckCircle,
-      title: "Complete Tasks",
-      description: "Follow quest instructions and complete the required tasks to earn rewards.",
-      details: ["Read quest requirements carefully", "Complete tasks on external platforms", "Generate necessary proofs"],
+      title: t('users.steps.completeTasks.title'),
+      description: t('users.steps.completeTasks.description'),
+      details: t('users.steps.completeTasks.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))]"
     },
     {
       icon: Trophy,
-      title: "Claim Rewards",
-      description: "Once verified, automatically receive your rewards directly to your wallet.",
-      details: ["Wait for automatic verification", "Receive rewards in your wallet", "Track your earning history"],
+      title: t('users.steps.claimRewards.title'),
+      description: t('users.steps.claimRewards.description'),
+      details: t('users.steps.claimRewards.details', { returnObjects: true }) as string[],
       gradient: "from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))]"
     }
   ];
@@ -101,54 +105,54 @@ const Guide = () => {
   const features = [
     {
       icon: Bot,
-      title: "Automated Verification",
-      description: "Smart contracts automatically verify quest completion and distribute rewards",
+      title: t('features.items.automatedVerification.title'),
+      description: t('features.items.automatedVerification.description'),
       gradient: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))]"
     },
     {
       icon: Shield,
-      title: "Zero-Knowledge Privacy",
-      description: "Protect your privacy while proving task completion with advanced cryptography",
+      title: t('features.items.zeroKnowledgePrivacy.title'),
+      description: t('features.items.zeroKnowledgePrivacy.description'),
       gradient: "from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))]"
     },
     {
       icon: Activity,
-      title: "Transparent & Verifiable",
-      description: "All transactions and verifications are recorded on the blockchain for transparency",
+      title: t('features.items.transparentVerifiable.title'),
+      description: t('features.items.transparentVerifiable.description'),
       gradient: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]"
     },
     {
       icon: Layers,
-      title: "Multi-Platform Integration",
-      description: "Complete tasks across various Web2 platforms and earn Web3 rewards",
+      title: t('features.items.multiPlatformIntegration.title'),
+      description: t('features.items.multiPlatformIntegration.description'),
       gradient: "from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))]"
     }
   ];
 
   const faqs = [
     {
-      question: "What is ProofQuest?",
-      answer: "ProofQuest is a Web3 quest platform that allows you to complete Web2 tasks and earn cryptocurrency rewards. Using zero-knowledge proof technology, you can prove task completion while maintaining privacy."
+      question: t('faq.items.whatIsProofQuest.question'),
+      answer: t('faq.items.whatIsProofQuest.answer')
     },
     {
-      question: "How do I get started?",
-      answer: "Simply connect your Web3 wallet to the Monad testnet, browse available quests, and start completing tasks. You'll automatically receive rewards upon verification."
+      question: t('faq.items.howToGetStarted.question'),
+      answer: t('faq.items.howToGetStarted.answer')
     },
     {
-      question: "What types of quests are available?",
-      answer: "Quests include social media tasks (Twitter engagement), development tasks (GitHub contributions), content creation, community participation, and custom challenges created by sponsors."
+      question: t('faq.items.questTypes.question'),
+      answer: t('faq.items.questTypes.answer')
     },
     {
-      question: "How are rewards distributed?",
-      answer: "Rewards are automatically distributed to your wallet once quest completion is verified through our smart contract system. No manual claiming required!"
+      question: t('faq.items.rewardDistribution.question'),
+      answer: t('faq.items.rewardDistribution.answer')
     },
     {
-      question: "Is my data private?",
-      answer: "Yes! We use zero-knowledge proofs to verify task completion without exposing your personal data or sensitive information to the blockchain."
+      question: t('faq.items.dataPrivacy.question'),
+      answer: t('faq.items.dataPrivacy.answer')
     },
     {
-      question: "What is Monad testnet?",
-      answer: "Monad is a high-performance blockchain that we use for fast and cost-effective transactions. The testnet allows you to interact with the platform without real cryptocurrency costs."
+      question: t('faq.items.monadTestnet.question'),
+      answer: t('faq.items.monadTestnet.answer')
     }
   ];
 
@@ -167,10 +171,10 @@ const Guide = () => {
               <Sparkles className="h-6 w-6 text-white/80" />
             </div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-              How ProofQuest Works
+              {t('hero.title')}
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed">
-              Complete Web2 tasks, earn Web3 rewards with zero-knowledge proof verification
+              {t('hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -179,7 +183,7 @@ const Guide = () => {
                 onClick={() => setActiveTab("users")}
               >
                 <Users className="h-5 w-5 mr-2" />
-                I want to earn rewards
+                {t('hero.userButton')}
               </Button>
               <Button 
                 size="lg" 
@@ -188,7 +192,7 @@ const Guide = () => {
                 onClick={() => setActiveTab("sponsors")}
               >
                 <Target className="h-5 w-5 mr-2" />
-                I want to create quests
+                {t('hero.sponsorButton')}
               </Button>
             </div>
           </div>
@@ -204,23 +208,23 @@ const Guide = () => {
               className="text-lg py-4 px-6 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[hsl(var(--vibrant-orange))] data-[state=active]:to-[hsl(var(--vibrant-yellow))] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 font-medium"
             >
               <Target className="h-5 w-5 mr-2" />
-              For Sponsors
+              {t('sponsors.title')}
             </TabsTrigger>
             <TabsTrigger 
               value="users" 
               className="text-lg py-4 px-6 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[hsl(var(--vibrant-blue))] data-[state=active]:to-[hsl(var(--vibrant-purple))] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 font-medium"
             >
               <Users className="h-5 w-5 mr-2" />
-              For Users
+              {t('users.title')}
             </TabsTrigger>
           </TabsList>
 
           {/* Sponsors Guide */}
           <TabsContent value="sponsors" className="space-y-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Create Engaging Quests</h2>
+              <h2 className="text-3xl font-bold mb-4">{t('sponsors.title')}</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Learn how to create compelling quests that drive community engagement and achieve your goals
+                {t('sponsors.subtitle')}
               </p>
             </div>
 
@@ -237,7 +241,7 @@ const Guide = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
                             <Badge variant="outline" className="text-sm font-medium">
-                              Step {index + 1}
+                              {t('common.stepLabel')} {index + 1}
                             </Badge>
                             <h3 className="text-2xl font-bold">{step.title}</h3>
                           </div>
@@ -261,7 +265,7 @@ const Guide = () => {
             <div className="text-center">
               <Link to="/create">
                 <Button size="lg" className="bg-gradient-to-r from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] text-white font-semibold">
-                  Start Creating Quests
+                  {t('sponsors.cta')}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
@@ -271,9 +275,9 @@ const Guide = () => {
           {/* Users Guide */}
           <TabsContent value="users" className="space-y-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Start Earning Rewards</h2>
+              <h2 className="text-3xl font-bold mb-4">{t('users.title')}</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Follow these simple steps to start participating in quests and earning cryptocurrency rewards
+                {t('users.subtitle')}
               </p>
             </div>
 
@@ -290,7 +294,7 @@ const Guide = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
                             <Badge variant="outline" className="text-sm font-medium">
-                              Step {index + 1}
+                              {t('common.stepLabel')} {index + 1}
                             </Badge>
                             <h3 className="text-2xl font-bold">{step.title}</h3>
                           </div>
@@ -303,6 +307,24 @@ const Guide = () => {
                               </li>
                             ))}
                           </ul>
+                          {/* Add Primus extension button for Complete Tasks step */}
+                          {index === 2 && (
+                            <div className="mt-4 p-4 bg-gradient-to-r from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 border border-[hsl(var(--vibrant-blue))]/20 rounded-lg">
+                              <p className="text-sm text-muted-foreground mb-3">
+                                {t('users.steps.completeTasks.primusNote')}
+                              </p>
+                              <a 
+                                href={t('primus.chromeStoreUrl')}
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium text-sm"
+                              >
+                                <Download className="h-4 w-4" />
+                                {t('primus.installButton')}
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -314,7 +336,7 @@ const Guide = () => {
             <div className="text-center">
               <Link to="/quests">
                 <Button size="lg" className="bg-gradient-to-r from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] text-white font-semibold">
-                  Explore Available Quests
+                  {t('users.cta')}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
@@ -325,9 +347,9 @@ const Guide = () => {
         {/* Key Features Section */}
         <div className="mt-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose ProofQuest?</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('features.title')}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Advanced features that make quest completion secure, private, and rewarding
+              {t('features.subtitle')}
             </p>
           </div>
 
@@ -352,9 +374,9 @@ const Guide = () => {
         {/* FAQ Section */}
         <div className="mt-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('faq.title')}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Got questions? We've got answers to help you get started
+              {t('faq.subtitle')}
             </p>
           </div>
 
@@ -391,20 +413,20 @@ const Guide = () => {
         <div className="mt-20 text-center">
           <Card className="border-0 bg-gradient-to-br from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10 border-[hsl(var(--vibrant-blue))]/20">
             <CardContent className="p-12">
-              <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+              <h2 className="text-3xl font-bold mb-4">{t('cta.title')}</h2>
               <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join the ProofQuest community and start earning rewards for completing tasks you already do
+                {t('cta.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/quests">
                   <Button size="lg" className="bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white font-semibold">
-                    Browse Quests
+                    {t('cta.browseQuests')}
                     <Zap className="h-5 w-5 ml-2" />
                   </Button>
                 </Link>
                 <Link to="/create">
                   <Button size="lg" variant="outline" className="font-semibold">
-                    Create a Quest
+                    {t('cta.createQuest')}
                     <Target className="h-5 w-5 ml-2" />
                   </Button>
                 </Link>
@@ -417,9 +439,9 @@ const Guide = () => {
         <div className="mt-20 text-center">
           <Card className="border-0 bg-gradient-to-br from-muted/50 to-background">
             <CardContent className="p-8">
-              <h2 className="text-2xl font-bold mb-4">Get in Touch</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('contact.title')}</h2>
               <p className="text-muted-foreground mb-6">
-                Have questions or feedback? Feel free to reach out!
+                {t('contact.subtitle')}
               </p>
               <div className="flex justify-center">
                 <a 
@@ -429,7 +451,7 @@ const Guide = () => {
                   className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
                 >
                   <Twitter className="h-5 w-5" />
-                  Follow @coder_chao
+                  {t('contact.followButton')}
                 </a>
               </div>
             </CardContent>

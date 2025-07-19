@@ -1,0 +1,26 @@
+{
+  "success": {
+    "questCreated": "Quest created successfully!",
+    "questCompleted": "Quest completed successfully!",
+    "rewardClaimed": "Reward claimed successfully!",
+    "profileUpdated": "Profile updated successfully!"
+  },
+  "error": {
+    "questCreationFailed": "Failed to create quest. Please try again.",
+    "questCompletionFailed": "Failed to complete quest. Please try again.",
+    "rewardClaimFailed": "Failed to claim reward. Please try again.",
+    "profileUpdateFailed": "Failed to update profile. Please try again.",
+    "connectionFailed": "Connection failed. Please check your network.",
+    "authenticationFailed": "Authentication failed. Please try again."
+  },
+  "warning": {
+    "unsavedChanges": "You have unsaved changes. Are you sure you want to leave?",
+    "insufficientBalance": "Insufficient balance to complete this action.",
+    "questExpired": "This quest has expired."
+  },
+  "info": {
+    "questStarted": "Quest started! Complete the tasks to earn rewards.",
+    "walletConnected": "Wallet connected successfully!",
+    "walletDisconnected": "Wallet disconnected."
+  }
+}

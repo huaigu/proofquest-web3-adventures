@@ -4,8 +4,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, Shield, Layers, Activity, Users, Trophy, Zap, ArrowRight, Sparkles, Star, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDashboard, formatEthAmount, formatUserAddress, formatTimeAgo } from "@/hooks/useDashboard";
+import { useTranslation } from 'react-i18next';
 
 const Index = () => {
+  const { t } = useTranslation(['quests', 'common']);
   const { data: dashboardData, isLoading, error } = useDashboard();
 
   // Show loading state
@@ -14,7 +16,7 @@ const Index = () => {
       <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--vibrant-blue))] mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
+          <p className="text-muted-foreground">{t('loadingDashboard')}</p>
         </div>
       </div>
     );
@@ -25,8 +27,8 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">Failed to load dashboard data</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <p className="text-red-500 mb-4">{t('failedToLoadDashboard')}</p>
+          <Button onClick={() => window.location.reload()}>{t('common:retry')}</Button>
         </div>
       </div>
     );
@@ -49,24 +51,24 @@ const Index = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="h-5 w-5" />
-                  <span className="text-sm font-medium text-white/80">Web3 Quest Platform</span>
+                  <span className="text-sm font-medium text-white/80">{t('common:brand.tagline')}</span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
-                  ProofQuest
+                  {t('common:brand.name')}
                 </h1>
                 <p className="text-sm text-white/90 mb-4 leading-relaxed">
-                  Complete Web2 tasks, earn Web3 rewards with zero-knowledge proof verification
+                  {t('common:brand.description')}
                 </p>
               </div>
               <div className="flex gap-3">
                 <Link to="/quests">
                   <Button size="sm" className="bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90 text-xs font-medium">
-                    Explore Quests
+                    {t('exploreQuests')}
                   </Button>
                 </Link>
                 <Link to="/create">
                   <Button size="sm" className="bg-white/10 text-white hover:bg-white/20 border border-white/30 text-xs font-medium">
-                    Create Quest
+                    {t('createQuest')}
                   </Button>
                 </Link>
               </div>
@@ -79,7 +81,7 @@ const Index = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xl font-bold">{stats?.totalQuests || 0}</div>
-                  <div className="text-xs text-white/80">Total Quests</div>
+                  <div className="text-xs text-white/80">{t('totalQuests')}</div>
                 </div>
                 <Activity className="h-4 w-4 text-white/60" />
               </div>
@@ -88,7 +90,7 @@ const Index = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 MON'}</div>
-                  <div className="text-xs text-white/80">Rewards</div>
+                  <div className="text-xs text-white/80">{t('totalRewards')}</div>
                 </div>
                 <Trophy className="h-4 w-4 text-white/60" />
               </div>
@@ -98,12 +100,12 @@ const Index = () => {
           <div className="col-span-6 md:col-span-2 grid grid-cols-1 gap-4">
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-red))] rounded-xl p-4 text-white shadow-lg">
               <div className="text-lg font-bold">{stats?.totalUsers || 0}</div>
-              <div className="text-xs text-white/80">Users</div>
+              <div className="text-xs text-white/80">{t('totalUsers')}</div>
               <Users className="h-4 w-4 text-white/60 mt-1" />
             </div>
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))] rounded-xl p-4 text-white shadow-lg">
               <div className="text-lg font-bold">{stats?.completedQuests || 0}</div>
-              <div className="text-xs text-white/80">Complete</div>
+              <div className="text-xs text-white/80">{t('common:completed')}</div>
               <Zap className="h-4 w-4 text-white/60 mt-1" />
             </div>
           </div>
@@ -111,7 +113,7 @@ const Index = () => {
           <div className="col-span-6 md:col-span-2 bg-gradient-to-br from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))] rounded-xl p-4 text-white shadow-lg">
             <div className="h-full flex flex-col justify-center text-center">
               <div className="text-2xl font-bold mb-1">{stats?.averageCompletionRate ? `${stats.averageCompletionRate.toFixed(1)}%` : '0%'}</div>
-              <div className="text-xs text-white/80">Success Rate</div>
+              <div className="text-xs text-white/80">{t('successRate')}</div>
               <div className="w-full bg-white/20 rounded-full h-1 mt-2">
                 <div className="bg-white h-1 rounded-full" style={{ width: `${stats?.averageCompletionRate || 0}%` }}></div>
               </div>
@@ -129,9 +131,9 @@ const Index = () => {
               <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Bot className="h-4 w-4" />
-                  <span className="text-xs font-semibold">Auto Rewards</span>
+                  <span className="text-xs font-semibold">{t('autoRewards')}</span>
                 </div>
-                <p className="text-xs text-white/90 mb-2">Smart contract verification</p>
+                <p className="text-xs text-white/90 mb-2">{t('smartContractVerification')}</p>
                 {/* Auto Rewards SVG - Robot/Automation theme */}
                 <div className="flex-1 p-3">
                   <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,9 +170,9 @@ const Index = () => {
               <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Activity className="h-4 w-4" />
-                  <span className="text-xs font-semibold">Transparent</span>
+                  <span className="text-xs font-semibold">{t('transparent')}</span>
                 </div>
-                <p className="text-xs text-white/90 mb-2">Blockchain verifiable</p>
+                <p className="text-xs text-white/90 mb-2">{t('blockchainVerifiable')}</p>
                 {/* Transparency SVG - Blockchain/transparency theme */}
                 <div className="flex-1 p-3">
                   <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,9 +211,9 @@ const Index = () => {
               <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Shield className="h-4 w-4" />
-                  <span className="text-xs font-semibold">Private</span>
+                  <span className="text-xs font-semibold">{t('private')}</span>
                 </div>
-                <p className="text-xs text-white/90 mb-2">Zero-knowledge proofs</p>
+                <p className="text-xs text-white/90 mb-2">{t('zeroKnowledgeProofs')}</p>
                 {/* Privacy SVG - Zero-knowledge/privacy theme */}
                 <div className="flex-1 p-3">
                   <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,9 +246,9 @@ const Index = () => {
               <div className="relative z-10 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <Layers className="h-4 w-4" />
-                  <span className="text-xs font-semibold">Multi-Task</span>
+                  <span className="text-xs font-semibold">{t('multiTask')}</span>
                 </div>
-                <p className="text-xs text-white/90 mb-2">Web2 integrations</p>
+                <p className="text-xs text-white/90 mb-2">{t('web2Integrations')}</p>
                 {/* Multi-Task SVG - Web2 integrations theme */}
                 <div className="flex-1 p-3">
                   <svg className="w-full h-full text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,10 +286,10 @@ const Index = () => {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-[hsl(var(--vibrant-yellow))]" />
-                <h3 className="font-semibold tex-white-600">Trending Quests</h3>
+                <h3 className="font-semibold tex-white-600">{t('trendingQuests')}</h3>
               </div>
               <Button size="sm" variant="ghost" className="text-xs text-gray-600 hover:text-white-500">
-                View All <ArrowRight className="h-3 w-3 ml-1" />
+                {t('viewAll')} <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </div>
             
@@ -317,7 +319,7 @@ const Index = () => {
                         <div className="flex items-center justify-between mb-1">
                           <h4 className="text-sm font-semibold text-white truncate">{quest.title}</h4>
                           <Badge className="bg-white/20 text-white text-xs font-medium border-white/30">
-                            {quest.status === 'active' ? 'Active' : quest.status}
+                            {quest.status === 'active' ? t('common:active') : quest.status}
                           </Badge>
                         </div>
                         <p className="text-xs text-white/90 mb-2 leading-relaxed line-clamp-2">
@@ -325,7 +327,7 @@ const Index = () => {
                         </p>
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-white font-bold">{formatEthAmount(quest.rewardPerUser)}</span>
-                          <span className="text-xs text-white/80">{quest.participantCount}/{quest.maxParticipants} participants</span>
+                          <span className="text-xs text-white/80">{quest.participantCount}/{quest.maxParticipants} {t('participants')}</span>
                         </div>
                         <div className="w-full bg-white/30 rounded-full h-1.5">
                           <div className="bg-white h-1.5 rounded-full transition-all" style={{ width: `${quest.participationPercentage}%` }}></div>
@@ -337,7 +339,7 @@ const Index = () => {
                 );
               }) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No trending quests available</p>
+                  <p>{t('noTrendingQuests')}</p>
                 </div>
               )}
             </div>
@@ -349,10 +351,10 @@ const Index = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))] rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Wallet className="h-5 w-5" />
-                <h3 className="font-bold text-white">Top Earners</h3>
+                <h3 className="font-bold text-white">{t('topEarners')}</h3>
               </div>
               <div className="text-2xl font-bold">{stats?.totalRewards ? formatEthAmount(stats.totalRewards) : '0 MON'}</div>
-              <div className="text-xs text-white/80">Total Distributed</div>
+              <div className="text-xs text-white/80">{t('totalDistributed')}</div>
             </div>
 
             {/* Top Earners Cards */}
@@ -411,7 +413,7 @@ const Index = () => {
                           {formatEthAmount(earner.totalRewardsEarned)}
                         </p>
                         {index === 0 && (
-                          <p className="text-xs text-gray-600">{earner.totalParticipations} quests completed</p>
+                          <p className="text-xs text-gray-600">{earner.totalParticipations} {t('questsCompleted')}</p>
                         )}
                       </div>
                       {index > 0 && (
@@ -422,7 +424,7 @@ const Index = () => {
                 );
               }) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No earners data available</p>
+                  <p>{t('noEarnersData')}</p>
                 </div>
               )}
             </div>

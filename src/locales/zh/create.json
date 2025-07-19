@@ -1,0 +1,206 @@
+{
+  "header": {
+    "title": "创建新任务",
+    "subtitle": "为 ProofQuest 社区设置任务"
+  },
+  "steps": {
+    "basicInfo": "基本信息",
+    "taskType": "任务类型",
+    "rewards": "奖励",
+    "timing": "时间设置",
+    "review": "审核",
+    "basicInformation": "基本信息",
+    "taskTypeConfiguration": "任务类型和配置",
+    "thresholdRewardConfiguration": "阈值和奖励配置",
+    "timeConfiguration": "时间配置",
+    "reviewDeploy": "审核和部署",
+    "success": "成功！"
+  },
+  "navigation": {
+    "back": "返回",
+    "next": "下一步",
+    "saveDraft": "保存草稿",
+    "deployQuest": "部署任务",
+    "connectWalletToDeploy": "连接钱包以部署",
+    "deployingToBlockchain": "正在部署到区块链..."
+  },
+  "step1": {
+    "title": "任务详情",
+    "description": "提供关于您任务的基本信息",
+    "questTitle": "任务标题",
+    "questTitlePlaceholder": "输入任务标题",
+    "descriptionLabel": "描述",
+    "descriptionPlaceholder": "描述参与者需要做什么"
+  },
+  "step2": {
+    "title": "任务类型和配置",
+    "description": "选择任务类型并配置其要求",
+    "questType": "任务类型",
+    "questTypes": {
+      "twitterInteraction": {
+        "title": "Twitter 互动",
+        "description": "用户与推文互动（点赞、转发、评论、关注）"
+      },
+      "quoteTweet": {
+        "title": "引用推文",
+        "description": "用户按特定要求引用推文"
+      },
+      "sendTweet": {
+        "title": "发送推文",
+        "description": "用户创建和发送原创推文",
+        "comingSoon": "即将推出"
+      }
+    },
+    "twitterInteraction": {
+      "tweetUrl": "推文链接",
+      "tweetUrlPlaceholder": "https://twitter.com/...",
+      "tweetUrlHelp": "此链接将用作参与者互动的启动页面",
+      "requiredActions": "必需操作",
+      "like": "点赞",
+      "retweet": "转发"
+    },
+    "quoteTweet": {
+      "originalTweetUrl": "原始推文链接",
+      "originalTweetUrlPlaceholder": "https://twitter.com/...",
+      "originalTweetUrlHelp": "输入您希望参与者引用的推文链接。这将用作启动页面。",
+      "requiredHashtag": "必需话题标签",
+      "requiredHashtagPlaceholder": "输入话题标签（例如：#Web3, #DeFi, #ProofQuest）",
+      "requiredHashtagHelp": "可选：输入一个必须包含在引用推文中的话题标签"
+    }
+  },
+  "step3": {
+    "threshold": {
+      "title": "阈值配置",
+      "description": "设置参与限制",
+      "maxParticipants": "最大参与者数",
+      "maxParticipantsPlaceholder": "100",
+      "maxParticipantsHelp": "此任务允许的参与者总数"
+    },
+    "reward": {
+      "title": "奖励配置",
+      "description": "设置奖励和分发",
+      "rewardType": "奖励类型",
+      "rewardTypes": {
+        "mon": "MON",
+        "monDescription": "Monad 原生代币",
+        "erc20": "ERC20 代币",
+        "erc20Description": "自定义 ERC20 代币",
+        "nft": "NFT",
+        "nftDescription": "非同质化代币奖励",
+        "comingSoon": "即将推出"
+      },
+      "totalRewardPool": "总奖励池",
+      "totalRewardPoolPlaceholder": "1.0",
+      "rewardPerParticipant": "每位参与者奖励",
+      "rewardCalculation": "从总奖励池 ÷ 最大参与者数计算得出",
+      "distributionMethod": "分发方式",
+      "distributionMethods": {
+        "immediate": "立即发放",
+        "immediateDescription": "完成后立即分发奖励",
+        "linearVesting": "线性释放",
+        "linearVestingDescription": "奖励按时间线性释放",
+        "comingSoon": "即将推出"
+      }
+    }
+  },
+  "step4": {
+    "title": "时间配置",
+    "description": "设置任务时间和截止日期",
+    "questStartDate": "任务开始日期",
+    "questEndDate": "任务结束日期",
+    "rewardClaimDeadline": "奖励领取截止日期",
+    "rewardClaimDeadlineHelp": "参与者必须在此日期前领取奖励",
+    "pickADate": "选择日期"
+  },
+  "step5": {
+    "questDetails": {
+      "title": "任务详情",
+      "description": "基本信息和任务要求",
+      "fields": {
+        "title": "标题",
+        "taskType": "任务类型",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "claimDeadline": "领取截止日期",
+        "description": "描述",
+        "launchPageUrl": "启动页面链接"
+      }
+    },
+    "questConfiguration": {
+      "title": "任务配置",
+      "description": "任务特定要求和条件",
+      "interactionType": "互动类型",
+      "targetAccount": "目标账户",
+      "tweetUrl": "推文链接",
+      "originalTweetUrl": "原始推文链接",
+      "quoteRequirements": "引用要求",
+      "contentRequirements": "内容要求"
+    },
+    "thresholdConfiguration": {
+      "title": "阈值配置",
+      "description": "参与者要求和任务激活条件",
+      "minimumParticipants": "最少参与者",
+      "maximumParticipants": "最大参与者数",
+      "noMinimumSet": "未设置最小值",
+      "questActivatesWhenReached": "（达到时激活任务）"
+    },
+    "rewardConfiguration": {
+      "title": "奖励配置",
+      "description": "奖励详情和分发方式",
+      "rewardType": "奖励类型",
+      "distributionMethod": "分发方式",
+      "tokenAddress": "代币地址",
+      "tokenSymbol": "代币符号",
+      "totalRewardPool": "总奖励池",
+      "rewardPerParticipant": "每位参与者奖励",
+      "calculatedFrom": "（计算：{{total}} ÷ {{max}}）"
+    },
+    "costBreakdown": {
+      "title": "费用明细",
+      "description": "任务部署的预估费用",
+      "totalRewardPool": "总奖励池",
+      "estimatedGasFee": "预估燃料费",
+      "platformFee": "平台费用（2%）",
+      "totalCost": "总费用"
+    },
+    "terms": {
+      "agreement": "我同意",
+      "termsOfService": "服务条款",
+      "and": "和",
+      "questCreationGuidelines": "任务创建指南"
+    }
+  },
+  "success": {
+    "title": "任务已部署！",
+    "message": "您的任务\"{{title}}\"现在已上线并接受参与者。",
+    "viewQuest": "查看任务",
+    "createAnother": "创建另一个任务"
+  },
+  "validation": {
+    "titleRequired": "标题是必填项",
+    "titleTooLong": "标题太长",
+    "descriptionMinLength": "描述至少需要10个字符",
+    "endDateAfterStart": "任务结束日期必须在开始日期之后",
+    "tweetUrlRequired": "Twitter 互动任务需要推文链接",
+    "quoteTweetUrlRequired": "引用推文任务需要原始推文链接",
+    "rewardPoolMinimum": "奖励池必须大于0",
+    "participantsMinimum": "必须允许至少1个参与者",
+    "agreeToTerms": "您必须同意条款",
+    "formValidationFailed": "表单验证失败",
+    "checkRequiredFields": "请检查必填字段并重试。"
+  },
+  "notifications": {
+    "draftSaved": "草稿已保存！",
+    "draftSavedDescription": "您的任务草稿已本地保存。",
+    "walletNotConnected": "钱包未连接",
+    "connectWalletDescription": "请连接您的钱包以部署任务。",
+    "networkSwitchRequired": "需要切换网络",
+    "networkSwitchDescription": "请切换到 Monad 测试网以部署任务。",
+    "questDeployedSuccessfully": "任务部署成功！",
+    "transactionHash": "交易哈希：{{hash}}",
+    "questDeploymentFailed": "任务部署失败",
+    "failedToDeployToBlockchain": "无法将任务部署到区块链",
+    "authenticationRequired": "需要身份验证",
+    "signInToCreateQuest": "请使用您的钱包登录以创建任务。"
+  }
+}

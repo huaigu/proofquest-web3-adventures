@@ -1,0 +1,32 @@
+{
+  "brand": {
+    "name": "ProofQuest",
+    "tagline": "Web3 Quest Platform",
+    "description": "Complete Web2 tasks, earn Web3 rewards with zero-knowledge proof verification"
+  },
+  "loading": "Loading...",
+  "retry": "Retry",
+  "error": "Error",
+  "success": "Success",
+  "failed": "Failed",
+  "clear": "Clear",
+  "save": "Save",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "close": "Close",
+  "view": "View",
+  "edit": "Edit",
+  "delete": "Delete",
+  "refresh": "Refresh",
+  "search": "Search",
+  "filter": "Filter",
+  "sort": "Sort",
+  "all": "All",
+  "active": "Active",
+  "pending": "Pending",
+  "completed": "Completed",
+  "ended": "Ended",
+  "cancelled": "Cancelled",
+  "paused": "Paused",
+  "claiming": "Claiming"
+}

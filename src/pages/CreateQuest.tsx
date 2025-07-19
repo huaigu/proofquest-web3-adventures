@@ -45,11 +45,12 @@ import type { QuestFormData } from "@/types";
 import { createLikeAndRetweetQuest, createQuoteTweetQuest } from "@/lib/questContract";
 import { useAccount, useChainId, useSwitchChain } from 'wagmi';
 import { parseEther } from 'viem';
+import { useTranslation } from 'react-i18next';
 
 // Form schema for validation (matching QuestFormData interface)
-const questSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title too long"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
+const createQuestSchema = (t: (key: string) => string) => z.object({
+  title: z.string().min(1, t('validation.titleRequired')).max(100, t('validation.titleTooLong')),
+  description: z.string().min(10, t('validation.descriptionMinLength')),
   launch_page: z.string().optional(), // Will be populated automatically from tweet URLs
   questType: z.enum(["twitter-interaction", "quote-tweet", "send-tweet"]),
   // Twitter interaction specific
@@ -66,7 +67,7 @@ const questSchema = z.object({
   requiredActions: z.array(z.string()).optional(),
   // Step 2 - Reward configuration
   rewardType: z.enum(["MON", "ERC20", "NFT"]),
-  totalRewardPool: z.number().min(0.001, "Reward pool must be greater than 0"),
+  totalRewardPool: z.number().min(0.001, t('validation.rewardPoolMinimum')),
   rewardPerParticipant: z.number().optional(),
   distributionMethod: z.enum(["immediate", "manual", "scheduled"]),
   linearPeriod: z.number().optional(),
@@ -75,14 +76,14 @@ const questSchema = z.object({
   startDate: z.date(),
   endDate: z.date(),
   rewardClaimDeadline: z.date(),
-  maxParticipants: z.number().min(1, "Must allow at least 1 participant"),
+  maxParticipants: z.number().min(1, t('validation.participantsMinimum')),
   requireWhitelist: z.boolean(),
   autoApproveSubmissions: z.boolean(),
-  agreeToTerms: z.boolean().refine(val => val === true, "You must agree to terms")
+  agreeToTerms: z.boolean().refine(val => val === true, t('validation.agreeToTerms'))
 }).refine((data) => {
   return data.endDate > data.startDate;
 }, {
-  message: "Quest End Date must be after Quest Start Date",
+  message: t('validation.endDateAfterStart'),
   path: ["endDate"]
 }).refine((data) => {
   // 验证Twitter Interaction类型需要Tweet URL
@@ -91,7 +92,7 @@ const questSchema = z.object({
   }
   return true;
 }, {
-  message: "Tweet URL is required for Twitter Interaction quests",
+  message: t('validation.tweetUrlRequired'),
   path: ["tweetUrl"]
 }).refine((data) => {
   // 验证Quote Tweet类型需要Quote Tweet URL
@@ -100,11 +101,12 @@ const questSchema = z.object({
   }
   return true;
 }, {
-  message: "Original Tweet URL is required for Quote Tweet quests",
+  message: t('validation.quoteTweetUrlRequired'),
   path: ["quoteTweetUrl"]
 });
 
 const CreateQuest = () => {
+  const { t } = useTranslation('create');
   const { toast } = useToast();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
@@ -124,7 +126,7 @@ const CreateQuest = () => {
   const [isDeploying, setIsDeploying] = useState(false);
 
   const { control, handleSubmit, watch, setValue, getValues, trigger, formState: { errors } } = useForm<QuestFormData>({
-    resolver: zodResolver(questSchema),
+    resolver: zodResolver(createQuestSchema(t)),
     defaultValues: {
       title: "",
       description: "",
@@ -242,8 +244,8 @@ const CreateQuest = () => {
     // Check wallet connection
     if (!isConnected || !address) {
       toast({
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet to deploy the quest.",
+        title: t('notifications.walletNotConnected'),
+        description: t('notifications.connectWalletDescription'),
         variant: "destructive"
       });
       return;
@@ -256,8 +258,8 @@ const CreateQuest = () => {
         await switchChain({ chainId: targetChainId });
       } catch (error) {
         toast({
-          title: "Network Switch Required",
-          description: "Please switch to Monad testnet to deploy the quest.",
+          title: t('notifications.networkSwitchRequired'),
+          description: t('notifications.networkSwitchDescription'),
           variant: "destructive"
         });
         return;
@@ -328,8 +330,8 @@ const CreateQuest = () => {
       console.log('✅ Quest deployed successfully! Transaction hash:', hash);
 
       toast({
-        title: "Quest Deployed Successfully!",
-        description: `Transaction hash: ${hash.slice(0, 10)}...`,
+        title: t('notifications.questDeployedSuccessfully'),
+        description: t('notifications.transactionHash', { hash: hash.slice(0, 10) + '...' }),
       });
 
       // Clear draft on success
@@ -342,8 +344,8 @@ const CreateQuest = () => {
     } catch (error: any) {
       console.error('❌ Quest deployment failed:', error);
       toast({
-        title: "Quest Deployment Failed",
-        description: error.message || "Failed to deploy quest to blockchain",
+        title: t('notifications.questDeploymentFailed'),
+        description: error.message || t('notifications.failedToDeployToBlockchain'),
         variant: "destructive"
       });
     } finally {
@@ -360,8 +362,8 @@ const CreateQuest = () => {
     if (!isAuthenticated) {
       console.log('❌ User not authenticated, requesting sign-in');
       toast({
-        title: "Authentication Required",
-        description: "Please sign in with your wallet to create a quest.",
+        title: t('notifications.authenticationRequired'),
+        description: t('notifications.signInToCreateQuest'),
         variant: "destructive"
       });
       await handleSignIn();
@@ -389,19 +391,19 @@ const CreateQuest = () => {
   const saveDraft = () => {
     localStorage.setItem('questDraft', JSON.stringify(formData));
     toast({
-      title: "Draft saved!",
-      description: "Your quest draft has been saved locally.",
+      title: t('notifications.draftSaved'),
+      description: t('notifications.draftSavedDescription'),
     });
   };
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 1: return "Basic Information";
-      case 2: return "Task Type & Configuration";
-      case 3: return "Threshold & Reward Configuration";
-      case 4: return "Time Configuration";
-      case 5: return "Review & Deploy";
-      case 6: return "Success!";
+      case 1: return t('steps.basicInformation');
+      case 2: return t('steps.taskTypeConfiguration');
+      case 3: return t('steps.thresholdRewardConfiguration');
+      case 4: return t('steps.timeConfiguration');
+      case 5: return t('steps.reviewDeploy');
+      case 6: return t('steps.success');
       default: return "";
     }
   };
@@ -409,27 +411,27 @@ const CreateQuest = () => {
   const questTypeOptions = [
     {
       value: "twitter-interaction",
-      title: "Twitter Interaction", 
-      description: "Users interact with tweets (like, retweet, comment, follow)",
+      title: t('step2.questTypes.twitterInteraction.title'), 
+      description: t('step2.questTypes.twitterInteraction.description'),
       icon: Heart
     },
     {
       value: "quote-tweet",
-      title: "Quote Tweet",
-      description: "Users quote tweet with specific requirements",
+      title: t('step2.questTypes.quoteTweet.title'),
+      description: t('step2.questTypes.quoteTweet.description'),
       icon: MessageCircle
     },
     {
       value: "send-tweet",
-      title: "Send Tweet",
-      description: "Users create and send original tweets",
+      title: t('step2.questTypes.sendTweet.title'),
+      description: t('step2.questTypes.sendTweet.description'),
       icon: FileText
     }
   ];
 
   const interactionTypeOptions = [
-    { value: "like", label: "Like", icon: Heart },
-    { value: "retweet", label: "Retweet", icon: Repeat2 },
+    { value: "like", label: t('step2.twitterInteraction.like'), icon: Heart },
+    { value: "retweet", label: t('step2.twitterInteraction.retweet'), icon: Repeat2 },
     { value: "comment", label: "Comment", icon: MessageCircle },
     { value: "follow", label: "Follow", icon: Twitter }
   ];
@@ -442,16 +444,16 @@ const CreateQuest = () => {
             <div className="mx-auto w-16 h-16 bg-[hsl(var(--vibrant-green))]/10 rounded-full flex items-center justify-center mb-4">
               <Check className="h-8 w-8 text-[hsl(var(--vibrant-green))]" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Quest Deployed!</h1>
+            <h1 className="text-2xl font-bold mb-2">{t('success.title')}</h1>
             <p className="text-muted-foreground mb-6">
-              Your quest "{formData.title}" is now live and accepting participants.
+              {t('success.message', { title: formData.title })}
             </p>
             <div className="space-y-3">
               <Button className="w-full bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90">
-                View Quest
+                {t('success.viewQuest')}
               </Button>
               <Button variant="outline" className="w-full" onClick={() => window.location.href = '/create'}>
-                Create Another Quest
+                {t('success.createAnother')}
               </Button>
             </div>
           </CardContent>
@@ -468,8 +470,8 @@ const CreateQuest = () => {
           <div className="bg-gradient-to-br from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-blue))] rounded-2xl p-6 text-white relative overflow-hidden shadow-xl">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15)_0%,transparent_50%)]" />
             <div className="relative z-10">
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">Create New Quest</h1>
-              <p className="text-white/80">Set up a quest for the ProofQuest community</p>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('header.title')}</h1>
+              <p className="text-white/80">{t('header.subtitle')}</p>
             </div>
           </div>
         </div>
@@ -505,11 +507,11 @@ const CreateQuest = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6 relative">
             {[
-              { num: 1, title: "Basic Info", color: "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]" },
-              { num: 2, title: "Task Type", color: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]" },
-              { num: 3, title: "Rewards", color: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]" },
-              { num: 4, title: "Timing", color: "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]" },
-              { num: 5, title: "Review", color: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]" }
+              { num: 1, title: t('steps.basicInfo'), color: "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]" },
+              { num: 2, title: t('steps.taskType'), color: "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]" },
+              { num: 3, title: t('steps.rewards'), color: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]" },
+              { num: 4, title: t('steps.timing'), color: "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]" },
+              { num: 5, title: t('steps.review'), color: "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]" }
             ].map((step, index) => (
               <div key={step.num} className="flex flex-col items-center flex-1 relative">
                 <div className={cn(
@@ -561,8 +563,8 @@ const CreateQuest = () => {
         <form onSubmit={handleSubmit(onSubmit, (errors) => {
           console.log('❌ Form validation errors:', errors);
           toast({
-            title: "Form Validation Failed",
-            description: "Please check the required fields and try again.",
+            title: t('validation.formValidationFailed'),
+            description: t('validation.checkRequiredFields'),
             variant: "destructive"
           });
         })}>
@@ -570,13 +572,13 @@ const CreateQuest = () => {
               {currentStep === 1 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Quest Details</CardTitle>
-                    <CardDescription>Provide basic information about your quest</CardDescription>
+                    <CardTitle>{t('step1.title')}</CardTitle>
+                    <CardDescription>{t('step1.description')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Quest Title */}
                     <div className="space-y-2">
-                      <Label htmlFor="title">Quest Title *</Label>
+                      <Label htmlFor="title">{t('step1.questTitle')} *</Label>
                       <Controller
                         name="title"
                         control={control}
@@ -584,7 +586,7 @@ const CreateQuest = () => {
                           <Input
                             {...field}
                             value={field.value || ""}
-                            placeholder="Enter quest title"
+                            placeholder={t('step1.questTitlePlaceholder')}
                             className={errors.title ? "border-destructive" : ""}
                           />
                         )}
@@ -596,7 +598,7 @@ const CreateQuest = () => {
 
                     {/* Description */}
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description *</Label>
+                      <Label htmlFor="description">{t('step1.descriptionLabel')} *</Label>
                       <Controller
                         name="description"
                         control={control}
@@ -604,7 +606,7 @@ const CreateQuest = () => {
                           <Textarea
                             {...field}
                             value={field.value || ""}
-                            placeholder="Describe what participants need to do"
+                            placeholder={t('step1.descriptionPlaceholder')}
                             rows={4}
                             className={errors.description ? "border-destructive" : ""}
                           />
@@ -623,13 +625,13 @@ const CreateQuest = () => {
               {currentStep === 2 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Task Type & Configuration</CardTitle>
-                    <CardDescription>Choose the type of quest and configure its requirements</CardDescription>
+                    <CardTitle>{t('step2.title')}</CardTitle>
+                    <CardDescription>{t('step2.description')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Quest Type */}
                     <div className="space-y-4">
-                      <Label>Quest Type *</Label>
+                      <Label>{t('step2.questType')} *</Label>
                       <Controller
                         name="questType"
                         control={control}
@@ -686,14 +688,14 @@ const CreateQuest = () => {
                       {formData.questType === "twitter-interaction" && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="tweetUrl">Tweet URL *</Label>
+                            <Label htmlFor="tweetUrl">{t('step2.twitterInteraction.tweetUrl')} *</Label>
                             <Controller
                               name="tweetUrl"
                               control={control}
                               render={({ field }) => (
                                 <Input
                                   {...field}
-                                  placeholder="https://twitter.com/..."
+                                  placeholder={t('step2.twitterInteraction.tweetUrlPlaceholder')}
                                   value={field.value || ""}
                                   onChange={(e) => {
                                     field.onChange(e.target.value);
@@ -708,15 +710,15 @@ const CreateQuest = () => {
                               <p className="text-sm text-destructive">{errors.tweetUrl.message}</p>
                             )}
                             <p className="text-sm text-muted-foreground">
-                              This URL will be used as the launch page for participants to interact with
+                              {t('step2.twitterInteraction.tweetUrlHelp')}
                             </p>
                           </div>
                           <div className="space-y-4">
-                            <Label>Required Actions *</Label>
+                            <Label>{t('step2.twitterInteraction.requiredActions')} *</Label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {[
-                                { id: "like", label: "Like", icon: Heart },
-                                { id: "retweet", label: "Retweet", icon: Repeat2 }
+                                { id: "like", label: t('step2.twitterInteraction.like'), icon: Heart },
+                                { id: "retweet", label: t('step2.twitterInteraction.retweet'), icon: Repeat2 }
                               ].map((action) => {
                                 const IconComponent = action.icon;
                                 return (
@@ -755,14 +757,14 @@ const CreateQuest = () => {
                       {formData.questType === "quote-tweet" && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="quoteTweetUrl">Original Tweet URL *</Label>
+                            <Label htmlFor="quoteTweetUrl">{t('step2.quoteTweet.originalTweetUrl')} *</Label>
                             <Controller
                               name="quoteTweetUrl"
                               control={control}
                               render={({ field }) => (
                                 <Input
                                   {...field}
-                                  placeholder="https://twitter.com/..."
+                                  placeholder={t('step2.quoteTweet.originalTweetUrlPlaceholder')}
                                   value={field.value || ""}
                                   onChange={(e) => {
                                     field.onChange(e.target.value);
@@ -777,24 +779,24 @@ const CreateQuest = () => {
                               <p className="text-sm text-destructive">{errors.quoteTweetUrl.message}</p>
                             )}
                             <p className="text-sm text-muted-foreground">
-                              Enter the URL of the tweet you want participants to quote. This will be used as the launch page.
+                              {t('step2.quoteTweet.originalTweetUrlHelp')}
                             </p>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="quoteRequirements">Required Hashtag</Label>
+                            <Label htmlFor="quoteRequirements">{t('step2.quoteTweet.requiredHashtag')}</Label>
                             <Controller
                               name="quoteRequirements"
                               control={control}
                               render={({ field }) => (
                                 <Input
                                   {...field}
-                                  placeholder="Enter hashtag (e.g., #Web3, #DeFi, #ProofQuest)"
+                                  placeholder={t('step2.quoteTweet.requiredHashtagPlaceholder')}
                                   value={field.value || ""}
                                 />
                               )}
                             />
                             <p className="text-sm text-muted-foreground">
-                              Optional: Enter one hashtag that must be included in the quote tweet
+                              {t('step2.quoteTweet.requiredHashtagHelp')}
                             </p>
                           </div>
                         </>
@@ -810,19 +812,19 @@ const CreateQuest = () => {
                   {/* Threshold Configuration */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Threshold Configuration</CardTitle>
-                      <CardDescription>Set participation limits</CardDescription>
+                      <CardTitle>{t('step3.threshold.title')}</CardTitle>
+                      <CardDescription>{t('step3.threshold.description')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="maxParticipants">Maximum Participants *</Label>
+                        <Label htmlFor="maxParticipants">{t('step3.threshold.maxParticipants')} *</Label>
                         <Controller
                           name="maxParticipants"
                           control={control}
                           render={({ field }) => (
                             <Input
                               type="number"
-                              placeholder="100"
+                              placeholder={t('step3.threshold.maxParticipantsPlaceholder')}
                               value={field.value?.toString() || ""}
                               onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                               className={errors.maxParticipants ? "border-destructive" : ""}
@@ -833,7 +835,7 @@ const CreateQuest = () => {
                           <p className="text-sm text-destructive">{errors.maxParticipants.message}</p>
                         )}
                         <p className="text-sm text-muted-foreground">
-                          Total number of participants allowed for this quest
+                          {t('step3.threshold.maxParticipantsHelp')}
                         </p>
                       </div>
                     </CardContent>
@@ -842,13 +844,13 @@ const CreateQuest = () => {
                   {/* Reward Configuration */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Reward Configuration</CardTitle>
-                      <CardDescription>Set up rewards and distribution</CardDescription>
+                      <CardTitle>{t('step3.reward.title')}</CardTitle>
+                      <CardDescription>{t('step3.reward.description')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Reward Type */}
                       <div className="space-y-4">
-                        <Label>Reward Type *</Label>
+                        <Label>{t('step3.reward.rewardType')} *</Label>
                         <Controller
                           name="rewardType"
                           control={control}
@@ -866,9 +868,9 @@ const CreateQuest = () => {
                                   )}>
                                     <div className="flex items-center gap-3 mb-2">
                                       <Coins className="h-5 w-5 text-[hsl(var(--vibrant-blue))]" />
-                                      <h4 className="font-medium">MON</h4>
+                                      <h4 className="font-medium">{t('step3.reward.rewardTypes.mon')}</h4>
                                     </div>
-                                    <p className="text-sm text-muted-foreground flex-1">Native Monad token</p>
+                                    <p className="text-sm text-muted-foreground flex-1">{t('step3.reward.rewardTypes.monDescription')}</p>
                                   </div>
                                 </Label>
 
@@ -877,10 +879,10 @@ const CreateQuest = () => {
                                   <div className="border rounded-lg p-4 border-border bg-muted/30 h-full min-h-[80px] flex flex-col">
                                     <div className="flex items-center gap-3 mb-2">
                                       <Coins className="h-5 w-5 text-muted-foreground" />
-                                      <h4 className="font-medium text-muted-foreground">ERC20 Token</h4>
-                                      <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                      <h4 className="font-medium text-muted-foreground">{t('step3.reward.rewardTypes.erc20')}</h4>
+                                      <Badge variant="secondary" className="text-xs">{t('step3.reward.rewardTypes.comingSoon')}</Badge>
                                     </div>
-                                    <p className="text-sm text-muted-foreground flex-1">Custom ERC20 tokens</p>
+                                    <p className="text-sm text-muted-foreground flex-1">{t('step3.reward.rewardTypes.erc20Description')}</p>
                                   </div>
                                 </div>
 
@@ -889,10 +891,10 @@ const CreateQuest = () => {
                                   <div className="border rounded-lg p-4 border-border bg-muted/30 h-full min-h-[80px] flex flex-col">
                                     <div className="flex items-center gap-3 mb-2">
                                       <FileText className="h-5 w-5 text-muted-foreground" />
-                                      <h4 className="font-medium text-muted-foreground">NFT</h4>
-                                      <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                      <h4 className="font-medium text-muted-foreground">{t('step3.reward.rewardTypes.nft')}</h4>
+                                      <Badge variant="secondary" className="text-xs">{t('step3.reward.rewardTypes.comingSoon')}</Badge>
                                     </div>
-                                    <p className="text-sm text-muted-foreground flex-1">Non-fungible token rewards</p>
+                                    <p className="text-sm text-muted-foreground flex-1">{t('step3.reward.rewardTypes.nftDescription')}</p>
                                   </div>
                                 </div>
                               </div>
@@ -905,7 +907,7 @@ const CreateQuest = () => {
                       {/* Reward Amounts */}
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="totalRewardPool">Total Reward Pool *</Label>
+                          <Label htmlFor="totalRewardPool">{t('step3.reward.totalRewardPool')} *</Label>
                           <Controller
                             name="totalRewardPool"
                             control={control}
@@ -913,7 +915,7 @@ const CreateQuest = () => {
                               <Input
                                 type="text"
                                 inputMode="decimal"
-                                placeholder="1.0"
+                                placeholder={t('step3.reward.totalRewardPoolPlaceholder')}
                                 value={field.value?.toString() || ""}
                                 onChange={(e) => {
                                   const value = e.target.value;
@@ -944,10 +946,10 @@ const CreateQuest = () => {
                           <div className="bg-[hsl(var(--vibrant-green))]/5 border border-[hsl(var(--vibrant-green))]/20 rounded-lg p-3">
                             <div className="flex items-center gap-2 text-sm">
                               <Calculator className="h-4 w-4 text-[hsl(var(--vibrant-green))]" />
-                              <span className="font-medium">Reward per Participant: {rewardPerParticipant} {formData.rewardType}</span>
+                              <span className="font-medium">{t('step3.reward.rewardPerParticipant')}: {rewardPerParticipant} {formData.rewardType}</span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Calculated from Total Reward Pool ÷ Maximum Participants
+                              {t('step3.reward.rewardCalculation')}
                             </p>
                           </div>
                         )}
@@ -955,7 +957,7 @@ const CreateQuest = () => {
 
                       {/* Distribution Method */}
                       <div className="space-y-4">
-                        <Label>Distribution Method *</Label>
+                        <Label>{t('step3.reward.distributionMethod')} *</Label>
                         <Controller
                           name="distributionMethod"
                           control={control}
@@ -973,9 +975,9 @@ const CreateQuest = () => {
                                     <div className="flex items-center gap-3">
                                       <Coins className="h-4 w-4 text-[hsl(var(--vibrant-green))]" />
                                       <div>
-                                        <div className="font-medium">Immediate</div>
+                                        <div className="font-medium">{t('step3.reward.distributionMethods.immediate')}</div>
                                         <div className="text-sm text-muted-foreground">
-                                          Rewards distributed instantly upon completion
+                                          {t('step3.reward.distributionMethods.immediateDescription')}
                                         </div>
                                       </div>
                                     </div>
@@ -989,11 +991,11 @@ const CreateQuest = () => {
                                       <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                       <div>
                                         <div className="font-medium text-muted-foreground flex items-center gap-2">
-                                          Linear Vesting
-                                          <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                          {t('step3.reward.distributionMethods.linearVesting')}
+                                          <Badge variant="secondary" className="text-xs">{t('step3.reward.distributionMethods.comingSoon')}</Badge>
                                         </div>
                                         <div className="text-sm text-muted-foreground">
-                                          Rewards are vested linearly over time
+                                          {t('step3.reward.distributionMethods.linearVestingDescription')}
                                         </div>
                                       </div>
                                     </div>
@@ -1014,14 +1016,14 @@ const CreateQuest = () => {
               {currentStep === 4 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Time Configuration</CardTitle>
-                    <CardDescription>Set up quest timing and deadlines</CardDescription>
+                    <CardTitle>{t('step4.title')}</CardTitle>
+                    <CardDescription>{t('step4.description')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Quest Duration */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Quest Start Date *</Label>
+                        <Label>{t('step4.questStartDate')} *</Label>
                         <Controller
                           name="startDate"
                           control={control}
@@ -1036,7 +1038,7 @@ const CreateQuest = () => {
                                   )}
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value && field.value instanceof Date && !isNaN(field.value.getTime()) ? format(field.value, "PPP") : "Pick a date"}
+                                  {field.value && field.value instanceof Date && !isNaN(field.value.getTime()) ? format(field.value, "PPP") : t('step4.pickADate')}
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-0" align="start">
@@ -1072,7 +1074,7 @@ const CreateQuest = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Quest End Date *</Label>
+                        <Label>{t('step4.questEndDate')} *</Label>
                         <Controller
                           name="endDate"
                           control={control}
@@ -1088,7 +1090,7 @@ const CreateQuest = () => {
                                   )}
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value && field.value instanceof Date && !isNaN(field.value.getTime()) ? format(field.value, "PPP") : "Pick a date"}
+                                  {field.value && field.value instanceof Date && !isNaN(field.value.getTime()) ? format(field.value, "PPP") : t('step4.pickADate')}
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-0" align="start">
@@ -1111,7 +1113,7 @@ const CreateQuest = () => {
 
                     {/* Reward Claim Deadline */}
                     <div className="space-y-2">
-                      <Label>Reward Claim Deadline *</Label>
+                      <Label>{t('step4.rewardClaimDeadline')} *</Label>
                       <Controller
                         name="rewardClaimDeadline"
                         control={control}
@@ -1126,7 +1128,7 @@ const CreateQuest = () => {
                                 )}
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                {field.value ? format(field.value, "PPP") : t('step4.pickADate')}
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
@@ -1142,7 +1144,7 @@ const CreateQuest = () => {
                         )}
                       />
                       <p className="text-sm text-muted-foreground">
-                        Participants must claim their rewards before this date
+                        {t('step4.rewardClaimDeadlineHelp')}
                       </p>
                     </div>
                   </CardContent>
@@ -1156,41 +1158,41 @@ const CreateQuest = () => {
                   {/* Quest Details */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Quest Details</CardTitle>
-                      <CardDescription>Basic information and task requirements</CardDescription>
+                      <CardTitle>{t('step5.questDetails.title')}</CardTitle>
+                      <CardDescription>{t('step5.questDetails.description')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Title</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.questDetails.fields.title')}</Label>
                           <p className="font-medium">{formData.title}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Task Type</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.questDetails.fields.taskType')}</Label>
                           <p className="font-medium">
                             {questTypeOptions.find(opt => opt.value === formData.questType)?.title}
                           </p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Start Date</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.questDetails.fields.startDate')}</Label>
                           <p className="font-medium">{formData.startDate && formData.startDate instanceof Date && !isNaN(formData.startDate.getTime()) ? format(formData.startDate, "PPP") : "Invalid date"}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">End Date</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.questDetails.fields.endDate')}</Label>
                           <p className="font-medium">{formData.endDate && formData.endDate instanceof Date && !isNaN(formData.endDate.getTime()) ? format(formData.endDate, "PPP") : "Invalid date"}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Claim Deadline</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.questDetails.fields.claimDeadline')}</Label>
                           <p className="font-medium">{formData.rewardClaimDeadline && formData.rewardClaimDeadline instanceof Date && !isNaN(formData.rewardClaimDeadline.getTime()) ? format(formData.rewardClaimDeadline, "PPP") : "Invalid date"}</p>
                         </div>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                        <Label className="text-sm font-medium text-muted-foreground">{t('step5.questDetails.fields.description')}</Label>
                         <p className="text-sm">{formData.description}</p>
                       </div>
                       {formData.launch_page && (
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Launch Page URL</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.questDetails.fields.launchPageUrl')}</Label>
                           <p className="text-sm text-[hsl(var(--vibrant-blue))] break-all">{formData.launch_page}</p>
                         </div>
                       )}
@@ -1200,28 +1202,28 @@ const CreateQuest = () => {
                   {/* Quest Configuration */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Quest Configuration</CardTitle>
-                      <CardDescription>Task-specific requirements and conditions</CardDescription>
+                      <CardTitle>{t('step5.questConfiguration.title')}</CardTitle>
+                      <CardDescription>{t('step5.questConfiguration.description')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {/* Twitter Interaction Configuration */}
                       {formData.questType === "twitter-interaction" && (
                         <div className="space-y-3">
                           <div>
-                            <Label className="text-sm font-medium text-muted-foreground">Interaction Type</Label>
+                            <Label className="text-sm font-medium text-muted-foreground">{t('step5.questConfiguration.interactionType')}</Label>
                             <p className="font-medium capitalize">
                               {interactionTypeOptions.find(opt => opt.value === formData.interactionType)?.label || formData.interactionType}
                             </p>
                           </div>
                           {formData.interactionType === "follow" && formData.targetAccount && (
                             <div>
-                              <Label className="text-sm font-medium text-muted-foreground">Target Account</Label>
+                              <Label className="text-sm font-medium text-muted-foreground">{t('step5.questConfiguration.targetAccount')}</Label>
                               <p className="font-medium">{formData.targetAccount}</p>
                             </div>
                           )}
                           {formData.interactionType !== "follow" && formData.tweetUrl && (
                             <div>
-                              <Label className="text-sm font-medium text-muted-foreground">Tweet URL</Label>
+                              <Label className="text-sm font-medium text-muted-foreground">{t('step5.questConfiguration.tweetUrl')}</Label>
                               <p className="font-medium text-[hsl(var(--vibrant-blue))] break-all">{formData.tweetUrl}</p>
                             </div>
                           )}
@@ -1233,13 +1235,13 @@ const CreateQuest = () => {
                         <div className="space-y-3">
                           {formData.quoteTweetUrl && (
                             <div>
-                              <Label className="text-sm font-medium text-muted-foreground">Original Tweet URL</Label>
+                              <Label className="text-sm font-medium text-muted-foreground">{t('step5.questConfiguration.originalTweetUrl')}</Label>
                               <p className="font-medium text-[hsl(var(--vibrant-blue))] break-all">{formData.quoteTweetUrl}</p>
                             </div>
                           )}
                           {formData.quoteRequirements && (
                             <div>
-                              <Label className="text-sm font-medium text-muted-foreground">Quote Requirements</Label>
+                              <Label className="text-sm font-medium text-muted-foreground">{t('step5.questConfiguration.quoteRequirements')}</Label>
                               <p className="text-sm">{formData.quoteRequirements}</p>
                             </div>
                           )}
@@ -1249,7 +1251,7 @@ const CreateQuest = () => {
                       {/* Send Tweet Configuration */}
                       {formData.questType === "send-tweet" && formData.contentRequirements && (
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Content Requirements</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.questConfiguration.contentRequirements')}</Label>
                           <p className="text-sm">{formData.contentRequirements}</p>
                         </div>
                       )}
@@ -1259,24 +1261,24 @@ const CreateQuest = () => {
                   {/* Threshold Configuration */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Threshold Configuration</CardTitle>
-                      <CardDescription>Participant requirements and quest activation conditions</CardDescription>
+                      <CardTitle>{t('step5.thresholdConfiguration.title')}</CardTitle>
+                      <CardDescription>{t('step5.thresholdConfiguration.description')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Minimum Participants</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.thresholdConfiguration.minimumParticipants')}</Label>
                           <p className="font-medium">
-                            {formData.participantThreshold || "No minimum set"}
+                            {formData.participantThreshold || t('step5.thresholdConfiguration.noMinimumSet')}
                             {formData.participantThreshold && (
                               <span className="text-sm text-muted-foreground ml-2">
-                                (Quest activates when reached)
+                                {t('step5.thresholdConfiguration.questActivatesWhenReached')}
                               </span>
                             )}
                           </p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Maximum Participants</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.thresholdConfiguration.maximumParticipants')}</Label>
                           <p className="font-medium">{formData.maxParticipants}</p>
                         </div>
                       </div>
@@ -1286,48 +1288,48 @@ const CreateQuest = () => {
                   {/* Reward Configuration */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Reward Configuration</CardTitle>
-                      <CardDescription>Reward details and distribution method</CardDescription>
+                      <CardTitle>{t('step5.rewardConfiguration.title')}</CardTitle>
+                      <CardDescription>{t('step5.rewardConfiguration.description')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Reward Type</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.rewardConfiguration.rewardType')}</Label>
                           <p className="font-medium">{formData.rewardType}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Distribution Method</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.rewardConfiguration.distributionMethod')}</Label>
                           <p className="font-medium capitalize">{formData.distributionMethod}</p>
                         </div>
                         {formData.rewardType === "ERC20" && (
                           <>
                             {formData.tokenAddress && (
                               <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Token Address</Label>
+                                <Label className="text-sm font-medium text-muted-foreground">{t('step5.rewardConfiguration.tokenAddress')}</Label>
                                 <p className="font-medium text-xs break-all">{formData.tokenAddress}</p>
                               </div>
                             )}
                             {formData.tokenSymbol && (
                               <div>
-                                <Label className="text-sm font-medium text-muted-foreground">Token Symbol</Label>
+                                <Label className="text-sm font-medium text-muted-foreground">{t('step5.rewardConfiguration.tokenSymbol')}</Label>
                                 <p className="font-medium">{formData.tokenSymbol}</p>
                               </div>
                             )}
                           </>
                         )}
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Total Reward Pool</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.rewardConfiguration.totalRewardPool')}</Label>
                           <p className="font-medium text-[hsl(var(--vibrant-green))]">
                             {formData.totalRewardPool} {formData.rewardType}
                           </p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Reward per Participant</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('step5.rewardConfiguration.rewardPerParticipant')}</Label>
                           <p className="font-medium">
                             {rewardPerParticipant} {formData.rewardType}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            (Calculated: {formData.totalRewardPool} ÷ {formData.maxParticipants})
+                            {t('step5.rewardConfiguration.calculatedFrom', { total: formData.totalRewardPool, max: formData.maxParticipants })}
                           </p>
                         </div>
                       </div>
@@ -1337,30 +1339,30 @@ const CreateQuest = () => {
                   {/* Cost Breakdown */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Cost Breakdown</CardTitle>
-                      <CardDescription>Estimated costs for quest deployment</CardDescription>
+                      <CardTitle>{t('step5.costBreakdown.title')}</CardTitle>
+                      <CardDescription>{t('step5.costBreakdown.description')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span>Total Reward Pool</span>
+                          <span>{t('step5.costBreakdown.totalRewardPool')}</span>
                           <span className="font-medium">
                             {formData.totalRewardPool} {formData.rewardType}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Estimated Gas Fee</span>
+                          <span>{t('step5.costBreakdown.estimatedGasFee')}</span>
                           <span className="font-medium">0.005 MON</span>
                         </div>
                         {/* <div className="flex justify-between">
-                          <span>Platform Fee (2%)</span>
+                          <span>{t('step5.costBreakdown.platformFee')}</span>
                           <span className="font-medium">
                             {((formData.totalRewardPool || 0) * 0.02).toFixed(4)} {formData.rewardType}
                           </span>
                         </div> */}
                         <div className="border-t pt-3">
                           <div className="flex justify-between font-bold">
-                            <span>Total Cost</span>
+                            <span>{t('step5.costBreakdown.totalCost')}</span>
                             <span className="text-[hsl(var(--vibrant-blue))]">
                               {((formData.totalRewardPool || 0) * 1).toFixed(4)} {formData.rewardType} + 0.005 MON
                             </span>
@@ -1385,13 +1387,13 @@ const CreateQuest = () => {
                             />
                             <div className="text-sm">
                               <p>
-                                I agree to the{" "}
+                                {t('step5.terms.agreement')}{" "}
                                 <a href="#" className="text-[hsl(var(--vibrant-blue))] hover:underline">
-                                  Terms of Service
+                                  {t('step5.terms.termsOfService')}
                                 </a>{" "}
-                                and{" "}
+                                {t('step5.terms.and')}{" "}
                                 <a href="#" className="text-[hsl(var(--vibrant-blue))] hover:underline">
-                                  Quest Creation Guidelines
+                                  {t('step5.terms.questCreationGuidelines')}
                                 </a>
                               </p>
                               {errors.agreeToTerms && (
@@ -1415,7 +1417,7 @@ const CreateQuest = () => {
               disabled={currentStep === 1}
             >
               <ChevronLeft className="h-4 w-4 mr-2" />
-              Back
+              {t('navigation.back')}
             </Button>
 
             {/* Save Draft Button - Center */}
@@ -1426,7 +1428,7 @@ const CreateQuest = () => {
               className="text-muted-foreground hover:text-foreground"
             >
               <Save className="h-4 w-4 mr-2" />
-              Save Draft
+              {t('navigation.saveDraft')}
             </Button>
 
             <div className="flex gap-3">
@@ -1436,7 +1438,7 @@ const CreateQuest = () => {
                   onClick={nextStep}
                   className="bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90"
                 >
-                  Next
+                  {t('navigation.next')}
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
@@ -1471,17 +1473,17 @@ const CreateQuest = () => {
                   {isDeploying ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deploying to Blockchain...
+                      {t('navigation.deployingToBlockchain')}
                     </>
                   ) : !isConnected ? (
                     <>
                       <Shield className="h-4 w-4 mr-2" />
-                      Connect Wallet to Deploy
+                      {t('navigation.connectWalletToDeploy')}
                     </>
                   ) : (
                     <>
                       <Rocket className="h-4 w-4 mr-2" />
-                      Deploy Quest
+                      {t('navigation.deployQuest')}
                     </>
                   )}
                 </Button>

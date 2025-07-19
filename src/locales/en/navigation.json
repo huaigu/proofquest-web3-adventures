@@ -1,0 +1,11 @@
+{
+  "home": "Home",
+  "explore": "Explore",
+  "create": "Create",
+  "profile": "Profile",
+  "guide": "Guide",
+  "quests": "Quests",
+  "authenticated": "Authenticated",
+  "signInRequired": "Sign In Required",
+  "authenticatedAs": "Authenticated as {{name}}"
+}

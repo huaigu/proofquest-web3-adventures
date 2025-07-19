@@ -1,0 +1,166 @@
+{
+  "hero": {
+    "title": "ProofQuest 如何运作",
+    "subtitle": "完成 Web2 任务，通过零知识证明验证获得 Web3 奖励",
+    "userButton": "我想要赚取奖励",
+    "sponsorButton": "我想要创建任务"
+  },
+  "sponsors": {
+    "title": "创建引人入胜的任务",
+    "subtitle": "学习如何创建引人注目的任务，推动社区参与并实现您的目标",
+    "cta": "开始创建任务",
+    "steps": {
+      "connectWallet": {
+        "title": "连接您的钱包",
+        "description": "将您的 Web3 钱包连接到 Monad 测试网，开始创建任务。",
+        "details": [
+          "确保您已安装 Web3 钱包",
+          "切换到 Monad 测试网",
+          "将您的钱包连接到 ProofQuest"
+        ]
+      },
+      "defineQuest": {
+        "title": "定义您的任务",
+        "description": "创建具有明确目标和有吸引力奖励的引人入胜的任务。",
+        "details": [
+          "选择任务类型（Twitter、GitHub、自定义）",
+          "设置明确的完成标准",
+          "定义奖励金额和分配方式"
+        ]
+      },
+      "configureParameters": {
+        "title": "配置参数",
+        "description": "设置任务参数，包括持续时间、参与者限制和验证规则。",
+        "details": [
+          "设置最大参与者数量",
+          "选择任务持续时间",
+          "配置验证要求"
+        ]
+      },
+      "monitorVerify": {
+        "title": "监控和验证",
+        "description": "跟踪任务进度并验证参与者提交的内容以进行奖励分配。",
+        "details": [
+          "监控实时参与情况",
+          "审核提交的证明",
+          "批准已验证的完成情况"
+        ]
+      }
+    }
+  },
+  "users": {
+    "title": "开始赚取奖励",
+    "subtitle": "按照这些简单步骤开始参与任务并赚取加密货币奖励",
+    "cta": "探索可用任务",
+    "steps": {
+      "connectWallet": {
+        "title": "连接您的钱包",
+        "description": "连接您的 Web3 钱包以开始参与任务并赚取奖励。",
+        "details": [
+          "安装 Web3 钱包",
+          "添加 Monad 测试网配置",
+          "连接到 ProofQuest 平台"
+        ]
+      },
+      "discoverQuests": {
+        "title": "发现任务",
+        "description": "浏览可用任务，找到符合您兴趣和技能的任务。",
+        "details": [
+          "按奖励金额筛选任务",
+          "检查任务要求",
+          "查看完成截止日期"
+        ]
+      },
+      "completeTasks": {
+        "title": "完成任务",
+        "description": "按照任务说明完成所需任务以赚取奖励。",
+        "details": [
+          "仔细阅读任务要求",
+          "安装 Primus 浏览器扩展程序进行任务验证",
+          "在外部平台完成任务",
+          "生成必要的证明"
+        ],
+        "primusNote": "重要提示：安装 Primus 浏览器扩展程序以自动验证任务完成情况。"
+      },
+      "claimRewards": {
+        "title": "领取奖励",
+        "description": "一旦验证通过，您将自动收到直接发送到您钱包的奖励。",
+        "details": [
+          "等待自动验证",
+          "在您的钱包中接收奖励",
+          "跟踪您的收益历史"
+        ]
+      }
+    }
+  },
+  "features": {
+    "title": "为什么选择 ProofQuest？",
+    "subtitle": "先进的功能使任务完成安全、私密且有回报",
+    "items": {
+      "automatedVerification": {
+        "title": "自动验证",
+        "description": "智能合约自动验证任务完成并分配奖励"
+      },
+      "zeroKnowledgePrivacy": {
+        "title": "零知识隐私",
+        "description": "使用先进的密码学技术在证明任务完成的同时保护您的隐私"
+      },
+      "transparentVerifiable": {
+        "title": "透明且可验证",
+        "description": "所有交易和验证都记录在区块链上以确保透明度"
+      },
+      "multiPlatformIntegration": {
+        "title": "多平台集成",
+        "description": "在各种 Web2 平台上完成任务并赚取 Web3 奖励"
+      }
+    }
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "有疑问？我们为您提供答案，帮助您开始使用",
+    "items": {
+      "whatIsProofQuest": {
+        "question": "什么是 ProofQuest？",
+        "answer": "ProofQuest 是一个 Web3 任务平台，允许您完成 Web2 任务并赚取加密货币奖励。使用零知识证明技术，您可以在保持隐私的同时证明任务完成。"
+      },
+      "howToGetStarted": {
+        "question": "如何开始使用？",
+        "answer": "只需将您的 Web3 钱包连接到 Monad 测试网，浏览可用任务，然后开始完成任务。验证后您将自动收到奖励。"
+      },
+      "questTypes": {
+        "question": "有哪些类型的任务？",
+        "answer": "任务包括社交媒体任务（Twitter 互动）、开发任务（GitHub 贡献）、内容创作、社区参与以及赞助商创建的自定义挑战。"
+      },
+      "rewardDistribution": {
+        "question": "奖励如何分配？",
+        "answer": "一旦通过我们的智能合约系统验证任务完成，奖励将自动分配到您的钱包。无需手动领取！"
+      },
+      "dataPrivacy": {
+        "question": "我的数据是私密的吗？",
+        "answer": "是的！我们使用零知识证明来验证任务完成，而不会将您的个人数据或敏感信息暴露给区块链。"
+      },
+      "monadTestnet": {
+        "question": "什么是 Monad 测试网？",
+        "answer": "Monad 是我们用于快速和经济高效交易的高性能区块链。测试网允许您与平台交互而无需真实的加密货币成本。"
+      }
+    }
+  },
+  "cta": {
+    "title": "准备好开始了吗？",
+    "subtitle": "加入 ProofQuest 社区，开始为完成您已经在做的任务赚取奖励",
+    "browseQuests": "浏览任务",
+    "createQuest": "创建任务"
+  },
+  "contact": {
+    "title": "联系我们",
+    "subtitle": "有问题或反馈？欢迎联系我们！",
+    "followButton": "关注 @coder_chao"
+  },
+  "common": {
+    "stepLabel": "步骤"
+  },
+  "primus": {
+    "installButton": "安装 Primus 扩展程序",
+    "chromeStoreUrl": "https://chromewebstore.google.com/detail/primus/oeiomhmbaapihbilkfkhmlajkeegnjhe"
+  }
+}

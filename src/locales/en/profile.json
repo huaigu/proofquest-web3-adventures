@@ -1,0 +1,89 @@
+{
+  "header": {
+    "title": "My Profile",
+    "memberSince": "ProofQuest Member since {{date}}"
+  },
+  "wallet": {
+    "connectPrompt": "Connect Your Wallet",
+    "connectDescription": "Please connect your wallet to view your profile"
+  },
+  "loading": {
+    "profile": "Loading profile..."
+  },
+  "error": {
+    "failedToLoad": "Failed to load profile data",
+    "retry": "Retry"
+  },
+  "stats": {
+    "totalEarned": "Total Earned",
+    "completed": "Completed",
+    "created": "Created",
+    "successRate": "Success Rate"
+  },
+  "tabs": {
+    "myQuests": "My Quests",
+    "rewards": "Rewards",
+    "activity": "Activity"
+  },
+  "quests": {
+    "title": "My Quests",
+    "description": "Track your quest participation and progress",
+    "tabs": {
+      "active": "Active",
+      "completed": "Completed",
+      "created": "Created"
+    },
+    "status": {
+      "active": "Active",
+      "completed": "Completed"
+    },
+    "completedOn": "Completed on {{date}}",
+    "participants": "participants",
+    "noActive": "No active quests available",
+    "noCompleted": "No completed quests yet",
+    "noCreated": "No created quests yet"
+  },
+  "rewards": {
+    "pending": {
+      "title": "Pending Rewards",
+      "description": "Claimable rewards from completed quests",
+      "claimAll": "Claim All",
+      "claim": "Claim",
+      "pending": "Pending",
+      "noPending": "No pending rewards"
+    },
+    "vesting": {
+      "title": "Vesting Rewards",
+      "description": "Long-term rewards with linear vesting",
+      "vested": "vested",
+      "claimable": "claimable",
+      "remaining": "remaining",
+      "noVesting": "No vesting rewards"
+    },
+    "history": {
+      "title": "Reward History",
+      "description": "Previous rewards and transactions",
+      "noHistory": "No reward history"
+    }
+  },
+  "activity": {
+    "title": "Activity Timeline",
+    "description": "Your recent activity on ProofQuest",
+    "noActivity": "No recent activity"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "createQuest": "Create New Quest",
+    "viewAllQuests": "View All Quests",
+    "accountSettings": "Account Settings",
+    "disconnectWallet": "Disconnect Wallet"
+  },
+  "notifications": {
+    "addressCopied": "Address copied!",
+    "addressCopiedDescription": "Wallet address has been copied to clipboard.",
+    "rewardClaimed": "Reward claimed!",
+    "rewardClaimedDescription": "Your reward has been successfully claimed.",
+    "allRewardsClaimed": "All rewards claimed!",
+    "allRewardsClaimedDescription": "All pending rewards have been successfully claimed."
+  }
+}

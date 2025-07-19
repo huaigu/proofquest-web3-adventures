@@ -1,0 +1,206 @@
+{
+  "header": {
+    "title": "Create New Quest",
+    "subtitle": "Set up a quest for the ProofQuest community"
+  },
+  "steps": {
+    "basicInfo": "Basic Info",
+    "taskType": "Task Type", 
+    "rewards": "Rewards",
+    "timing": "Timing",
+    "review": "Review",
+    "basicInformation": "Basic Information",
+    "taskTypeConfiguration": "Task Type & Configuration",
+    "thresholdRewardConfiguration": "Threshold & Reward Configuration",
+    "timeConfiguration": "Time Configuration",
+    "reviewDeploy": "Review & Deploy",
+    "success": "Success!"
+  },
+  "navigation": {
+    "back": "Back",
+    "next": "Next",
+    "saveDraft": "Save Draft",
+    "deployQuest": "Deploy Quest",
+    "connectWalletToDeploy": "Connect Wallet to Deploy",
+    "deployingToBlockchain": "Deploying to Blockchain..."
+  },
+  "step1": {
+    "title": "Quest Details",
+    "description": "Provide basic information about your quest",
+    "questTitle": "Quest Title",
+    "questTitlePlaceholder": "Enter quest title",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe what participants need to do"
+  },
+  "step2": {
+    "title": "Task Type & Configuration", 
+    "description": "Choose the type of quest and configure its requirements",
+    "questType": "Quest Type",
+    "questTypes": {
+      "twitterInteraction": {
+        "title": "Twitter Interaction",
+        "description": "Users interact with tweets (like, retweet, comment, follow)"
+      },
+      "quoteTweet": {
+        "title": "Quote Tweet",
+        "description": "Users quote tweet with specific requirements"
+      },
+      "sendTweet": {
+        "title": "Send Tweet",
+        "description": "Users create and send original tweets",
+        "comingSoon": "Coming Soon"
+      }
+    },
+    "twitterInteraction": {
+      "tweetUrl": "Tweet URL",
+      "tweetUrlPlaceholder": "https://twitter.com/...",
+      "tweetUrlHelp": "This URL will be used as the launch page for participants to interact with",
+      "requiredActions": "Required Actions",
+      "like": "Like",
+      "retweet": "Retweet"
+    },
+    "quoteTweet": {
+      "originalTweetUrl": "Original Tweet URL",
+      "originalTweetUrlPlaceholder": "https://twitter.com/...",
+      "originalTweetUrlHelp": "Enter the URL of the tweet you want participants to quote. This will be used as the launch page.",
+      "requiredHashtag": "Required Hashtag",
+      "requiredHashtagPlaceholder": "Enter hashtag (e.g., #Web3, #DeFi, #ProofQuest)",
+      "requiredHashtagHelp": "Optional: Enter one hashtag that must be included in the quote tweet"
+    }
+  },
+  "step3": {
+    "threshold": {
+      "title": "Threshold Configuration",
+      "description": "Set participation limits",
+      "maxParticipants": "Maximum Participants",
+      "maxParticipantsPlaceholder": "100",
+      "maxParticipantsHelp": "Total number of participants allowed for this quest"
+    },
+    "reward": {
+      "title": "Reward Configuration",
+      "description": "Set up rewards and distribution",
+      "rewardType": "Reward Type",
+      "rewardTypes": {
+        "mon": "MON",
+        "monDescription": "Native Monad token",
+        "erc20": "ERC20 Token", 
+        "erc20Description": "Custom ERC20 tokens",
+        "nft": "NFT",
+        "nftDescription": "Non-fungible token rewards",
+        "comingSoon": "Coming Soon"
+      },
+      "totalRewardPool": "Total Reward Pool",
+      "totalRewardPoolPlaceholder": "1.0",
+      "rewardPerParticipant": "Reward per Participant",
+      "rewardCalculation": "Calculated from Total Reward Pool ÷ Maximum Participants",
+      "distributionMethod": "Distribution Method",
+      "distributionMethods": {
+        "immediate": "Immediate",
+        "immediateDescription": "Rewards distributed instantly upon completion",
+        "linearVesting": "Linear Vesting",
+        "linearVestingDescription": "Rewards are vested linearly over time",
+        "comingSoon": "Coming Soon"
+      }
+    }
+  },
+  "step4": {
+    "title": "Time Configuration",
+    "description": "Set up quest timing and deadlines",
+    "questStartDate": "Quest Start Date",
+    "questEndDate": "Quest End Date",
+    "rewardClaimDeadline": "Reward Claim Deadline",
+    "rewardClaimDeadlineHelp": "Participants must claim their rewards before this date",
+    "pickADate": "Pick a date"
+  },
+  "step5": {
+    "questDetails": {
+      "title": "Quest Details",
+      "description": "Basic information and task requirements",
+      "fields": {
+        "title": "Title",
+        "taskType": "Task Type",
+        "startDate": "Start Date",
+        "endDate": "End Date", 
+        "claimDeadline": "Claim Deadline",
+        "description": "Description",
+        "launchPageUrl": "Launch Page URL"
+      }
+    },
+    "questConfiguration": {
+      "title": "Quest Configuration",
+      "description": "Task-specific requirements and conditions",
+      "interactionType": "Interaction Type",
+      "targetAccount": "Target Account",
+      "tweetUrl": "Tweet URL",
+      "originalTweetUrl": "Original Tweet URL",
+      "quoteRequirements": "Quote Requirements",
+      "contentRequirements": "Content Requirements"
+    },
+    "thresholdConfiguration": {
+      "title": "Threshold Configuration", 
+      "description": "Participant requirements and quest activation conditions",
+      "minimumParticipants": "Minimum Participants",
+      "maximumParticipants": "Maximum Participants",
+      "noMinimumSet": "No minimum set",
+      "questActivatesWhenReached": "(Quest activates when reached)"
+    },
+    "rewardConfiguration": {
+      "title": "Reward Configuration",
+      "description": "Reward details and distribution method",
+      "rewardType": "Reward Type",
+      "distributionMethod": "Distribution Method",
+      "tokenAddress": "Token Address",
+      "tokenSymbol": "Token Symbol",
+      "totalRewardPool": "Total Reward Pool",
+      "rewardPerParticipant": "Reward per Participant",
+      "calculatedFrom": "(Calculated: {{total}} ÷ {{max}})"
+    },
+    "costBreakdown": {
+      "title": "Cost Breakdown",
+      "description": "Estimated costs for quest deployment",
+      "totalRewardPool": "Total Reward Pool",
+      "estimatedGasFee": "Estimated Gas Fee",
+      "platformFee": "Platform Fee (2%)",
+      "totalCost": "Total Cost"
+    },
+    "terms": {
+      "agreement": "I agree to the",
+      "termsOfService": "Terms of Service",
+      "and": "and",
+      "questCreationGuidelines": "Quest Creation Guidelines"
+    }
+  },
+  "success": {
+    "title": "Quest Deployed!",
+    "message": "Your quest \"{{title}}\" is now live and accepting participants.",
+    "viewQuest": "View Quest",
+    "createAnother": "Create Another Quest"
+  },
+  "validation": {
+    "titleRequired": "Title is required",
+    "titleTooLong": "Title too long",
+    "descriptionMinLength": "Description must be at least 10 characters",
+    "endDateAfterStart": "Quest End Date must be after Quest Start Date",
+    "tweetUrlRequired": "Tweet URL is required for Twitter Interaction quests", 
+    "quoteTweetUrlRequired": "Original Tweet URL is required for Quote Tweet quests",
+    "rewardPoolMinimum": "Reward pool must be greater than 0",
+    "participantsMinimum": "Must allow at least 1 participant",
+    "agreeToTerms": "You must agree to terms",
+    "formValidationFailed": "Form Validation Failed",
+    "checkRequiredFields": "Please check the required fields and try again."
+  },
+  "notifications": {
+    "draftSaved": "Draft saved!",
+    "draftSavedDescription": "Your quest draft has been saved locally.",
+    "walletNotConnected": "Wallet Not Connected",
+    "connectWalletDescription": "Please connect your wallet to deploy the quest.",
+    "networkSwitchRequired": "Network Switch Required",
+    "networkSwitchDescription": "Please switch to Monad testnet to deploy the quest.",
+    "questDeployedSuccessfully": "Quest Deployed Successfully!",
+    "transactionHash": "Transaction hash: {{hash}}",
+    "questDeploymentFailed": "Quest Deployment Failed",
+    "failedToDeployToBlockchain": "Failed to deploy quest to blockchain",
+    "authenticationRequired": "Authentication Required",
+    "signInToCreateQuest": "Please sign in with your wallet to create a quest."
+  }
+}

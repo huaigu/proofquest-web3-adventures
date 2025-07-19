@@ -30,8 +30,11 @@ import {
 import { Link } from "react-router-dom";
 import { useQuests } from "@/hooks/useQuests";
 import type { QuestFilters, QuestListItem } from "@/types";
+import { useTranslation } from 'react-i18next';
 
 const QuestList = () => {
+  const { t } = useTranslation(['quests', 'common']);
+  
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -199,19 +202,19 @@ const QuestList = () => {
   const getStatusText = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
-        return "Active";
+        return t('status.active');
       case "claiming":
-        return "Claiming";
+        return t('status.claiming');
       case "pending":
-        return "Pending";
+        return t('status.pending');
       case "ended":
       case "completed":
-        return "Ended";
+        return t('status.ended');
       case "cancelled":
       case "cancel":
-        return "Cancelled";
+        return t('status.cancelled');
       case "paused":
-        return "Paused";
+        return t('status.paused');
       default:
         return status.charAt(0).toUpperCase() + status.slice(1);
     }
@@ -221,12 +224,12 @@ const QuestList = () => {
     switch (questType) {
       case "twitter-interaction":
       case "likeAndRetweet":
-        return "Like & Retweet";
+        return t('types.likeAndRetweet');
       case "quote-tweet":
       case "Quoted":
-        return "Quote Tweet";
+        return t('types.quoteTweet');
       case "send-tweet":
-        return "Send Tweet";
+        return t('types.sendTweet');
       default:
         return questType;
     }
@@ -282,10 +285,10 @@ const QuestList = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] bg-clip-text text-transparent mb-2">
-              Explore Quests
+              {t('title')}
             </h1>
             <p className="text-muted-foreground">
-              Complete Web2 tasks, earn Web3 rewards. {quests.length} quests available.
+              {t('description', { count: quests.length })}
             </p>
           </div>
           
@@ -299,12 +302,12 @@ const QuestList = () => {
               className="flex items-center space-x-2"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <span>{t('common:refresh')}</span>
             </Button>
             {error && (
               <div className="flex items-center space-x-1 text-yellow-400">
                 <AlertCircle className="w-4 h-4" />
-                <span className="text-sm">Using cached data</span>
+                <span className="text-sm">{t('usingCachedData')}</span>
               </div>
             )}
           </div>
@@ -318,7 +321,7 @@ const QuestList = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Filter className="w-4 h-4" />
-                    Filters
+                    {t('common:filter')}
                   </h3>
                   <Button
                     variant="ghost"
@@ -332,11 +335,11 @@ const QuestList = () => {
 
                 {/* Search */}
                 <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium">Search</label>
+                  <label className="text-sm font-medium">{t('filters.search')}</label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                      placeholder="Search quests..."
+                      placeholder={t('filters.searchPlaceholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
@@ -346,32 +349,32 @@ const QuestList = () => {
 
                 {/* Status Filter */}
                 <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium">Status</label>
+                  <label className="text-sm font-medium">{t('filters.status')}</label>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="claiming">Claiming</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="ended">Ended</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                      <SelectItem value="paused">Paused</SelectItem>
+                      <SelectItem value="all">{t('filters.allStatus')}</SelectItem>
+                      <SelectItem value="active">{t('status.active')}</SelectItem>
+                      <SelectItem value="claiming">{t('status.claiming')}</SelectItem>
+                      <SelectItem value="pending">{t('status.pending')}</SelectItem>
+                      <SelectItem value="ended">{t('status.ended')}</SelectItem>
+                      <SelectItem value="cancelled">{t('status.cancelled')}</SelectItem>
+                      <SelectItem value="paused">{t('status.paused')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Reward Type Filter */}
                 <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium">Reward Type</label>
+                  <label className="text-sm font-medium">{t('filters.rewardType')}</label>
                   <Select value={rewardTypeFilter} onValueChange={setRewardTypeFilter}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="all">{t('filters.allTypes')}</SelectItem>
                       <SelectItem value="MON">MON</SelectItem>
                       <SelectItem value="ERC20">ERC20 Tokens</SelectItem>
                       <SelectItem value="NFT">NFT</SelectItem>
@@ -381,37 +384,37 @@ const QuestList = () => {
 
                 {/* Quest Type Filter */}
                 <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium">Quest Type</label>
+                  <label className="text-sm font-medium">{t('filters.questType')}</label>
                   <Select value={questTypeFilter} onValueChange={setQuestTypeFilter}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="twitter-interaction">Twitter Interaction</SelectItem>
-                      <SelectItem value="likeAndRetweet">Like & Retweet</SelectItem>
-                      <SelectItem value="quote-tweet">Quote Tweet</SelectItem>
-                      <SelectItem value="Quoted">Quoted</SelectItem>
-                      <SelectItem value="send-tweet">Send Tweet</SelectItem>
+                      <SelectItem value="all">{t('filters.allTypes')}</SelectItem>
+                      <SelectItem value="twitter-interaction">{t('types.twitterInteraction')}</SelectItem>
+                      <SelectItem value="likeAndRetweet">{t('types.likeAndRetweet')}</SelectItem>
+                      <SelectItem value="quote-tweet">{t('types.quoteTweet')}</SelectItem>
+                      <SelectItem value="Quoted">{t('types.quoteTweet')}</SelectItem>
+                      <SelectItem value="send-tweet">{t('types.sendTweet')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Category Filter */}
                 <div className="space-y-2 mb-4">
-                  <label className="text-sm font-medium">Category</label>
+                  <label className="text-sm font-medium">{t('filters.category')}</label>
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="Social">Social</SelectItem>
-                      <SelectItem value="Content">Content</SelectItem>
-                      <SelectItem value="General">General</SelectItem>
-                      <SelectItem value="DeFi">DeFi</SelectItem>
-                      <SelectItem value="Gaming">Gaming</SelectItem>
-                      <SelectItem value="Education">Education</SelectItem>
+                      <SelectItem value="all">{t('filters.allCategories')}</SelectItem>
+                      <SelectItem value="Social">{t('categories.social')}</SelectItem>
+                      <SelectItem value="Content">{t('categories.content')}</SelectItem>
+                      <SelectItem value="General">{t('categories.general')}</SelectItem>
+                      <SelectItem value="DeFi">{t('categories.defi')}</SelectItem>
+                      <SelectItem value="Gaming">{t('categories.gaming')}</SelectItem>
+                      <SelectItem value="Education">{t('categories.education')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -419,7 +422,7 @@ const QuestList = () => {
                 {/* Reward Range */}
                 <div className="space-y-2 mb-4">
                   <label className="text-sm font-medium">
-                    Reward Range: {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)} MON
+                    {t('filters.rewardRange')}: {rewardRange[0].toFixed(2)} - {rewardRange[1].toFixed(2)} MON
                   </label>
                   <Slider
                     value={rewardRange}
@@ -439,7 +442,7 @@ const QuestList = () => {
                     onClick={clearFilters}
                     className="w-full"
                   >
-                    Clear All Filters
+                    {t('filters.clearAllFilters')}
                   </Button>
                 )}
               </Card>
@@ -458,7 +461,7 @@ const QuestList = () => {
                     onClick={() => setShowSidebar(true)}
                   >
                     <Filter className="w-4 h-4 mr-2" />
-                    Filters
+                    {t('common:filter')}
                   </Button>
                 )}
                 
@@ -469,24 +472,24 @@ const QuestList = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="created-newest">Newest First</SelectItem>
-                    <SelectItem value="created-oldest">Oldest First</SelectItem>
-                    <SelectItem value="reward-highest">Highest Reward</SelectItem>
-                    <SelectItem value="reward-lowest">Lowest Reward</SelectItem>
-                    <SelectItem value="participants-most">Most Participants</SelectItem>
-                    <SelectItem value="participants-least">Least Participants</SelectItem>
+                    <SelectItem value="created-newest">{t('sort.newestFirst')}</SelectItem>
+                    <SelectItem value="created-oldest">{t('sort.oldestFirst')}</SelectItem>
+                    <SelectItem value="reward-highest">{t('sort.highestReward')}</SelectItem>
+                    <SelectItem value="reward-lowest">{t('sort.lowestReward')}</SelectItem>
+                    <SelectItem value="participants-most">{t('sort.mostParticipants')}</SelectItem>
+                    <SelectItem value="participants-least">{t('sort.leastParticipants')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-muted-foreground">
-                  {sortedQuests.length} quests found
+                  {t('questsFound', { count: sortedQuests.length })}
                 </span>
                 {quests.some(q => (q as QuestListItem & { _source?: string })._source) && (
                   <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/50">
                     <Database className="w-3 h-3 mr-1" />
-                    Live Data
+                    {t('liveData')}
                   </Badge>
                 )}
               </div>
@@ -495,7 +498,7 @@ const QuestList = () => {
             {/* Active Filters */}
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mb-6">
-                <span className="text-sm text-muted-foreground">Active filters:</span>
+                <span className="text-sm text-muted-foreground">{t('filters.activeFilters')}</span>
                 {activeFilters.map((filter, index) => (
                   <Badge
                     key={index}
@@ -531,13 +534,13 @@ const QuestList = () => {
             {error && !isLoading && quests.length === 0 && (
               <Card className="p-8 text-center">
                 <AlertCircle className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
-                <h3 className="text-lg font-semibold mb-2">Connection Issue</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('connectionIssue')}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Unable to load quests from the server. Please check your connection and try again.
+                  {t('unableToLoadQuests')}
                 </p>
                 <Button onClick={() => refetch()}>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Retry
+                  {t('common:retry')}
                 </Button>
               </Card>
             )}
@@ -584,7 +587,7 @@ const QuestList = () => {
                               {quest.creator.name.slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0 flex-1 text-white">
-                              <div className="text-xs text-gray-400 mb-1 font-medium">User</div>
+                              <div className="text-xs text-gray-400 mb-1 font-medium">{t('user')}</div>
                               <div className="text-sm font-medium truncate">{quest.creator.name}</div>
                             </div>
                           </div>
@@ -593,7 +596,7 @@ const QuestList = () => {
                           <div className="col-span-3 bg-black rounded-xl p-2.5 border border-gray-800/50 flex flex-col justify-center items-end text-right">
                             <div className="flex items-center gap-1.5 mb-0.5">
                               <Coins className="w-4 h-4 text-gray-400" />
-                              <span className="text-xs text-gray-400 font-medium">Reward</span>
+                              <span className="text-xs text-gray-400 font-medium">{t('reward')}</span>
                             </div>
                             <div className="text-lg font-bold text-white">{quest.reward.amount} {quest.reward.type}</div>
                           </div>
@@ -601,7 +604,7 @@ const QuestList = () => {
                           {/* Progress */}
                           <div className="col-span-4 bg-black rounded-xl p-3 border border-gray-800/50 flex flex-col">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-gray-400">Progress</span>
+                              <span className="text-sm font-medium text-gray-400">{t('progress')}</span>
                               <span className="text-lg font-bold text-white">
                                 {quest.participants.max ? Math.round((quest.participants.current / quest.participants.max) * 100) : 0}%
                               </span>
@@ -629,12 +632,12 @@ const QuestList = () => {
                             {isMock ? (
                               <>
                                 <div className="w-1 h-1 bg-gray-400 rounded-full mb-0.5"></div>
-                                <span className="text-xs font-medium text-center leading-tight text-gray-400">Mock</span>
+                                <span className="text-xs font-medium text-center leading-tight text-gray-400">{t('mock')}</span>
                               </>
                             ) : (
                               <Link to={`/quest/${quest.id}`} className="flex items-center justify-center gap-1 h-full w-full">
                                 <Eye className="w-3 h-3 text-white" />
-                                <span className="text-sm font-medium text-white">View</span>
+                                <span className="text-sm font-medium text-white">{t('common:view')}</span>
                               </Link>
                             )}
                           </div>
@@ -651,11 +654,11 @@ const QuestList = () => {
             {!isLoading && paginatedQuests.length === 0 && !error && (
               <Card className="p-8 text-center">
                 <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Quests Found</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('noQuestsFound')}</h3>
                 <p className="text-muted-foreground mb-4">
-                  No quests match your current filters. Try adjusting your search criteria.
+                  {t('noQuestsMatchFilters')}
                 </p>
-                <Button onClick={clearFilters}>Clear Filters</Button>
+                <Button onClick={clearFilters}>{t('clearFilters')}</Button>
               </Card>
             )}
 
@@ -669,7 +672,7 @@ const QuestList = () => {
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Previous
+                  {t('previous')}
                 </Button>
                 
                 <div className="flex items-center space-x-1">
@@ -696,7 +699,7 @@ const QuestList = () => {
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  Next
+                  {t('next')}
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>

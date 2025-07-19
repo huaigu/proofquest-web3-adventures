@@ -1,0 +1,26 @@
+{
+  "success": {
+    "questCreated": "任务创建成功！",
+    "questCompleted": "任务完成成功！",
+    "rewardClaimed": "奖励领取成功！",
+    "profileUpdated": "个人资料更新成功！"
+  },
+  "error": {
+    "questCreationFailed": "创建任务失败。请重试。",
+    "questCompletionFailed": "完成任务失败。请重试。",
+    "rewardClaimFailed": "领取奖励失败。请重试。",
+    "profileUpdateFailed": "更新个人资料失败。请重试。",
+    "connectionFailed": "连接失败。请检查您的网络。",
+    "authenticationFailed": "认证失败。请重试。"
+  },
+  "warning": {
+    "unsavedChanges": "您有未保存的更改。确定要离开吗？",
+    "insufficientBalance": "余额不足以完成此操作。",
+    "questExpired": "此任务已过期。"
+  },
+  "info": {
+    "questStarted": "任务已开始！完成任务以获得奖励。",
+    "walletConnected": "钱包连接成功！",
+    "walletDisconnected": "钱包已断开连接。"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "home": "首页",
+  "explore": "探索",
+  "create": "创建",
+  "profile": "个人资料",
+  "guide": "指南",
+  "quests": "任务",
+  "authenticated": "已认证",
+  "signInRequired": "需要登录",
+  "authenticatedAs": "已认证为 {{name}}"
+}

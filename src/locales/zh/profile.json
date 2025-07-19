@@ -1,0 +1,89 @@
+{
+  "header": {
+    "title": "我的个人资料",
+    "memberSince": "ProofQuest 会员自 {{date}}"
+  },
+  "wallet": {
+    "connectPrompt": "连接您的钱包",
+    "connectDescription": "请连接您的钱包以查看您的个人资料"
+  },
+  "loading": {
+    "profile": "正在加载个人资料..."
+  },
+  "error": {
+    "failedToLoad": "加载个人资料数据失败",
+    "retry": "重试"
+  },
+  "stats": {
+    "totalEarned": "总收益",
+    "completed": "已完成",
+    "created": "已创建",
+    "successRate": "成功率"
+  },
+  "tabs": {
+    "myQuests": "我的任务",
+    "rewards": "奖励",
+    "activity": "活动"
+  },
+  "quests": {
+    "title": "我的任务",
+    "description": "跟踪您的任务参与和进度",
+    "tabs": {
+      "active": "进行中",
+      "completed": "已完成",
+      "created": "已创建"
+    },
+    "status": {
+      "active": "进行中",
+      "completed": "已完成"
+    },
+    "completedOn": "完成于 {{date}}",
+    "participants": "参与者",
+    "noActive": "没有进行中的任务",
+    "noCompleted": "还没有完成的任务",
+    "noCreated": "还没有创建的任务"
+  },
+  "rewards": {
+    "pending": {
+      "title": "待领取奖励",
+      "description": "已完成任务的可领取奖励",
+      "claimAll": "全部领取",
+      "claim": "领取",
+      "pending": "待处理",
+      "noPending": "没有待领取奖励"
+    },
+    "vesting": {
+      "title": "释放中奖励",
+      "description": "长期奖励与线性释放",
+      "vested": "已释放",
+      "claimable": "可领取",
+      "remaining": "剩余",
+      "noVesting": "没有释放中奖励"
+    },
+    "history": {
+      "title": "奖励历史",
+      "description": "以往奖励和交易记录",
+      "noHistory": "没有奖励历史"
+    }
+  },
+  "activity": {
+    "title": "活动时间线",
+    "description": "您在 ProofQuest 上的最近活动",
+    "noActivity": "没有最近活动"
+  },
+  "quickActions": {
+    "title": "快速操作",
+    "createQuest": "创建新任务",
+    "viewAllQuests": "查看所有任务",
+    "accountSettings": "账户设置",
+    "disconnectWallet": "断开钱包连接"
+  },
+  "notifications": {
+    "addressCopied": "地址已复制！",
+    "addressCopiedDescription": "钱包地址已复制到剪贴板。",
+    "rewardClaimed": "奖励已领取！",
+    "rewardClaimedDescription": "您的奖励已成功领取。",
+    "allRewardsClaimed": "所有奖励已领取！",
+    "allRewardsClaimedDescription": "所有待领取奖励已成功领取。"
+  }
+}

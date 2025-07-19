@@ -5,9 +5,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAuthUI } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export const Navigation = () => {
   const location = useLocation();
+  const { t } = useTranslation('navigation');
   const { 
     authButtonState, 
     userDisplayName, 
@@ -17,10 +20,10 @@ export const Navigation = () => {
   } = useAuthUI();
 
   const navItems = [
-    { label: "Explore", href: "/quests" },
-    { label: "Create", href: "/create" },
-    { label: "Profile", href: "/profile" },
-    { label: "Guide", href: "/guide" },
+    { label: t('explore'), href: "/quests" },
+    { label: t('create'), href: "/create" },
+    { label: t('profile'), href: "/profile" },
+    { label: t('guide'), href: "/guide" },
     // { label: "Test", href: "/test" },
   ];
 
@@ -80,18 +83,21 @@ export const Navigation = () => {
 
         {/* Wallet Connection & Authentication */}
         <div className="flex items-center space-x-3">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+          
           {/* Authentication Status Indicator */}
           {isWalletConnected && (
             <div className="hidden sm:flex items-center space-x-2">
               {isAuthenticated ? (
                 <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/50">
                   <Shield className="w-3 h-3 mr-1" />
-                  Authenticated
+                  {t('authenticated')}
                 </Badge>
               ) : (
                 // <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
                 //   <User className="w-3 h-3 mr-1" />
-                //   Sign In Required
+                //   {t('signInRequired')}
                 // </Badge>
                 null
               )}
@@ -127,6 +133,11 @@ export const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col space-y-4 mt-6">
+                {/* Mobile Language Switcher */}
+                <div className="w-full flex justify-center">
+                  <LanguageSwitcher />
+                </div>
+                
                 {/* Mobile Wallet Connection */}
                 <div className="w-full">
                   <ConnectButton />
@@ -140,12 +151,12 @@ export const Navigation = () => {
                       {isAuthenticated ? (
                         <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/50">
                           <Shield className="w-3 h-3 mr-1" />
-                          Authenticated as {userDisplayName}
+                          {t('authenticatedAs', { name: userDisplayName })}
                         </Badge>
                       ) : (
                         // <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">
                         //   <User className="w-3 h-3 mr-1" />
-                        //   Sign In Required
+                        //   {t('signInRequired')}
                         // </Badge>
                         null
                       )}

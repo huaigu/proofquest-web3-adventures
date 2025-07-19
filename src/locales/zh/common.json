@@ -1,0 +1,32 @@
+{
+  "brand": {
+    "name": "ProofQuest",
+    "tagline": "Web3 任务平台",
+    "description": "完成 Web2 任务，获得 Web3 奖励，并提供零知识证明验证"
+  },
+  "loading": "加载中...",
+  "retry": "重试",
+  "error": "错误",
+  "success": "成功",
+  "failed": "失败",
+  "clear": "清除",
+  "save": "保存",
+  "cancel": "取消",
+  "confirm": "确认",
+  "close": "关闭",
+  "view": "查看",
+  "edit": "编辑",
+  "delete": "删除",
+  "refresh": "刷新",
+  "search": "搜索",
+  "filter": "筛选",
+  "sort": "排序",
+  "all": "全部",
+  "active": "活跃",
+  "pending": "待定",
+  "completed": "已完成",
+  "ended": "已结束",
+  "cancelled": "已取消",
+  "paused": "已暂停",
+  "claiming": "领取中"
+}

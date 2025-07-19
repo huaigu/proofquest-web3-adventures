@@ -1,0 +1,166 @@
+{
+  "hero": {
+    "title": "How ProofQuest Works",
+    "subtitle": "Complete Web2 tasks, earn Web3 rewards with zero-knowledge proof verification",
+    "userButton": "I want to earn rewards",
+    "sponsorButton": "I want to create quests"
+  },
+  "sponsors": {
+    "title": "Create Engaging Quests",
+    "subtitle": "Learn how to create compelling quests that drive community engagement and achieve your goals",
+    "cta": "Start Creating Quests",
+    "steps": {
+      "connectWallet": {
+        "title": "Connect Your Wallet",
+        "description": "Connect your Web3 wallet to the Monad testnet to get started with quest creation.",
+        "details": [
+          "Ensure you have a Web3 wallet installed",
+          "Switch to Monad testnet",
+          "Connect your wallet to ProofQuest"
+        ]
+      },
+      "defineQuest": {
+        "title": "Define Your Quest",
+        "description": "Create engaging quests with clear objectives and attractive rewards.",
+        "details": [
+          "Choose quest type (Twitter, GitHub, Custom)",
+          "Set clear completion criteria",
+          "Define reward amount and distribution"
+        ]
+      },
+      "configureParameters": {
+        "title": "Configure Parameters",
+        "description": "Set up quest parameters including duration, participant limits, and verification rules.",
+        "details": [
+          "Set maximum participants",
+          "Choose quest duration",
+          "Configure verification requirements"
+        ]
+      },
+      "monitorVerify": {
+        "title": "Monitor & Verify",
+        "description": "Track quest progress and verify participant submissions for reward distribution.",
+        "details": [
+          "Monitor real-time participation",
+          "Review submission proofs",
+          "Approve verified completions"
+        ]
+      }
+    }
+  },
+  "users": {
+    "title": "Start Earning Rewards",
+    "subtitle": "Follow these simple steps to start participating in quests and earning cryptocurrency rewards",
+    "cta": "Explore Available Quests",
+    "steps": {
+      "connectWallet": {
+        "title": "Connect Your Wallet",
+        "description": "Connect your Web3 wallet to start participating in quests and earning rewards.",
+        "details": [
+          "Install a Web3 wallet",
+          "Add Monad testnet configuration",
+          "Connect to ProofQuest platform"
+        ]
+      },
+      "discoverQuests": {
+        "title": "Discover Quests",
+        "description": "Browse available quests and find ones that match your interests and skills.",
+        "details": [
+          "Filter quests by reward amount",
+          "Check quest requirements",
+          "View completion deadlines"
+        ]
+      },
+      "completeTasks": {
+        "title": "Complete Tasks",
+        "description": "Follow quest instructions and complete the required tasks to earn rewards.",
+        "details": [
+          "Read quest requirements carefully",
+          "Install Primus browser extension for task verification",
+          "Complete tasks on external platforms",
+          "Generate necessary proofs"
+        ],
+        "primusNote": "Important: Install the Primus browser extension to verify task completion automatically."
+      },
+      "claimRewards": {
+        "title": "Claim Rewards",
+        "description": "Once verified, automatically receive your rewards directly to your wallet.",
+        "details": [
+          "Wait for automatic verification",
+          "Receive rewards in your wallet",
+          "Track your earning history"
+        ]
+      }
+    }
+  },
+  "features": {
+    "title": "Why Choose ProofQuest?",
+    "subtitle": "Advanced features that make quest completion secure, private, and rewarding",
+    "items": {
+      "automatedVerification": {
+        "title": "Automated Verification",
+        "description": "Smart contracts automatically verify quest completion and distribute rewards"
+      },
+      "zeroKnowledgePrivacy": {
+        "title": "Zero-Knowledge Privacy",
+        "description": "Protect your privacy while proving task completion with advanced cryptography"
+      },
+      "transparentVerifiable": {
+        "title": "Transparent & Verifiable",
+        "description": "All transactions and verifications are recorded on the blockchain for transparency"
+      },
+      "multiPlatformIntegration": {
+        "title": "Multi-Platform Integration",
+        "description": "Complete tasks across various Web2 platforms and earn Web3 rewards"
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Got questions? We've got answers to help you get started",
+    "items": {
+      "whatIsProofQuest": {
+        "question": "What is ProofQuest?",
+        "answer": "ProofQuest is a Web3 quest platform that allows you to complete Web2 tasks and earn cryptocurrency rewards. Using zero-knowledge proof technology, you can prove task completion while maintaining privacy."
+      },
+      "howToGetStarted": {
+        "question": "How do I get started?",
+        "answer": "Simply connect your Web3 wallet to the Monad testnet, browse available quests, and start completing tasks. You'll automatically receive rewards upon verification."
+      },
+      "questTypes": {
+        "question": "What types of quests are available?",
+        "answer": "Quests include social media tasks (Twitter engagement), development tasks (GitHub contributions), content creation, community participation, and custom challenges created by sponsors."
+      },
+      "rewardDistribution": {
+        "question": "How are rewards distributed?",
+        "answer": "Rewards are automatically distributed to your wallet once quest completion is verified through our smart contract system. No manual claiming required!"
+      },
+      "dataPrivacy": {
+        "question": "Is my data private?",
+        "answer": "Yes! We use zero-knowledge proofs to verify task completion without exposing your personal data or sensitive information to the blockchain."
+      },
+      "monadTestnet": {
+        "question": "What is Monad testnet?",
+        "answer": "Monad is a high-performance blockchain that we use for fast and cost-effective transactions. The testnet allows you to interact with the platform without real cryptocurrency costs."
+      }
+    }
+  },
+  "cta": {
+    "title": "Ready to Get Started?",
+    "subtitle": "Join the ProofQuest community and start earning rewards for completing tasks you already do",
+    "browseQuests": "Browse Quests",
+    "createQuest": "Create a Quest"
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "Have questions or feedback? Feel free to reach out!",
+    "followButton": "Follow @coder_chao"
+  },
+  "common": {
+    "stepLabel": "Step"
+  },
+  "primus": {
+    "installButton": "Install Primus Extension",
+    "chromeStoreUrl": "https://chromewebstore.google.com/detail/primus/oeiomhmbaapihbilkfkhmlajkeegnjhe"
+  }
+}

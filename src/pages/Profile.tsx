@@ -29,8 +29,10 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAccount } from "wagmi";
 import { useProfile, formatEthAmount, formatUserAddress, formatDate, formatTimeAgo, getActivityIcon } from "@/hooks/useProfile";
+import { useTranslation } from 'react-i18next';
 
 const Profile = () => {
+  const { t } = useTranslation('profile');
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("my-quests");
   const [questTab, setQuestTab] = useState("active");
@@ -44,8 +46,8 @@ const Profile = () => {
       <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
         <div className="text-center">
           <Wallet className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Connect Your Wallet</h2>
-          <p className="text-muted-foreground mb-4">Please connect your wallet to view your profile</p>
+          <h2 className="text-xl font-semibold mb-2">{t('wallet.connectPrompt')}</h2>
+          <p className="text-muted-foreground mb-4">{t('wallet.connectDescription')}</p>
         </div>
       </div>
     );
@@ -57,7 +59,7 @@ const Profile = () => {
       <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--vibrant-blue))] mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading profile...</p>
+          <p className="text-muted-foreground">{t('loading.profile')}</p>
         </div>
       </div>
     );
@@ -68,8 +70,8 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-background p-4 md:p-6 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">Failed to load profile data</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <p className="text-red-500 mb-4">{t('error.failedToLoad')}</p>
+          <Button onClick={() => window.location.reload()}>{t('error.retry')}</Button>
         </div>
       </div>
     );
@@ -85,23 +87,23 @@ const Profile = () => {
   const copyAddress = () => {
     navigator.clipboard.writeText(walletAddress);
     toast({
-      title: "Address copied!",
-      description: "Wallet address has been copied to clipboard.",
+      title: t('notifications.addressCopied'),
+      description: t('notifications.addressCopiedDescription'),
     });
   };
 
 
   const claimReward = (rewardId: number) => {
     toast({
-      title: "Reward claimed!",
-      description: "Your reward has been successfully claimed.",
+      title: t('notifications.rewardClaimed'),
+      description: t('notifications.rewardClaimedDescription'),
     });
   };
 
   const claimAllRewards = () => {
     toast({
-      title: "All rewards claimed!",
-      description: "All pending rewards have been successfully claimed.",
+      title: t('notifications.allRewardsClaimed'),
+      description: t('notifications.allRewardsClaimedDescription'),
     });
   };
 
@@ -122,7 +124,7 @@ const Profile = () => {
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold">My Profile</h1>
+                  <h1 className="text-2xl font-bold">{t('header.title')}</h1>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -133,7 +135,7 @@ const Profile = () => {
                     {shortAddress}
                   </Button>
                 </div>
-                <p className="text-white/80 text-sm">ProofQuest Member since {profile?.joinDate ? formatDate(profile.joinDate) : 'Unknown'}</p>
+                <p className="text-white/80 text-sm">{t('header.memberSince', { date: profile?.joinDate ? formatDate(profile.joinDate) : 'Unknown' })}</p>
               </div>
             </div>
           </div>
@@ -144,7 +146,7 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xl font-bold">{profile?.totalEarned ? formatEthAmount(profile.totalEarned) : '0 MON'}</div>
-                  <div className="text-xs text-white/80">Total Earned</div>
+                  <div className="text-xs text-white/80">{t('stats.totalEarned')}</div>
                 </div>
                 <DollarSign className="h-5 w-5 text-white/60" />
               </div>
@@ -154,7 +156,7 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xl font-bold">{profile?.questsCompleted || 0}</div>
-                  <div className="text-xs text-white/80">Completed</div>
+                  <div className="text-xs text-white/80">{t('stats.completed')}</div>
                 </div>
                 <CheckCircle2 className="h-5 w-5 text-white/60" />
               </div>
@@ -164,7 +166,7 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xl font-bold">{profile?.questsCreated || 0}</div>
-                  <div className="text-xs text-white/80">Created</div>
+                  <div className="text-xs text-white/80">{t('stats.created')}</div>
                 </div>
                 <Plus className="h-5 w-5 text-white/60" />
               </div>
@@ -174,7 +176,7 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xl font-bold">{profile?.successRate ? `${profile.successRate}%` : '0%'}</div>
-                  <div className="text-xs text-white/80">Success Rate</div>
+                  <div className="text-xs text-white/80">{t('stats.successRate')}</div>
                 </div>
                 <TrendingUp className="h-5 w-5 text-white/60" />
               </div>
@@ -187,24 +189,24 @@ const Profile = () => {
           <div className="col-span-12 lg:col-span-9">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="my-quests">My Quests</TabsTrigger>
-                <TabsTrigger value="rewards">Rewards</TabsTrigger>
-                <TabsTrigger value="activity">Activity</TabsTrigger>
+                <TabsTrigger value="my-quests">{t('tabs.myQuests')}</TabsTrigger>
+                <TabsTrigger value="rewards">{t('tabs.rewards')}</TabsTrigger>
+                <TabsTrigger value="activity">{t('tabs.activity')}</TabsTrigger>
               </TabsList>
 
               {/* My Quests Tab */}
               <TabsContent value="my-quests">
                 <Card>
                   <CardHeader>
-                    <CardTitle>My Quests</CardTitle>
-                    <CardDescription>Track your quest participation and progress</CardDescription>
+                    <CardTitle>{t('quests.title')}</CardTitle>
+                    <CardDescription>{t('quests.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Tabs value={questTab} onValueChange={setQuestTab}>
                       <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="active">Active ({quests?.active?.length || 0})</TabsTrigger>
-                        <TabsTrigger value="completed">Completed ({quests?.completed?.length || 0})</TabsTrigger>
-                        <TabsTrigger value="created">Created ({quests?.created?.length || 0})</TabsTrigger>
+                        <TabsTrigger value="active">{t('quests.tabs.active')} ({quests?.active?.length || 0})</TabsTrigger>
+                        <TabsTrigger value="completed">{t('quests.tabs.completed')} ({quests?.completed?.length || 0})</TabsTrigger>
+                        <TabsTrigger value="created">{t('quests.tabs.created')} ({quests?.created?.length || 0})</TabsTrigger>
                       </TabsList>
 
                       <TabsContent value="active" className="space-y-4">
@@ -217,7 +219,7 @@ const Profile = () => {
                                   <p className="text-sm text-muted-foreground line-clamp-2">{quest.description}</p>
                                 </div>
                                 <Badge className="bg-[hsl(var(--vibrant-blue))]/15 text-[hsl(var(--vibrant-blue))]">
-                                  {quest.status === 'active' ? 'Active' : quest.status}
+                                  {quest.status === 'active' ? t('quests.status.active') : quest.status}
                                 </Badge>
                               </div>
                               <div className="flex items-center justify-between text-sm">
@@ -235,7 +237,7 @@ const Profile = () => {
                           </Link>
                         )) : (
                           <div className="text-center py-8 text-muted-foreground">
-                            <p>No active quests available</p>
+                            <p>{t('quests.noActive')}</p>
                           </div>
                         )}
                       </TabsContent>
@@ -250,18 +252,18 @@ const Profile = () => {
                                   <p className="text-sm text-muted-foreground line-clamp-2">{quest.description}</p>
                                 </div>
                                 <Badge className="bg-[hsl(var(--vibrant-green))]/15 text-[hsl(var(--vibrant-green))]">
-                                  Completed
+                                  {t('quests.status.completed')}
                                 </Badge>
                               </div>
                               <div className="flex items-center justify-between text-sm">
                                 <span className="font-medium text-[hsl(var(--vibrant-green))]">{formatEthAmount(quest.rewardEarned)}</span>
-                                <span className="text-muted-foreground">Completed on {formatDate(quest.completedDate)}</span>
+                                <span className="text-muted-foreground">{t('quests.completedOn', { date: formatDate(quest.completedDate) })}</span>
                               </div>
                             </div>
                           </Link>
                         )) : (
                           <div className="text-center py-8 text-muted-foreground">
-                            <p>No completed quests yet</p>
+                            <p>{t('quests.noCompleted')}</p>
                           </div>
                         )}
                       </TabsContent>
@@ -281,7 +283,7 @@ const Profile = () => {
                               </div>
                               <div className="flex items-center justify-between text-sm">
                                 <span className="font-medium text-[hsl(var(--vibrant-green))]">{formatEthAmount(quest.totalRewards)}</span>
-                                <span className="text-muted-foreground">{quest.participantCount}/{quest.maxParticipants} participants</span>
+                                <span className="text-muted-foreground">{quest.participantCount}/{quest.maxParticipants} {t('quests.participants')}</span>
                               </div>
                               <div className="w-full bg-muted rounded-full h-2">
                                 <div 
@@ -293,7 +295,7 @@ const Profile = () => {
                           </Link>
                         )) : (
                           <div className="text-center py-8 text-muted-foreground">
-                            <p>No created quests yet</p>
+                            <p>{t('quests.noCreated')}</p>
                           </div>
                         )}
                       </TabsContent>
@@ -308,12 +310,12 @@ const Profile = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <CardTitle>Pending Rewards</CardTitle>
-                      <CardDescription>Claimable rewards from completed quests</CardDescription>
+                      <CardTitle>{t('rewards.pending.title')}</CardTitle>
+                      <CardDescription>{t('rewards.pending.description')}</CardDescription>
                     </div>
                     <Button onClick={claimAllRewards} className="bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90">
                       <Gift className="h-4 w-4 mr-2" />
-                      Claim All
+                      {t('rewards.pending.claimAll')}
                     </Button>
                   </CardHeader>
                   <CardContent>
@@ -330,12 +332,12 @@ const Profile = () => {
                             disabled={!reward.claimable}
                             className="bg-[hsl(var(--vibrant-blue))] hover:bg-[hsl(var(--vibrant-blue))]/90 disabled:opacity-50"
                           >
-                            {reward.claimable ? 'Claim' : 'Pending'}
+                            {reward.claimable ? t('rewards.pending.claim') : t('rewards.pending.pending')}
                           </Button>
                         </div>
                       )) : (
                         <div className="text-center py-8 text-muted-foreground">
-                          <p>No pending rewards</p>
+                          <p>{t('rewards.pending.noPending')}</p>
                         </div>
                       )}
                     </div>
@@ -345,8 +347,8 @@ const Profile = () => {
                 {/* Vesting Rewards */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Vesting Rewards</CardTitle>
-                    <CardDescription>Long-term rewards with linear vesting</CardDescription>
+                    <CardTitle>{t('rewards.vesting.title')}</CardTitle>
+                    <CardDescription>{t('rewards.vesting.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -356,15 +358,15 @@ const Profile = () => {
                             <div>
                               <div className="font-medium">{vesting.questTitle}</div>
                               <div className="text-sm text-muted-foreground">
-                                {formatEthAmount(vesting.vestedAmount)} / {formatEthAmount(vesting.totalAmount)} vested
+                                {formatEthAmount(vesting.vestedAmount)} / {formatEthAmount(vesting.totalAmount)} {t('rewards.vesting.vested')}
                               </div>
                             </div>
                             <div className="text-right">
                               <div className="font-medium text-[hsl(var(--vibrant-green))]">
-                                {formatEthAmount(vesting.claimableAmount)} claimable
+                                {formatEthAmount(vesting.claimableAmount)} {t('rewards.vesting.claimable')}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {vesting.timeRemaining} remaining
+                                {vesting.timeRemaining} {t('rewards.vesting.remaining')}
                               </div>
                             </div>
                           </div>
@@ -377,7 +379,7 @@ const Profile = () => {
                         </div>
                       )) : (
                         <div className="text-center py-8 text-muted-foreground">
-                          <p>No vesting rewards</p>
+                          <p>{t('rewards.vesting.noVesting')}</p>
                         </div>
                       )}
                     </div>
@@ -387,8 +389,8 @@ const Profile = () => {
                 {/* Reward History */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Reward History</CardTitle>
-                    <CardDescription>Previous rewards and transactions</CardDescription>
+                    <CardTitle>{t('rewards.history.title')}</CardTitle>
+                    <CardDescription>{t('rewards.history.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -408,7 +410,7 @@ const Profile = () => {
                         </div>
                       )) : (
                         <div className="text-center py-8 text-muted-foreground">
-                          <p>No reward history</p>
+                          <p>{t('rewards.history.noHistory')}</p>
                         </div>
                       )}
                     </div>
@@ -420,8 +422,8 @@ const Profile = () => {
               <TabsContent value="activity">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Activity Timeline</CardTitle>
-                    <CardDescription>Your recent activity on ProofQuest</CardDescription>
+                    <CardTitle>{t('activity.title')}</CardTitle>
+                    <CardDescription>{t('activity.description')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -441,7 +443,7 @@ const Profile = () => {
                         );
                       }) : (
                         <div className="text-center py-8 text-muted-foreground">
-                          <p>No recent activity</p>
+                          <p>{t('activity.noActivity')}</p>
                         </div>
                       )}
                     </div>
@@ -455,28 +457,28 @@ const Profile = () => {
           <div className="col-span-12 lg:col-span-3">
             <Card>
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle>{t('quickActions.title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link to="/create">
                   <Button className="w-full bg-[hsl(var(--vibrant-green))] hover:bg-[hsl(var(--vibrant-green))]/90">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create New Quest
+                    {t('quickActions.createQuest')}
                   </Button>
                 </Link>
                 <Link to="/quests">
                   <Button variant="outline" className="w-full">
                     <List className="h-4 w-4 mr-2" />
-                    View All Quests
+                    {t('quickActions.viewAllQuests')}
                   </Button>
                 </Link>
                 <Button variant="outline" className="w-full">
                   <Settings className="h-4 w-4 mr-2" />
-                  Account Settings
+                  {t('quickActions.accountSettings')}
                 </Button>
                 <Button variant="outline" className="w-full text-destructive hover:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Disconnect Wallet
+                  {t('quickActions.disconnectWallet')}
                 </Button>
               </CardContent>
             </Card>
