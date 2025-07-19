@@ -14,6 +14,7 @@ import QuestDetail from "./pages/QuestDetail";
 import Profile from "./pages/Profile";
 import CreateQuest from "./pages/CreateQuest";
 import QuestTest from "./pages/QuestTest";
+import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 
@@ -42,6 +43,7 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/quests" element={<QuestList />} />
                     <Route path="/quest/:id" element={<QuestDetail />} />
+                    <Route path="/guide" element={<Guide />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/create" element={<CreateQuest />} />
                     <Route path="/test" element={<QuestTest />} />

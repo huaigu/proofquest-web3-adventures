@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, User, LogOut, Shield } from "lucide-react";
+import { Menu, User, LogOut, Shield, BookOpen } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -20,6 +20,7 @@ export const Navigation = () => {
     { label: "Explore", href: "/quests" },
     { label: "Create", href: "/create" },
     { label: "Profile", href: "/profile" },
+    { label: "Guide", href: "/guide" },
     // { label: "Test", href: "/test" },
   ];
 
@@ -47,6 +48,7 @@ export const Navigation = () => {
           {navItems.map((item, index) => {
             const gradients = [
               "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]", // Explore
+              "from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))]", // Guide
               "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]", // Create
               "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]", // Profile
               "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]", // Test
@@ -169,6 +171,7 @@ export const Navigation = () => {
                   {navItems.map((item, index) => {
                     const gradients = [
                       "from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]", // Explore
+                      "from-[hsl(var(--vibrant-purple))] to-[hsl(var(--vibrant-pink))]", // Guide
                       "from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-yellow))]", // Create
                       "from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))]", // Profile
                       "from-[hsl(var(--vibrant-pink))] to-[hsl(var(--vibrant-purple))]", // Test
