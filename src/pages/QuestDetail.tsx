@@ -466,7 +466,7 @@ const QuestDetail = () => {
       let attTemplateID = ""
       // 使用固定的 Template ID
       if (quest.questType == "twitter-interaction") {
-        attTemplateID = "60ca2736-b331-4321-b78e-a2495956700c";
+        attTemplateID = "34a82c3f-781f-49a7-bd49-9d15c9382866";
       } else {
         attTemplateID = "32b16b38-9eab-41e0-96b1-218dd63be7a5"
       }

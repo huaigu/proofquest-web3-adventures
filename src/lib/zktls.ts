@@ -4,7 +4,7 @@ let PrimusZKTLS: any = null;
 // ZKTLS Configuration
 export const ZKTLS_CONFIG = {
   appId: import.meta.env.VITE_PRIMUS_APP_ID,
-  templateId: "60ca2736-b331-4321-b78e-a2495956700c",
+  templateId: "34a82c3f-781f-49a7-bd49-9d15c9382866",
   dataSourceUrl: "https://x.com/BoxMrChen/status/1945396393528713656",
   backendUrl: import.meta.env.VITE_API_URL || "http://localhost:3001"
 };
