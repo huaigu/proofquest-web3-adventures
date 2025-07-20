@@ -62,10 +62,10 @@ export const useDashboard = () => {
 // Helper functions to format data
 export const formatEthAmount = (weiAmount: string): string => {
   const monAmount = parseFloat(weiAmount) / Math.pow(10, 18);
-  if (monAmount >= 1) {
+  if (monAmount >= 0.1) {
     return `${monAmount.toFixed(2)} MON`;
   } else {
-    return `< 1 MON`;
+    return `< 0.1 MON`;
   }
 };
 
