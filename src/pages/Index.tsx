@@ -5,6 +5,7 @@ import { Bot, Shield, Layers, Activity, Users, Trophy, Zap, ArrowRight, Sparkles
 import { Link } from "react-router-dom";
 import { useDashboard, formatEthAmount, formatUserAddress, formatTimeAgo } from "@/hooks/useDashboard";
 import { useTranslation } from 'react-i18next';
+import { generateAddressGradient, getAddressInitials } from "@/lib/utils";
 
 const Index = () => {
   const { t } = useTranslation(['quests', 'common']);
@@ -288,13 +289,15 @@ const Index = () => {
                 <Star className="h-4 w-4 text-[hsl(var(--vibrant-yellow))]" />
                 <h3 className="font-semibold tex-white-600">{t('trendingQuests')}</h3>
               </div>
-              <Button size="sm" variant="ghost" className="text-xs text-gray-600 hover:text-white-500">
-                {t('viewAll')} <ArrowRight className="h-3 w-3 ml-1" />
-              </Button>
+              <Link to="/quests">
+                <Button size="sm" variant="ghost" className="text-xs text-gray-600 hover:text-gray-800">
+                  {t('viewAll')} <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
             </div>
             
             <div className="space-y-4">
-              {trendingQuests.length > 0 ? trendingQuests.slice(0, 3).map((quest, index) => {
+              {trendingQuests.length > 0 ? trendingQuests.slice(0, 3).map((quest: any, index: number) => {
                 const gradients = [
                   'from-[hsl(var(--vibrant-orange))]/90 to-[hsl(var(--vibrant-yellow))]/90',
                   'from-[hsl(var(--vibrant-purple))]/90 to-[hsl(var(--vibrant-blue))]/90',
@@ -308,7 +311,7 @@ const Index = () => {
                 
                 return (
                   <Link key={quest.id} to={`/quest/${quest.id}`} className="block">
-                    <div className={`flex items-start gap-3 p-4 bg-gradient-to-r ${gradients[index]} rounded-xl border ${borderColors[index]} transition-colors text-white cursor-pointer hover:scale-[1.02] transition-transform`}>
+                    <div className={`flex items-start gap-3 p-4 bg-gradient-to-r ${gradients[index]} rounded-xl border ${borderColors[index]} text-white cursor-pointer hover:scale-[1.02] transition-all duration-200`}>
                       <Avatar className="h-10 w-10 border-2 border-white/30">
                         <AvatarImage src="" />
                         <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] text-white text-xs font-bold">
@@ -359,7 +362,7 @@ const Index = () => {
 
             {/* Top Earners Cards */}
             <div className="grid grid-cols-1 gap-3">
-              {topEarners.length > 0 ? topEarners.slice(0, 3).map((earner, index) => {
+              {topEarners.length > 0 ? topEarners.slice(0, 3).map((earner: any, index: number) => {
                 const gradients = [
                   'from-[hsl(var(--vibrant-yellow))]/10 to-[hsl(var(--vibrant-orange))]/10',
                   'from-[hsl(var(--vibrant-blue))]/10 to-[hsl(var(--vibrant-purple))]/10',
@@ -386,10 +389,10 @@ const Index = () => {
                     <div className="flex items-center gap-3">
                       {index === 0 && (
                         <div className="relative">
-                          <Avatar className={`h-12 w-12 border-3 border-[hsl(var(--vibrant-yellow))]/50`}>
+                          <Avatar className={`h-12 w-12 border-3 border-white/30`}>
                             <AvatarImage src="" />
-                            <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-yellow))] to-[hsl(var(--vibrant-orange))] text-white text-sm font-bold">
-                              {formatUserAddress(earner.userAddress).slice(0, 2).toUpperCase()}
+                            <AvatarFallback className={`bg-gradient-to-br ${generateAddressGradient(earner.userAddress)} text-white text-sm font-bold`}>
+                              {getAddressInitials(earner.userAddress)}
                             </AvatarFallback>
                           </Avatar>
                           <div className={`absolute -top-1 -right-1 w-5 h-5 ${rankColors[index]} rounded-full flex items-center justify-center shadow-md`}>
@@ -398,26 +401,26 @@ const Index = () => {
                         </div>
                       )}
                       {index > 0 && (
-                        <Avatar className={`h-10 w-10 border-2 ${borderColors[index]}`}>
+                        <Avatar className={`h-10 w-10 border-2 border-white/30`}>
                           <AvatarImage src="" />
-                          <AvatarFallback className={`bg-gradient-to-br ${index === 1 ? 'from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))]' : 'from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue)))'} text-white text-xs font-bold`}>
-                            {formatUserAddress(earner.userAddress).slice(0, 2).toUpperCase()}
+                          <AvatarFallback className={`bg-gradient-to-br ${generateAddressGradient(earner.userAddress)} text-white text-xs font-bold`}>
+                            {getAddressInitials(earner.userAddress)}
                           </AvatarFallback>
                         </Avatar>
                       )}
                       <div className="flex-1">
-                        <p className={`text-${index === 0 ? 'sm' : 'xs'} font-${index === 0 ? 'bold' : 'semibold'} text-gray-900`}>
+                        <p className={`text-${index === 0 ? 'sm' : 'xs'} font-${index === 0 ? 'bold' : 'semibold'} text-white`}>
                           {formatUserAddress(earner.userAddress)}
                         </p>
-                        <p className={`text-${index === 0 ? 'lg' : 'sm'} font-bold ${textColors[index]}`}>
+                        <p className={`text-${index === 0 ? 'lg' : 'sm'} font-bold text-white`}>
                           {formatEthAmount(earner.totalRewardsEarned)}
                         </p>
                         {index === 0 && (
-                          <p className="text-xs text-gray-600">{earner.totalParticipations} {t('questsCompleted')}</p>
+                          <p className="text-xs text-white/80">{earner.totalParticipations} {t('questsCompleted')}</p>
                         )}
                       </div>
                       {index > 0 && (
-                        <div className="text-xs font-semibold text-gray-500">#{earner.rank}</div>
+                        <div className="text-xs font-semibold text-white/60">#{earner.rank}</div>
                       )}
                     </div>
                   </div>
