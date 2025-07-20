@@ -12,6 +12,7 @@ import { PrimusZKTLS } from "@primuslabs/zktls-js-sdk";
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { claimRewardWithAttestation, claimReward } from '@/lib/questContract';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Share2,
@@ -34,7 +35,7 @@ import {
   Loader2
 } from "lucide-react";
 
-// 扩展 window 对象类型
+// Extend window object type
 declare global {
   interface Window {
     ethereum?: any;
@@ -185,6 +186,7 @@ const QuestDetail = () => {
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
+  const { t } = useTranslation('quests');
 
   const [quest, setQuest] = useState<QuestDetail | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -206,7 +208,7 @@ const QuestDetail = () => {
   const [quoteTweetUrl, setQuoteTweetUrl] = useState<string>('');
   const [quoteTweetUrlError, setQuoteTweetUrlError] = useState<string>('');
 
-  // 初始化 Primus ZKTLS SDK
+  // Initialize Primus ZKTLS SDK
   useEffect(() => {
     const initializePrimus = async () => {
       try {
@@ -226,19 +228,19 @@ const QuestDetail = () => {
       } catch (error: any) {
         console.error("Failed to initialize Primus ZKTLS:", error);
         
-        // 检查是否是插件未安装错误
+        // Check if it's plugin not installed error
         if (error?.code === "00006" || error?.message?.includes("00006")) {
           setPluginNotInstalled(true);
           toast({
-            title: "需要安装 Primus 插件",
-            description: "请先安装 Primus Chrome 插件才能参与任务",
+            title: t('zkProof.primusPluginRequired'),
+            description: t('zkProof.installPrimusPlugin'),
             variant: "destructive",
             duration: 8000
           });
         } else {
           toast({
-            title: "ZKTLS 初始化失败",
-            description: "无法初始化零知识证明系统，请刷新页面重试",
+            title: t('zkProof.zktlsInitializationFailed'),
+            description: t('zkProof.cannotInitializeZkSystem'),
             variant: "destructive"
           });
         }
@@ -250,7 +252,7 @@ const QuestDetail = () => {
     initializePrimus();
   }, []);
 
-  // 监听钱包连接状态
+  // Listen to wallet connection status
   useEffect(() => {
     if (isConnected && address) {
       setUserProgress(prev => ({ ...prev, walletConnected: true }));
@@ -267,7 +269,7 @@ const QuestDetail = () => {
     }
   }, [isConnected, address]);
 
-  // 检查用户是否已经参与过当前活动
+  // Check if user has already participated in current activity
   useEffect(() => {
     const checkParticipation = async () => {
       if (!isConnected || !address || !quest?.id) return;
@@ -291,7 +293,7 @@ const QuestDetail = () => {
     checkParticipation();
   }, [isConnected, address, quest?.id]);
 
-  // 通过接口获取 quest detail，字段映射
+  // Get quest detail through API, field mapping
   useEffect(() => {
     const fetchQuestDetail = async () => {
       if (!id) return;
@@ -301,7 +303,7 @@ const QuestDetail = () => {
         const result = await res.json();
         if (!result.success) throw new Error('Quest not found');
         const data = result.data;
-        // 字段映射
+        // Field mapping
         setQuest({
           id: data.id,
           title: data.title,
@@ -344,7 +346,7 @@ const QuestDetail = () => {
     fetchQuestDetail();
   }, [id]);
 
-  // 通过接口获取 participants，字段映射
+  // Get participants through API, field mapping
   useEffect(() => {
     const fetchParticipants = async () => {
       if (!id) return;
@@ -417,8 +419,8 @@ const QuestDetail = () => {
       }
     } catch (error) {
       toast({
-        title: "连接失败",
-        description: "钱包连接失败，请重试。",
+        title: t('zkProof.connectionFailed'),
+        description: t('zkProof.walletConnectionFailed'),
         variant: "destructive"
       });
     }
@@ -440,7 +442,7 @@ const QuestDetail = () => {
   };
 
   const handleStartProof = async () => {
-    setCurrentStep('启动 ZK 证明中...');
+    setCurrentStep(t('zkProof.startingProof'));
     setIsLoading(true);
     try {
       if (!primusZKTLS) {
@@ -471,7 +473,7 @@ const QuestDetail = () => {
 
       const userAddress = address;
 
-      // 生成证明请求
+      // Generate proof request
       const request = primusZKTLS.generateRequestParams(attTemplateID, userAddress);
 
       // 设置额外参数 - 对于QuoteTweet使用用户的quote tweet URL，对于其他类型使用quest的launch_page
@@ -483,7 +485,7 @@ const QuestDetail = () => {
       // 转换请求为字符串
       const requestStr = request.toJsonString();
 
-      // 发送给服务器签名
+      // Send to server for signing
       const apiBase = import.meta.env.VITE_API_URL || '';
       const response = await fetch(`${apiBase}/api/zktls/sign`, {
         method: 'POST',
@@ -495,16 +497,16 @@ const QuestDetail = () => {
 
       setUserProgress(prev => ({ ...prev, zkProofStarted: true }));
       toast({
-        title: "ZK 签名完成",
-        description: "已获取 ZK 签名，开始生成证明。"
+        title: t('zkProof.signatureComplete'),
+        description: t('zkProof.signatureObtained')
       });
 
-      // 自动进入下一步
+      // Auto proceed to next step
       setTimeout(() => handleGenerateProof(signedRequestStr), 1000);
     } catch (error) {
       toast({
-        title: "签名失败",
-        description: "ZK 签名失败，请重试。",
+        title: t('zkProof.signatureFailed'),
+        description: t('zkProof.zkSignatureFailed'),
         variant: "destructive"
       });
       setIsLoading(false);
@@ -513,24 +515,24 @@ const QuestDetail = () => {
   };
 
   const handleGenerateProof = async (signedRequestStr: string) => {
-    setCurrentStep('生成证明中...');
+    setCurrentStep(t('zkProof.generatingProof'));
     try {
       if (!primusZKTLS) {
         throw new Error('Primus ZKTLS not initialized');
       }
 
-      // 开始证明过程
+      // Start proof process
       const attestation = await primusZKTLS.startAttestation(signedRequestStr);
       console.log("attestation=", attestation);
 
       setZkProofData(attestation);
       setUserProgress(prev => ({ ...prev, zkProofGenerated: true }));
       toast({
-        title: "证明生成完成",
-        description: "ZK 证明已生成，开始验证。"
+        title: t('zkProof.proofGenerationComplete'),
+        description: t('zkProof.zkProofGenerated')
       });
 
-      // 自动进入下一步
+      // Auto proceed to next step
       setTimeout(() => handleVerifyProof(attestation), 1000);
     } catch (error) {
       // Reset progress states when proof generation fails
@@ -541,8 +543,8 @@ const QuestDetail = () => {
         proofVerified: false 
       }));
       toast({
-        title: "生成失败",
-        description: "证明生成失败，请重试。",
+        title: t('zkProof.generationFailed'),
+        description: t('zkProof.proofGenerationFailed'),
         variant: "destructive"
       });
       setIsLoading(false);
@@ -551,13 +553,13 @@ const QuestDetail = () => {
   };
 
   const handleVerifyProof = async (attestation: any) => {
-    setCurrentStep('验证证明中...');
+    setCurrentStep(t('zkProof.verifyingProof'));
     try {
       if (!primusZKTLS) {
         throw new Error('Primus ZKTLS not initialized');
       }
 
-      // 验证证明
+      // Verify proof
       const verifyResult = await primusZKTLS.verifyAttestation(attestation);
       console.log("verifyResult=", verifyResult);
 
@@ -567,8 +569,8 @@ const QuestDetail = () => {
 
       setUserProgress(prev => ({ ...prev, proofVerified: true }));
       toast({
-        title: "证明验证通过",
-        description: "证明验证成功，可以提交领取奖励。"
+        title: t('zkProof.proofVerificationPassed'),
+        description: t('zkProof.proofVerificationSuccess')
       });
     } catch (error) {
       // Reset progress states when verification fails
@@ -579,8 +581,8 @@ const QuestDetail = () => {
         proofVerified: false 
       }));
       toast({
-        title: "验证失败",
-        description: "证明验证失败，请重试。",
+        title: t('zkProof.verificationFailed'),
+        description: t('zkProof.proofVerificationFailed'),
         variant: "destructive"
       });
     }
@@ -589,7 +591,7 @@ const QuestDetail = () => {
   };
 
   const handleClaimReward = async () => {
-    setCurrentStep('领取奖励中...');
+    setCurrentStep(t('zkProof.claimingReward'));
     setIsLoading(true);
     try {
       if (!zkProofData) {
@@ -613,12 +615,12 @@ const QuestDetail = () => {
 
       console.log('Transaction submitted:', txHash);
 
-      // 更新步骤状态为等待交易确认
-      setCurrentStep('等待交易确认...');
+      // Update step status to waiting for transaction confirmation
+      setCurrentStep(t('zkProof.waitingForConfirmation'));
       
       toast({
-        title: "交易已提交",
-        description: `交易已提交到区块链，等待确认中... 交易哈希: ${txHash.slice(0, 10)}...`,
+        title: t('zkProof.transactionSubmitted'),
+        description: `${t('zkProof.transactionSubmittedToBlockchain')}${txHash.slice(0, 10)}...`,
         duration: 3000
       });
 
@@ -631,27 +633,27 @@ const QuestDetail = () => {
           });
           
           if (receipt && receipt.status === '0x1') {
-            // 交易成功确认
+            // Transaction successfully confirmed
             setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
             toast({
-              title: "奖励领取成功！",
-              description: `恭喜！您已成功领取 ${formatReward()} 奖励。交易已确认！`,
+              title: t('zkProof.rewardClaimSuccess'),
+              description: `${t('zkProof.congratulations')}${formatReward()}${t('zkProof.rewardTransactionConfirmed')}`,
               duration: 5000
             });
           } else {
-            throw new Error('交易失败或被回滚');
+            throw new Error(t('zkProof.transactionFailedOrReverted'));
           }
         } catch (waitError) {
-          console.warn('等待交易确认时出错，使用轮询方式:', waitError);
-          // 降级到轮询方式
+          console.warn(t('zkProof.checkingTransactionStatus'), waitError);
+          // Fallback to polling method
           await waitForTransactionConfirmation(txHash);
         }
       } else {
-        // 如果没有 window.ethereum 或不支持 eth_waitForTransactionReceipt，使用轮询方式
+        // If no window.ethereum or doesn't support eth_waitForTransactionReceipt, use polling method
         await waitForTransactionConfirmation(txHash);
       }
 
-      // 等待一段时间后重新获取数据
+      // Wait a moment then reload data
       setTimeout(() => {
         window.location.reload();
       }, 3000);
@@ -659,7 +661,7 @@ const QuestDetail = () => {
       console.error('Claim reward error:', error);
       const errorMessage = parseContractError(error);
       toast({
-        title: "领取失败",
+        title: t('zkProof.claimFailed'),
         description: errorMessage,
         variant: "destructive"
       });
@@ -668,62 +670,62 @@ const QuestDetail = () => {
     setCurrentStep('');
   };
 
-  // 解析合约错误信息
+  // Parse contract error messages
   const parseContractError = (error: any): string => {
     console.log('Parsing contract error:', error);
     
-    // 检查错误消息中是否包含合约错误
+    // Check if error message contains contract errors
     const errorMessage = error?.message || error?.reason || error?.data?.message || '';
     
-    // 定义合约错误映射
+    // Define contract error mappings
     const contractErrors = {
-      'QuestSystem__QuoteTweetAlreadyUsed': '该推特已被其他用户使用，请使用不同的推特链接',
-      'QuestSystem__UserAlreadyParticipated': '您已经参与过此任务，无法重复参与',
-      'QuestSystem__QuestNotActive': '任务当前不可用或已结束',
-      'QuestSystem__QuestFull': '任务参与人数已满',
-      'QuestSystem__InvalidProof': '证明无效，请重新生成证明',
-      'QuestSystem__ProofExpired': '证明已过期，请重新生成证明',
-      'QuestSystem__InvalidAttestation': '无效的证明数据',
-      'QuestSystem__InsufficientFunds': '合约余额不足，请联系管理员',
-      'QuestSystem__QuestEnded': '任务已结束，无法继续参与',
-      'QuestSystem__InvalidQuestId': '无效的任务ID',
+      'QuestSystem__QuoteTweetAlreadyUsed': t('zkProof.twitterAlreadyUsed'),
+      'QuestSystem__UserAlreadyParticipated': t('zkProof.userAlreadyParticipated'),
+      'QuestSystem__QuestNotActive': t('zkProof.questNotActive'),
+      'QuestSystem__QuestFull': t('zkProof.questFull'),
+      'QuestSystem__InvalidProof': t('zkProof.invalidProof'),
+      'QuestSystem__ProofExpired': t('zkProof.proofExpired'),
+      'QuestSystem__InvalidAttestation': t('zkProof.invalidAttestation'),
+      'QuestSystem__InsufficientFunds': t('zkProof.insufficientFunds'),
+      'QuestSystem__QuestEnded': t('zkProof.questEnded'),
+      'QuestSystem__InvalidQuestId': t('zkProof.invalidQuestId'),
     };
     
-    // 检查是否包含特定的合约错误
+    // Check if contains specific contract errors
     for (const [contractError, userMessage] of Object.entries(contractErrors)) {
       if (errorMessage.includes(contractError)) {
         return userMessage;
       }
     }
     
-    // 检查其他常见错误
+    // Check other common errors
     if (errorMessage.includes('User denied transaction') || errorMessage.includes('user rejected')) {
-      return '用户取消了交易';
+      return t('zkProof.userDeniedTransaction');
     }
     
     if (errorMessage.includes('insufficient funds')) {
-      return '账户余额不足，请确保有足够的 MON 支付 Gas 费用';
+      return t('zkProof.insufficientAccountFunds');
     }
     
     if (errorMessage.includes('gas')) {
-      return 'Gas 费用不足或 Gas 限制过低';
+      return t('zkProof.gasFeeInsufficient');
     }
     
     if (errorMessage.includes('nonce')) {
-      return '交易 nonce 错误，请重试';
+      return t('zkProof.nonceError');
     }
     
     if (errorMessage.includes('reverted')) {
-      return '交易被回滚，请检查交易条件';
+      return t('zkProof.transactionReverted');
     }
     
-    // 如果没有匹配的错误，返回通用错误信息
-    return errorMessage || '奖励领取失败，请重试';
+    // If no matching error, return generic error message
+    return errorMessage || t('zkProof.rewardClaimFailedGeneric');
   };
 
-  // 轮询等待交易确认的辅助函数
+  // Polling helper function to wait for transaction confirmation
   const waitForTransactionConfirmation = async (txHash: string) => {
-    const maxAttempts = 30; // 最多等待30次，每次3秒
+    const maxAttempts = 30; // Max 30 attempts, 3 seconds each
     let attempts = 0;
     
     while (attempts < maxAttempts) {
@@ -735,36 +737,36 @@ const QuestDetail = () => {
         
         if (receipt) {
           if (receipt.status === '0x1') {
-            // 交易成功确认
+            // Transaction successfully confirmed
             setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
             toast({
-              title: "奖励领取成功！",
-              description: `恭喜！您已成功领取 ${formatReward()} 奖励。交易已确认！`,
+              title: t('zkProof.rewardClaimSuccess'),
+              description: `${t('zkProof.congratulations')}${formatReward()}${t('zkProof.rewardTransactionConfirmed')}`,
               duration: 5000
             });
             return;
           } else {
-            throw new Error('交易失败或被回滚');
+            throw new Error(t('zkProof.transactionFailedOrReverted'));
           }
         }
         
-        // 等待3秒后重试
+        // Wait 3 seconds before retrying
         await new Promise(resolve => setTimeout(resolve, 3000));
         attempts++;
         
-        // 更新等待状态
-        setCurrentStep(`等待交易确认... (${attempts}/${maxAttempts})`);
+        // Update waiting status
+        setCurrentStep(`${t('zkProof.waitingForConfirmation')} (${attempts}/${maxAttempts})`);
       } catch (error) {
-        console.error('检查交易状态时出错:', error);
+        console.error(t('zkProof.checkingTransactionStatus'), error);
         attempts++;
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
     
-    // 如果超时仍未确认，显示警告但不算失败
+    // If timeout without confirmation, show warning but don't count as failure
     toast({
-      title: "交易确认超时",
-      description: "交易可能仍在处理中，请稍后检查您的余额。",
+      title: t('zkProof.transactionConfirmationTimeout'),
+      description: t('zkProof.transactionMayStillProcessing'),
       variant: "destructive"
     });
   };
@@ -1130,23 +1132,23 @@ const QuestDetail = () => {
                     </div>
                   )}
 
-                  {/* 奖励信息 */}
+                  {/* Reward Information */}
                   <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg">
                     <div className="text-xl font-bold">{formatReward()}</div>
                     <div className="text-white/80 text-sm">Reward per participant</div>
                   </div>
 
-                  {/* 当前状态 */}
+                  {/* Current Status */}
                   {isLoading && currentStep && (
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <div className="text-sm font-medium">{currentStep}</div>
                     </div>
                   )}
 
-                  {/* 如果已参与活动，隐藏所有步骤 */}
+                  {/* If already participated, hide all steps */}
                   {!hasAlreadyParticipated && (
                     <>
-                      {/* 步骤 1: 连接钱包 */}
+                      {/* Step 1: Connect Wallet */}
                       <div className="flex items-start gap-3 p-3 rounded-lg border">
                         <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.walletConnected
                           ? 'bg-[hsl(var(--vibrant-green))] text-white'
@@ -1209,7 +1211,7 @@ const QuestDetail = () => {
                         </div>
                       )}
 
-                      {/* 步骤 3: 开始证明 */}
+                      {/* Step 3: Start Proof */}
                       <div className="flex items-start gap-3 p-3 rounded-lg border">
                         <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofStarted
                           ? 'bg-[hsl(var(--vibrant-green))] text-white'
@@ -1249,7 +1251,7 @@ const QuestDetail = () => {
                         </div>
                       </div>
 
-                      {/* 步骤 4: 生成证明 */}
+                      {/* Step 4: Generate Proof */}
                       <div className="flex items-start gap-3 p-3 rounded-lg border">
                         <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.zkProofGenerated
                           ? 'bg-[hsl(var(--vibrant-green))] text-white'
@@ -1270,7 +1272,7 @@ const QuestDetail = () => {
                         </div>
                       </div>
 
-                      {/* 步骤 5: 验证证明 */}
+                      {/* Step 5: Verify Proof */}
                       <div className="flex items-start gap-3 p-3 rounded-lg border">
                         <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.proofVerified
                           ? 'bg-[hsl(var(--vibrant-green))] text-white'
@@ -1291,7 +1293,7 @@ const QuestDetail = () => {
                         </div>
                       </div>
 
-                      {/* 步骤 6: 提交奖励 */}
+                      {/* Step 6: Submit Reward */}
                       <div className="flex items-start gap-3 p-3 rounded-lg border">
                         <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${userProgress.rewardClaimed
                           ? 'bg-[hsl(var(--vibrant-green))] text-white'

@@ -307,8 +307,8 @@ const Index = () => {
                 ];
                 
                 return (
-                  <Link key={quest.id} to={`/quest/${quest.id}`}>
-                    <div className={`flex items-start gap-3 p-4 bg-gradient-to-r ${gradients[index]} rounded-xl border ${borderColors[index]} transition-colors text-white cursor-pointer`}>
+                  <Link key={quest.id} to={`/quest/${quest.id}`} className="block">
+                    <div className={`flex items-start gap-3 p-4 bg-gradient-to-r ${gradients[index]} rounded-xl border ${borderColors[index]} transition-colors text-white cursor-pointer hover:scale-[1.02] transition-transform`}>
                       <Avatar className="h-10 w-10 border-2 border-white/30">
                         <AvatarImage src="" />
                         <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--vibrant-red))] to-[hsl(var(--vibrant-pink))] text-white text-xs font-bold">
