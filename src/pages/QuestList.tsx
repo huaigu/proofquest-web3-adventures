@@ -73,7 +73,7 @@ const QuestList = () => {
   } = useQuests(apiFilters, {
     limit: questsPerPage * 5, // Load more for client-side pagination
     offset: 0,
-    includeMockData: true
+    includeMockData: false
   });
 
   // Get active filters for display
@@ -486,12 +486,6 @@ const QuestList = () => {
                 <span className="text-sm text-muted-foreground">
                   {t('questsFound', { count: sortedQuests.length })}
                 </span>
-                {quests.some(q => (q as QuestListItem & { _source?: string })._source) && (
-                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/50">
-                    <Database className="w-3 h-3 mr-1" />
-                    {t('liveData')}
-                  </Badge>
-                )}
               </div>
             </div>
 
@@ -549,8 +543,6 @@ const QuestList = () => {
             {!isLoading && paginatedQuests.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
                 {paginatedQuests.map((quest) => {
-                  const isMock = (quest as QuestListItem & { _source?: string })._source === 'mock';
-                  
                   return (
                     <div key={quest.id} className="w-full max-w-lg mx-auto">
                       <div className="bg-gradient-to-br from-black-950 to-black-900 rounded-xl p-2 shadow-2xl border border-slate-850">
@@ -598,7 +590,7 @@ const QuestList = () => {
                               <Coins className="w-4 h-4 text-gray-400" />
                               <span className="text-xs text-gray-400 font-medium">{t('reward')}</span>
                             </div>
-                            <div className="text-lg font-bold text-white">{quest.reward.amount} {quest.reward.type}</div>
+                            <div className="text-lg font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">{quest.reward.amount} {quest.reward.type}</div>
                           </div>
 
                           {/* Progress */}
@@ -611,8 +603,26 @@ const QuestList = () => {
                             </div>
                             <div className="w-full bg-gray-700/30 rounded-full h-2 mb-3">
                               <div 
-                                className="bg-white h-2 rounded-full transition-all duration-500" 
-                                style={{ width: `${quest.participants.max ? Math.min((quest.participants.current / quest.participants.max) * 100, 100) : 0}%` }}
+                                className="h-2 rounded-full transition-all duration-500" 
+                                style={(() => {
+                                  const percentage = quest.participants.max ? Math.min((quest.participants.current / quest.participants.max) * 100, 100) : 0;
+                                  let backgroundColor;
+                                  
+                                  if (percentage <= 50) {
+                                    // 0-50%: 绿色到黄色渐变
+                                    const ratio = percentage / 50;
+                                    backgroundColor = `linear-gradient(90deg, #10b981 0%, #10b981 ${(1-ratio)*100}%, #fbbf24 100%)`;
+                                  } else {
+                                    // 50-100%: 黄色到红色渐变  
+                                    const ratio = (percentage - 50) / 50;
+                                    backgroundColor = `linear-gradient(90deg, #10b981 0%, #fbbf24 ${(1-ratio)*100}%, #ef4444 100%)`;
+                                  }
+                                  
+                                  return {
+                                    width: `${percentage}%`,
+                                    background: backgroundColor
+                                  };
+                                })()}
                               ></div>
                             </div>
                             <div className="flex items-center justify-between text-xs text-gray-400">
@@ -628,18 +638,11 @@ const QuestList = () => {
                           </div>
 
                           {/* Action Button */}
-                          <div className={`col-span-2 ${isMock ? 'bg-gray-800/50 cursor-not-allowed border border-gray-700/50' : 'bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] cursor-pointer hover:scale-105'} rounded-lg p-1.5 flex flex-col items-center justify-center text-white transition-all duration-200 shadow-lg`}>
-                            {isMock ? (
-                              <>
-                                <div className="w-1 h-1 bg-gray-400 rounded-full mb-0.5"></div>
-                                <span className="text-xs font-medium text-center leading-tight text-gray-400">{t('mock')}</span>
-                              </>
-                            ) : (
-                              <Link to={`/quest/${quest.id}`} className="flex items-center justify-center gap-1 h-full w-full">
-                                <Eye className="w-3 h-3 text-white" />
-                                <span className="text-sm font-medium text-white">{t('common:view')}</span>
-                              </Link>
-                            )}
+                          <div className="col-span-2 bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] cursor-pointer hover:scale-105 rounded-lg p-1.5 flex flex-col items-center justify-center text-white transition-all duration-200 shadow-lg">
+                            <Link to={`/quest/${quest.id}`} className="flex items-center justify-center gap-1 h-full w-full">
+                              <Eye className="w-3 h-3 text-white" />
+                              <span className="text-sm font-medium text-white">{t('common:view')}</span>
+                            </Link>
                           </div>
 
                         </div>

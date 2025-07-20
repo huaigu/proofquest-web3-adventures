@@ -42,7 +42,7 @@ declare global {
   }
 }
 
-// Mock quest data type
+// Quest data type
 interface QuestDetail {
   id: string;
   title: string;
@@ -84,101 +84,7 @@ interface Participant {
   status: 'joined' | 'submitted' | 'completed';
 }
 
-// Mock data with different quest types
-const getMockQuest = (id: string): QuestDetail => {
-  const questId = parseInt(id.replace('quest-', ''));
 
-  const questData = {
-    'quest-1': {
-      title: "Like and Retweet our Project Announcement",
-      description: "Help us spread the word about our latest project update by engaging with our announcement tweet.",
-      fullDescription: "We're launching an exciting new feature and need your help to amplify our reach. This quest involves engaging with our official announcement tweet through likes and retweets. Your participation helps us build community awareness and demonstrates your support for our project.",
-      questType: 'twitter-interaction' as const,
-      questConfig: {
-        tweetUrl: "https://twitter.com/proofquest/status/1234567890",
-        requiredActions: ["like", "retweet"]
-      },
-      reward: { amount: 0.01, type: 'MON' as const, distribution: 'Per participant' as const },
-      participants: { current: 234, max: 500 }
-    },
-    'quest-2': {
-      title: "Quote Tweet with Your Web3 Journey",
-      description: "Share your Web3 journey by quote tweeting our community thread with the #Web3Journey hashtag.",
-      fullDescription: "We want to hear about your unique Web3 journey! Quote tweet our community appreciation post and share your story, challenges, and wins in the Web3 space. This helps build our community narrative and inspires others.",
-      questType: 'quote-tweet' as const,
-      questConfig: {
-        quoteTweetUrl: "https://twitter.com/proofquest/status/1234567891",
-        requiredHashtag: "#Web3Journey"
-      },
-      reward: { amount: 0.05, type: 'MON' as const, distribution: 'Per participant' as const },
-      participants: { current: 67, max: 200 }
-    },
-    'quest-3': {
-      title: "Follow and Like Our DeFi Education Thread",
-      description: "Join our community by following our account and liking our comprehensive DeFi education thread.",
-      fullDescription: "Expand your DeFi knowledge by engaging with our educational content. This quest requires you to follow our Twitter account and like our detailed thread explaining DeFi concepts, protocols, and best practices.",
-      questType: 'twitter-interaction' as const,
-      questConfig: {
-        tweetUrl: "https://twitter.com/proofquest/status/1234567892",
-        requiredActions: ["follow", "like"]
-      },
-      reward: { amount: 50, type: 'ERC20' as const, distribution: 'Per participant' as const },
-      participants: { current: 156, max: 300 }
-    },
-    'quest-4': {
-      title: "Quote Tweet with #ProofQuest and Your Thoughts",
-      description: "Share what excites you about zero-knowledge proofs by quote tweeting with #ProofQuest hashtag.",
-      fullDescription: "Help us build excitement around zero-knowledge proof technology! Quote tweet our latest ZK research post and share your thoughts, questions, or insights about how ZK proofs might impact the future of privacy and blockchain technology.",
-      questType: 'quote-tweet' as const,
-      questConfig: {
-        quoteTweetUrl: "https://twitter.com/proofquest/status/1234567893",
-        requiredHashtag: "#ProofQuest"
-      },
-      reward: { amount: 0.03, type: 'MON' as const, distribution: 'Per participant' as const },
-      participants: { current: 89, max: 150 }
-    }
-  };
-
-  const defaultQuest = questData['quest-1'];
-  const quest = questData[id as keyof typeof questData] || defaultQuest;
-
-  return {
-    id,
-    ...quest,
-    launch_page: quest.questConfig.tweetUrl || quest.questConfig.quoteTweetUrl || 'https://x.com/monad_xyz/status/1942933687978365289',
-    creator: {
-      name: "ProofQuest Team",
-      avatar: "",
-      handle: "@proofquest",
-      address: "0x1234567890123456789012345678901234567890"
-    },
-    status: 'Active',
-    deadline: new Date(Date.now() + (7 + questId) * 24 * 60 * 60 * 1000),
-    category: 'Social',
-    createdAt: new Date(Date.now() - questId * 24 * 60 * 60 * 1000)
-  };
-};
-
-const getMockParticipants = (): Participant[] => [
-  {
-    id: "1",
-    address: "0xAbC1234567890123456789012345678901234567890",
-    joinedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    status: "completed"
-  },
-  {
-    id: "2",
-    address: "0xDeF1234567890123456789012345678901234567890",
-    joinedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    status: "submitted"
-  },
-  {
-    id: "3",
-    address: "0x1111234567890123456789012345678901234567890",
-    joinedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    status: "joined"
-  }
-];
 
 const QuestDetail = () => {
   const { id } = useParams<{ id: string }>();

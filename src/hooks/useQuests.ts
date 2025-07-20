@@ -28,133 +28,6 @@ export const questKeys = {
   detail: (id: string) => [...questKeys.details(), id] as const,
 }
 
-/**
- * Mock quest data for merging with backend data
- */
-const getMockQuestData = (): QuestListItem[] => {
-  return [
-    {
-      id: "mock-1",
-      title: "Follow @CryptoInfluencer for Alpha",
-      description: "Follow our Twitter account and like/retweet our latest post about cryptocurrency market trends and investment strategies.",
-      creator: {
-        name: "AlphaSeekerDAO",
-        avatar: "",
-        handle: "@alphaseekerxyz"
-      },
-      reward: {
-        amount: 0.005,
-        type: "MON" as const
-      },
-      status: "active" as const,
-      participants: {
-        current: 1247,
-        max: 2000
-      },
-      timeRemaining: "2d 14h",
-      questType: "likeAndRetweet" as const,
-      category: "Social",
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
-    },
-    {
-      id: "mock-2",
-      title: "Quote Tweet Web3 Innovation Thread",
-      description: "Quote tweet our comprehensive thread about the latest Web3 innovations and share your thoughts on decentralized technology.",
-      creator: {
-        name: "TechVanguard",
-        avatar: "",
-        handle: "@techvanguard"
-      },
-      reward: {
-        amount: 0.01,
-        type: "MON" as const
-      },
-      status: "claiming" as const,
-      participants: {
-        current: 589,
-        max: 1000
-      },
-      timeRemaining: "3h left to claim",
-      questType: "quote-tweet" as const,
-      category: "Content",
-      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) // 2 days from now
-    },
-    {
-      id: "mock-3",
-      title: "Share Your DeFi Experience",
-      description: "Share your personal experience with DeFi protocols and help educate the community about decentralized finance opportunities.",
-      creator: {
-        name: "DeFiEducator",
-        avatar: "",
-        handle: "@defieducator"
-      },
-      reward: {
-        amount: 0.02,
-        type: "MON" as const
-      },
-      status: "pending" as const,
-      participants: {
-        current: 25,
-        max: 100
-      },
-      timeRemaining: "Starts in 6h",
-      questType: "likeAndRetweet" as const,
-      category: "Education",
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-      endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // 5 days from now
-    },
-    {
-      id: "mock-4",
-      title: "Promote ProofQuest Platform",
-      description: "Help spread the word about ProofQuest by quote tweeting our announcement and adding your own thoughts about Web3 quest platforms.",
-      creator: {
-        name: "ProofQuestTeam",
-        avatar: "",
-        handle: "@proofquest"
-      },
-      reward: {
-        amount: 0.015,
-        type: "MON" as const
-      },
-      status: "ended" as const,
-      participants: {
-        current: 1500,
-        max: 1500
-      },
-      timeRemaining: "Ended",
-      questType: "quote-tweet" as const,
-      category: "Marketing",
-      createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
-      endDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago (ended)
-    },
-    {
-      id: "mock-5",
-      title: "NFT Collection Launch Announcement",
-      description: "Support our upcoming NFT collection by liking and retweeting our launch announcement. Get early access to exclusive digital art.",
-      creator: {
-        name: "DigitalArtCollective",
-        avatar: "",
-        handle: "@digitalartcollective"
-      },
-      reward: {
-        amount: 0.008,
-        type: "MON" as const
-      },
-      status: "cancelled" as const,
-      participants: {
-        current: 150,
-        max: 500
-      },
-      timeRemaining: "Cancelled",
-      questType: "likeAndRetweet" as const,
-      category: "Art",
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-      endDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) // 1 day from now
-    }
-  ]
-}
 
 /**
  * Hook to fetch quest list with backend integration
@@ -162,9 +35,8 @@ const getMockQuestData = (): QuestListItem[] => {
 export function useQuests(filters?: QuestFilters, options?: {
   limit?: number
   offset?: number
-  includeMockData?: boolean
 }) {
-  const { includeMockData = true, ...paginationOptions } = options || {}
+  const paginationOptions = options || {}
 
   return useQuery({
     queryKey: questKeys.list({ ...filters, ...paginationOptions }),
@@ -178,35 +50,26 @@ export function useQuests(filters?: QuestFilters, options?: {
         })
 
         // Transform backend quests to list items
-        const backendQuests = backendResponse.data.map(quest => ({
-          ...transformBackendQuestToListItem({
-            id: quest.id,
-            title: quest.title,
-            description: quest.description,
-            questType: quest.questType,
-            sponsor: quest.creator.address,
-            totalRewards: (quest.totalRewardPool * 1e18).toString(),
-            rewardPerUser: (quest.rewardPerParticipant * 1e18).toString(),
-            maxParticipants: quest.maxParticipants || 100,
-            participantCount: quest.participants.current,
-            startTime: new Date(quest.startDate).getTime(),
-            endTime: new Date(quest.endDate).getTime(),
-            claimEndTime: new Date(quest.rewardClaimDeadline).getTime(),
-            status: quest.status,
-            createdAt: new Date(quest.createdAt).getTime(),
-            updatedAt: new Date(quest.updatedAt).getTime()
-          }),
-          _source: 'backend' as const
+        const backendQuests = backendResponse.data.map(quest => transformBackendQuestToListItem({
+          id: quest.id,
+          title: quest.title,
+          description: quest.description,
+          questType: quest.questType,
+          sponsor: quest.creator.address,
+          totalRewards: (quest.totalRewardPool * 1e18).toString(),
+          rewardPerUser: (quest.rewardPerParticipant * 1e18).toString(),
+          maxParticipants: quest.maxParticipants || 100,
+          participantCount: quest.participants.current,
+          startTime: new Date(quest.startDate).getTime(),
+          endTime: new Date(quest.endDate).getTime(),
+          claimEndTime: new Date(quest.rewardClaimDeadline).getTime(),
+          status: quest.status,
+          createdAt: new Date(quest.createdAt).getTime(),
+          updatedAt: new Date(quest.updatedAt).getTime()
         }))
 
-        // Get mock data
-        const mockData = includeMockData ? getMockQuestData().map(quest => ({
-          ...quest,
-          _source: 'mock' as const
-        })) : []
-
-        // Combine backend and mock data
-        const allQuests = [...backendQuests, ...mockData]
+        // Use only backend data
+        const allQuests = backendQuests
         
         // Apply additional client-side filtering (not handled by backend)
         let filteredData = allQuests
@@ -229,9 +92,9 @@ export function useQuests(filters?: QuestFilters, options?: {
 
         return filteredData
       } catch (error) {
-        console.error('Failed to fetch quests from backend, using mock data only:', error)
-        // Fallback to mock data only
-        return includeMockData ? getMockQuestData() : []
+        console.error('Failed to fetch quests from backend:', error)
+        // Return empty array on error
+        return []
       }
     },
     staleTime: 30 * 1000, // 30 seconds
@@ -501,8 +364,8 @@ export function useTrendingQuests(limit: number = 5) {
         return trending.slice(0, limit)
       } catch (error) {
         console.error('Failed to fetch trending quests:', error)
-        // Fallback to mock data
-        return getMockQuestData().slice(0, limit)
+        // Return empty array on error
+        return []
       }
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
