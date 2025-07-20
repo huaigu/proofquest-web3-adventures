@@ -589,6 +589,15 @@ const Guide = () => {
                   <Twitter className="h-5 w-5" />
                   @Miles082510
                 </a>
+                <a 
+                  href="https://x.com/DX__DAO" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
+                >
+                  <Twitter className="h-5 w-5" />
+                  @DX__DAO
+                </a>
               </div>
             </CardContent>
           </Card>
