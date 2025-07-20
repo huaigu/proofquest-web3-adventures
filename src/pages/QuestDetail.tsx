@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { PrimusZKTLS } from "@primuslabs/zktls-js-sdk";
-import { useAccount } from 'wagmi';
+import { useAccount, usePublicClient } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { claimRewardWithAttestation, claimReward } from '@/lib/questContract';
 import { useTranslation } from 'react-i18next';
@@ -186,6 +186,7 @@ const QuestDetail = () => {
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
+  const publicClient = usePublicClient();
   const { t } = useTranslation('quests');
 
   const [quest, setQuest] = useState<QuestDetail | null>(null);
@@ -625,14 +626,13 @@ const QuestDetail = () => {
       });
 
       // 等待交易被确认
-      if (window.ethereum) {
+      if (publicClient) {
         try {
-          const receipt = await window.ethereum.request({
-            method: 'eth_waitForTransactionReceipt',
-            params: [txHash]
+          const receipt = await publicClient.waitForTransactionReceipt({
+            hash: txHash as `0x${string}`
           });
           
-          if (receipt && receipt.status === '0x1') {
+          if (receipt && receipt.status === 'success') {
             // Transaction successfully confirmed
             setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
             toast({
@@ -649,7 +649,7 @@ const QuestDetail = () => {
           await waitForTransactionConfirmation(txHash);
         }
       } else {
-        // If no window.ethereum or doesn't support eth_waitForTransactionReceipt, use polling method
+        // If no public client available, use polling method
         await waitForTransactionConfirmation(txHash);
       }
 
@@ -730,13 +730,12 @@ const QuestDetail = () => {
     
     while (attempts < maxAttempts) {
       try {
-        const receipt = await window.ethereum?.request({
-          method: 'eth_getTransactionReceipt',
-          params: [txHash]
+        const receipt = await publicClient?.getTransactionReceipt({
+          hash: txHash as `0x${string}`
         });
         
         if (receipt) {
-          if (receipt.status === '0x1') {
+          if (receipt.status === 'success') {
             // Transaction successfully confirmed
             setUserProgress(prev => ({ ...prev, rewardClaimed: true }));
             toast({
