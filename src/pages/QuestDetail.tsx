@@ -435,7 +435,7 @@ const QuestDetail = () => {
   const handleQuoteTweetUrlChange = (url: string) => {
     setQuoteTweetUrl(url);
     if (url && !validateQuoteTweetUrl(url)) {
-      setQuoteTweetUrlError('Please enter a valid Twitter/X URL (e.g., https://twitter.com/user/status/123)');
+      setQuoteTweetUrlError(t('participation.invalidTwitterUrl'));
     } else {
       setQuoteTweetUrlError('');
     }
@@ -456,10 +456,10 @@ const QuestDetail = () => {
       // For QuoteTweet quests, validate the quote tweet URL
       if (quest.questType === 'quote-tweet') {
         if (!quoteTweetUrl) {
-          throw new Error('Please enter your quote tweet URL');
+          throw new Error(t('participation.enterQuoteTweetUrl'));
         }
         if (!validateQuoteTweetUrl(quoteTweetUrl)) {
-          throw new Error('Please enter a valid Twitter/X URL');
+          throw new Error(t('participation.enterValidTwitterUrl'));
         }
       }
 
@@ -774,19 +774,19 @@ const QuestDetail = () => {
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     toast({
-      title: "Link Copied",
-      description: "Quest link copied to clipboard!"
+      title: t('common.linkCopied'),
+      description: t('common.questLinkCopied')
     });
   };
 
   const getParticipantStatus = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-[hsl(var(--vibrant-green))]/15 text-[hsl(var(--vibrant-green))]">Completed</Badge>;
+        return <Badge className="bg-[hsl(var(--vibrant-green))]/15 text-[hsl(var(--vibrant-green))]">{t('quest.participantStatus.completed')}</Badge>;
       case 'submitted':
-        return <Badge className="bg-[hsl(var(--vibrant-yellow))]/15 text-[hsl(var(--vibrant-yellow))]">Submitted</Badge>;
+        return <Badge className="bg-[hsl(var(--vibrant-yellow))]/15 text-[hsl(var(--vibrant-yellow))]">{t('quest.participantStatus.submitted')}</Badge>;
       default:
-        return <Badge variant="outline">Joined</Badge>;
+        return <Badge variant="outline">{t('quest.participantStatus.joined')}</Badge>;
     }
   };
 
@@ -848,7 +848,7 @@ const QuestDetail = () => {
                 className="text-white hover:bg-white/20 border border-white/20"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Quests
+                {t('navigation.backToQuests')}
               </Button>
               <Button
                 variant="ghost"
@@ -856,7 +856,7 @@ const QuestDetail = () => {
                 className="text-white hover:bg-white/20 border border-white/20"
               >
                 <Share2 className="h-4 w-4 mr-2" />
-                Share
+                {t('common.share')}
               </Button>
             </div>
 
@@ -891,10 +891,10 @@ const QuestDetail = () => {
 
               <div className="lg:col-span-4 text-right">
                 <Badge className={`text-sm ${getStatusBadgeColor(quest.status)} mb-2`}>
-                  {quest.status}
+                  {t(`status.${quest.status.toLowerCase()}`)}
                 </Badge>
                 <div className="text-white/80 text-sm">
-                  {getTimeRemaining()} remaining
+                  {getTimeRemaining()} {t('quest.timeRemaining')}
                 </div>
               </div>
             </div>
@@ -910,12 +910,12 @@ const QuestDetail = () => {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-white text-sm">
                 <Trophy className="h-4 w-4" />
-                Reward
+                {t('quest.reward')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-xl font-bold mb-1">{formatReward()}</div>
-              <div className="text-white/80 text-xs">{quest.reward.distribution}</div>
+              <div className="text-white/80 text-xs">{t(`quest.rewardDistribution.${quest.reward.distribution.toLowerCase().replace(' ', '')}`)}</div>
             </CardContent>
           </Card>
 
@@ -924,7 +924,7 @@ const QuestDetail = () => {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-white text-sm">
                 <Users className="h-4 w-4" />
-                Progress
+                {t('quest.progress')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
@@ -934,7 +934,7 @@ const QuestDetail = () => {
               <Progress value={getProgressPercentage()} className="mb-1 bg-white/20 [&>div]:bg-white h-2" />
               <div className="text-white/80 text-xs flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {getTimeRemaining()} left
+                {getTimeRemaining()} {t('quest.timeLeft')}
               </div>
             </CardContent>
           </Card>
@@ -944,13 +944,13 @@ const QuestDetail = () => {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-white text-sm">
                 {getQuestTypeIcon()}
-                Type
+                {t('quest.type')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-base font-bold mb-1">{getQuestTypeLabel()}</div>
               <div className="text-white/80 text-xs">
-                {quest.questType === 'twitter-interaction' ? 'Engage with tweet' : 'Share with quote'}
+                {quest.questType === 'twitter-interaction' ? t('quest.engageWithTweet') : t('quest.shareWithQuote')}
               </div>
             </CardContent>
           </Card>
@@ -961,18 +961,18 @@ const QuestDetail = () => {
           <div className="lg:col-span-2">
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="participants">Participants</TabsTrigger>
+                <TabsTrigger value="overview">{t('quest.overview')}</TabsTrigger>
+                <TabsTrigger value="participants">{t('quest.participants')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Quest Details</CardTitle>
+                    <CardTitle>{t('quest.questDetails')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <h4 className="font-semibold mb-2">Description</h4>
+                      <h4 className="font-semibold mb-2">{t('quest.description')}</h4>
                       <p className="text-muted-foreground text-sm leading-relaxed">
                         {quest.fullDescription}
                       </p>
@@ -982,21 +982,21 @@ const QuestDetail = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <h4 className="font-semibold mb-2">Quest Type</h4>
+                        <h4 className="font-semibold mb-2">{t('quest.questType')}</h4>
                         <div className="flex items-center gap-2">
                           {getQuestTypeIcon()}
                           <span className="text-sm">{getQuestTypeLabel()}</span>
                         </div>
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-2">Category</h4>
+                        <h4 className="font-semibold mb-2">{t('quest.category')}</h4>
                         <Badge variant="outline">{quest.category}</Badge>
                       </div>
                     </div>
 
                     {quest.questType === 'twitter-interaction' && (
                       <div>
-                        <h4 className="font-semibold mb-2">Required Actions</h4>
+                        <h4 className="font-semibold mb-2">{t('quest.requiredActions')}</h4>
                         <div className="flex gap-2 flex-wrap">
                           {getRequiredActions().map((action, index) => (
                             <div key={index} className="flex items-center gap-1 bg-muted rounded-lg px-3 py-1">
@@ -1007,7 +1007,7 @@ const QuestDetail = () => {
                         </div>
                         {quest.launch_page && (
                           <div className="mt-3">
-                            <h5 className="font-medium mb-1 text-sm">Target Tweet</h5>
+                            <h5 className="font-medium mb-1 text-sm">{t('quest.targetTweet')}</h5>
                             <a
                               href={quest.launch_page}
                               target="_blank"
@@ -1023,10 +1023,10 @@ const QuestDetail = () => {
 
                     {quest.questType === 'quote-tweet' && (
                       <div>
-                        <h4 className="font-semibold mb-2">Quote Tweet Requirements</h4>
+                        <h4 className="font-semibold mb-2">{t('quest.quoteTweetRequirements')}</h4>
                         {quest.launch_page && (
                           <div className="mb-3">
-                            <h5 className="font-medium mb-1 text-sm">Original Tweet to Quote</h5>
+                            <h5 className="font-medium mb-1 text-sm">{t('quest.originalTweetToQuote')}</h5>
                             <a
                               href={quest.launch_page}
                               target="_blank"
@@ -1040,7 +1040,7 @@ const QuestDetail = () => {
                         {quest.questConfig.requiredHashtag && (
                           <div className="flex items-center gap-2">
                             <Hash className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">Required hashtag: </span>
+                            <span className="text-sm">{t('quest.requiredHashtag')}: </span>
                             <Badge variant="secondary">{quest.questConfig.requiredHashtag}</Badge>
                           </div>
                         )}
@@ -1053,7 +1053,7 @@ const QuestDetail = () => {
               <TabsContent value="participants" className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Quest Participants ({participants.length})</CardTitle>
+                    <CardTitle>{t('quest.questParticipants')} ({participants.length})</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -1068,7 +1068,7 @@ const QuestDetail = () => {
                             <div>
                               <div className="font-mono text-sm">{formatAddress(participant.address)}</div>
                               <div className="text-xs text-muted-foreground">
-                                Joined {participant.joinedAt.toLocaleDateString()}
+                                {t('quest.joined')} {participant.joinedAt.toLocaleDateString()}
                               </div>
                             </div>
                           </div>
@@ -1091,24 +1091,24 @@ const QuestDetail = () => {
           <div className="lg:col-span-1">
             <Card className="sticky top-24">
               <CardHeader>
-                <CardTitle>How to Participate</CardTitle>
+                <CardTitle>{t('participation.howToParticipate')}</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {/* Already participated notice */}
                   {hasAlreadyParticipated && (
                     <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] text-white rounded-lg mb-4">
-                      <div className="text-lg font-bold">✅ You have already participated</div>
-                      <div className="text-white/80 text-sm">Reward successfully claimed</div>
+                      <div className="text-lg font-bold">✅ {t('participation.alreadyParticipated')}</div>
+                      <div className="text-white/80 text-sm">{t('participation.rewardClaimed')}</div>
                     </div>
                   )}
 
                   {/* Plugin not installed notice */}
                   {pluginNotInstalled && (
                     <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-orange))] to-[hsl(var(--vibrant-red))] text-white rounded-lg mb-4">
-                      <div className="text-lg font-bold">🔌 Primus Plugin Required</div>
+                      <div className="text-lg font-bold">🔌 {t('participation.pluginRequired')}</div>
                       <div className="text-white/80 text-sm mb-3">
-                        Please install the Primus Chrome plugin to participate in this quest
+                        {t('participation.installPluginMessage')}
                       </div>
                       <div className="flex gap-2">
                         <Button
@@ -1118,7 +1118,7 @@ const QuestDetail = () => {
                           onClick={() => window.open('https://chromewebstore.google.com/detail/oeiomhmbaapihbilkfkhmlajkeegnjhe', '_blank')}
                         >
                           <ExternalLink className="h-3 w-3 mr-1" />
-                          Install Plugin
+                          {t('participation.installPlugin')}
                         </Button>
                         <Button
                           variant="secondary"
@@ -1126,7 +1126,7 @@ const QuestDetail = () => {
                           className="bg-white/20 text-white border-white/30 hover:bg-white/30"
                           onClick={() => window.location.reload()}
                         >
-                          🔄 Retry
+                          🔄 {t('participation.retry')}
                         </Button>
                       </div>
                     </div>
@@ -1135,7 +1135,7 @@ const QuestDetail = () => {
                   {/* Reward Information */}
                   <div className="text-center p-4 bg-gradient-to-br from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg">
                     <div className="text-xl font-bold">{formatReward()}</div>
-                    <div className="text-white/80 text-sm">Reward per participant</div>
+                    <div className="text-white/80 text-sm">{t('participation.rewardPerParticipant')}</div>
                   </div>
 
                   {/* Current Status */}
@@ -1157,14 +1157,14 @@ const QuestDetail = () => {
                           {userProgress.walletConnected ? <CheckCircle className="h-3 w-3" /> : '1'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Connect Wallet</h4>
+                          <h4 className="font-semibold text-sm mb-1">{t('participation.connectWallet')}</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            Connect your Web3 wallet to start participating in quests
+                            {t('participation.connectWalletDescription')}
                           </p>
                           {!isConnected ? (
                             <Button onClick={handleConnectWallet} disabled={isLoading} size="sm" className="w-full">
                               <Wallet className="h-3 w-3 mr-1" />
-                              Connect Wallet
+                              {t('participation.connectWalletButton')}
                             </Button>
                           ) : null}
                         </div>
@@ -1182,9 +1182,9 @@ const QuestDetail = () => {
                             {quoteTweetUrl && !quoteTweetUrlError ? <CheckCircle className="h-3 w-3" /> : '2'}
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-semibold text-sm mb-1">Quote Tweet URL</h4>
+                            <h4 className="font-semibold text-sm mb-1">{t('participation.quoteTweetUrl')}</h4>
                             <p className="text-xs text-muted-foreground mb-2">
-                              First, quote tweet the target tweet, then paste your quote tweet URL here
+                              {t('participation.quoteTweetDescription')}
                             </p>
                             <div className="mb-2">
                               <a
@@ -1193,12 +1193,12 @@ const QuestDetail = () => {
                                 rel="noopener noreferrer"
                                 className="text-xs text-blue-500 hover:underline block mb-2"
                               >
-                                📝 Quote this tweet: {quest.launch_page}
+                                📝 {t('participation.quoteTweetPrompt')}: {quest.launch_page}
                               </a>
                             </div>
                             <input
                               type="text"
-                              placeholder="https://twitter.com/your_username/status/123..."
+                              placeholder={t('participation.quoteTweetPlaceholder')}
                               value={quoteTweetUrl}
                               onChange={(e) => handleQuoteTweetUrlChange(e.target.value)}
                               className="w-full text-xs border border-border rounded px-2 py-1 mb-1 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
@@ -1222,13 +1222,13 @@ const QuestDetail = () => {
                           {userProgress.zkProofStarted ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '3' : '2'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Start Proof</h4>
+                          <h4 className="font-semibold text-sm mb-1">{t('participation.startProof')}</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            Get ZK signature and start the proof process
+                            {t('participation.startProofDescription')}
                           </p>
                           {zkInitializing && (
                             <div className="text-xs text-blue-500 mb-2">
-                              ⏳ Initializing ZKTLS system...
+                              ⏳ {t('participation.initializingSystem')}
                             </div>
                           )}
                           {isConnected && !userProgress.zkProofStarted && (quest.questType !== 'quote-tweet' || (quoteTweetUrl && !quoteTweetUrlError)) ? (
@@ -1239,12 +1239,12 @@ const QuestDetail = () => {
                               className="w-full"
                             >
                               {pluginNotInstalled 
-                                ? 'Install plugin first' 
+                                ? t('participation.installPluginFirst') 
                                 : isLoading && currentStep.includes('ZK') 
-                                  ? 'Starting...' 
+                                  ? t('participation.starting') 
                                   : !zkInitialized 
-                                    ? 'Initializing ZKTLS...' 
-                                    : 'Start Proof'
+                                    ? t('participation.initializingZktls') 
+                                    : t('participation.startProofButton')
                               }
                             </Button>
                           ) : null}
@@ -1262,12 +1262,12 @@ const QuestDetail = () => {
                           {userProgress.zkProofGenerated ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '4' : '3'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Generate Proof</h4>
+                          <h4 className="font-semibold text-sm mb-1">{t('participation.generateProof')}</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            Call Primus to generate ZK proof
+                            {t('participation.generateProofDescription')}
                           </p>
                           {userProgress.zkProofStarted && !userProgress.zkProofGenerated && isLoading && (
-                            <div className="text-xs text-muted-foreground">Generating proof...</div>
+                            <div className="text-xs text-muted-foreground">{t('participation.generatingProof')}</div>
                           )}
                         </div>
                       </div>
@@ -1283,12 +1283,12 @@ const QuestDetail = () => {
                           {userProgress.proofVerified ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '5' : '4'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Verify Proof</h4>
+                          <h4 className="font-semibold text-sm mb-1">{t('participation.verifyProof')}</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            Check the validity of the proof
+                            {t('participation.verifyProofDescription')}
                           </p>
                           {userProgress.zkProofGenerated && !userProgress.proofVerified && isLoading && (
-                            <div className="text-xs text-muted-foreground">Verifying proof...</div>
+                            <div className="text-xs text-muted-foreground">{t('participation.verifyingProof')}</div>
                           )}
                         </div>
                       </div>
@@ -1304,9 +1304,9 @@ const QuestDetail = () => {
                           {userProgress.rewardClaimed ? <CheckCircle className="h-3 w-3" /> : quest.questType === 'quote-tweet' ? '6' : '5'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-sm mb-1">Claim Reward</h4>
+                          <h4 className="font-semibold text-sm mb-1">{t('participation.claimReward')}</h4>
                           <p className="text-xs text-muted-foreground mb-2">
-                            Submit proof and claim quest reward
+                            {t('participation.claimRewardDescription')}
                           </p>
                           {userProgress.proofVerified && !userProgress.rewardClaimed ? (
                             <Button onClick={handleClaimReward} disabled={isLoading} size="sm" className="w-full">
@@ -1316,13 +1316,13 @@ const QuestDetail = () => {
                                 <Trophy className="h-3 w-3 mr-1" />
                               )}
                               {isLoading 
-                                ? (currentStep.includes('Waiting for transaction') ? 'Confirming...' : 'Claiming...') 
-                                : 'Claim Reward'
+                                ? (currentStep.includes('Waiting for transaction') ? t('participation.confirming') : t('participation.claiming')) 
+                                : t('participation.claimRewardButton')
                               }
                             </Button>
                           ) : userProgress.rewardClaimed ? (
                             <div className="text-xs text-[hsl(var(--vibrant-green))] font-medium">
-                              🎉 Reward successfully claimed!
+                              🎉 {t('participation.rewardSuccessfullyClaimed')}
                             </div>
                           ) : null}
                         </div>

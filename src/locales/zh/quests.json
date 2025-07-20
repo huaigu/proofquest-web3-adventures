@@ -137,5 +137,83 @@
     "zktlsInitializationFailed": "ZKTLS 初始化失败",
     "cannotInitializeZkSystem": "无法初始化零知识证明系统，请刷新页面重试",
     "rewardClaimFailedGeneric": "奖励领取失败，请重试"
+  },
+  "participation": {
+    "howToParticipate": "如何参与",
+    "alreadyParticipated": "您已经参与过了",
+    "rewardClaimed": "奖励领取成功",
+    "pluginRequired": "需要 Primus 插件",
+    "installPluginMessage": "请安装 Primus Chrome 插件以参与此任务",
+    "installPlugin": "安装插件",
+    "retry": "重试",
+    "rewardPerParticipant": "每位参与者奖励",
+    "connectWallet": "连接钱包",
+    "connectWalletDescription": "连接您的 Web3 钱包以开始参与任务",
+    "connectWalletButton": "连接钱包",
+    "quoteTweetUrl": "引用推文链接",
+    "quoteTweetDescription": "首先引用目标推文，然后在此处粘贴您的引用推文链接",
+    "quoteTweetPrompt": "引用这条推文",
+    "quoteTweetPlaceholder": "https://twitter.com/your_username/status/123...",
+    "startProof": "开始证明",
+    "startProofDescription": "获取 ZK 签名并开始证明过程",
+    "startProofButton": "开始证明",
+    "initializingSystem": "正在初始化 ZKTLS 系统...",
+    "installPluginFirst": "请先安装插件",
+    "starting": "启动中...",
+    "initializingZktls": "正在初始化 ZKTLS...",
+    "generateProof": "生成证明",
+    "generateProofDescription": "调用 Primus 生成 ZK 证明",
+    "generatingProof": "正在生成证明...",
+    "verifyProof": "验证证明",
+    "verifyProofDescription": "检查证明的有效性",
+    "verifyingProof": "正在验证证明...",
+    "claimReward": "领取奖励",
+    "claimRewardDescription": "提交证明并领取任务奖励",
+    "claimRewardButton": "领取奖励",
+    "confirming": "确认中...",
+    "claiming": "领取中...",
+    "rewardSuccessfullyClaimed": "奖励领取成功！",
+    "invalidTwitterUrl": "请输入有效的 Twitter/X 链接（例如：https://twitter.com/user/status/123）",
+    "enterQuoteTweetUrl": "请输入您的引用推文链接",
+    "enterValidTwitterUrl": "请输入有效的 Twitter/X 链接"
+  },
+  "quest": {
+    "reward": "奖励",
+    "progress": "进度",
+    "type": "类型",
+    "timeRemaining": "剩余",
+    "timeLeft": "剩余",
+    "engageWithTweet": "与推文互动",
+    "shareWithQuote": "引用分享",
+    "overview": "概览",
+    "participants": "参与者",
+    "questDetails": "任务详情",
+    "description": "描述",
+    "questType": "任务类型",
+    "category": "分类",
+    "requiredActions": "所需操作",
+    "targetTweet": "目标推文",
+    "quoteTweetRequirements": "引用推文要求",
+    "originalTweetToQuote": "要引用的原始推文",
+    "requiredHashtag": "必需标签",
+    "questParticipants": "任务参与者",
+    "joined": "加入",
+    "participantStatus": {
+      "completed": "已完成",
+      "submitted": "已提交",
+      "joined": "已加入"
+    },
+    "rewardDistribution": {
+      "perparticipant": "每位参与者",
+      "pool": "奖池"
+    }
+  },
+  "navigation": {
+    "backToQuests": "返回任务"
+  },
+  "common": {
+    "share": "分享",
+    "linkCopied": "链接已复制",
+    "questLinkCopied": "任务链接已复制到剪贴板！"
   }
 }

@@ -137,5 +137,83 @@
     "zktlsInitializationFailed": "ZKTLS Initialization Failed",
     "cannotInitializeZkSystem": "Cannot initialize zero-knowledge proof system, please refresh and try again",
     "rewardClaimFailedGeneric": "Reward claim failed, please try again"
+  },
+  "participation": {
+    "howToParticipate": "How to Participate",
+    "alreadyParticipated": "You have already participated",
+    "rewardClaimed": "Reward successfully claimed",
+    "pluginRequired": "Primus Plugin Required",
+    "installPluginMessage": "Please install the Primus Chrome plugin to participate in this quest",
+    "installPlugin": "Install Plugin",
+    "retry": "Retry",
+    "rewardPerParticipant": "Reward per participant",
+    "connectWallet": "Connect Wallet",
+    "connectWalletDescription": "Connect your Web3 wallet to start participating in quests",
+    "connectWalletButton": "Connect Wallet",
+    "quoteTweetUrl": "Quote Tweet URL",
+    "quoteTweetDescription": "First, quote tweet the target tweet, then paste your quote tweet URL here",
+    "quoteTweetPrompt": "Quote this tweet",
+    "quoteTweetPlaceholder": "https://twitter.com/your_username/status/123...",
+    "startProof": "Start Proof",
+    "startProofDescription": "Get ZK signature and start the proof process",
+    "startProofButton": "Start Proof",
+    "initializingSystem": "Initializing ZKTLS system...",
+    "installPluginFirst": "Install plugin first",
+    "starting": "Starting...",
+    "initializingZktls": "Initializing ZKTLS...",
+    "generateProof": "Generate Proof",
+    "generateProofDescription": "Call Primus to generate ZK proof",
+    "generatingProof": "Generating proof...",
+    "verifyProof": "Verify Proof",
+    "verifyProofDescription": "Check the validity of the proof",
+    "verifyingProof": "Verifying proof...",
+    "claimReward": "Claim Reward",
+    "claimRewardDescription": "Submit proof and claim quest reward",
+    "claimRewardButton": "Claim Reward",
+    "confirming": "Confirming...",
+    "claiming": "Claiming...",
+    "rewardSuccessfullyClaimed": "Reward successfully claimed!",
+    "invalidTwitterUrl": "Please enter a valid Twitter/X URL (e.g., https://twitter.com/user/status/123)",
+    "enterQuoteTweetUrl": "Please enter your quote tweet URL",
+    "enterValidTwitterUrl": "Please enter a valid Twitter/X URL"
+  },
+  "quest": {
+    "reward": "Reward",
+    "progress": "Progress",
+    "type": "Type",
+    "timeRemaining": "remaining",
+    "timeLeft": "left",
+    "engageWithTweet": "Engage with tweet",
+    "shareWithQuote": "Share with quote",
+    "overview": "Overview",
+    "participants": "Participants",
+    "questDetails": "Quest Details",
+    "description": "Description",
+    "questType": "Quest Type",
+    "category": "Category",
+    "requiredActions": "Required Actions",
+    "targetTweet": "Target Tweet",
+    "quoteTweetRequirements": "Quote Tweet Requirements",
+    "originalTweetToQuote": "Original Tweet to Quote",
+    "requiredHashtag": "Required hashtag",
+    "questParticipants": "Quest Participants",
+    "joined": "Joined",
+    "participantStatus": {
+      "completed": "Completed",
+      "submitted": "Submitted",
+      "joined": "Joined"
+    },
+    "rewardDistribution": {
+      "perparticipant": "Per participant",
+      "pool": "Pool"
+    }
+  },
+  "navigation": {
+    "backToQuests": "Back to Quests"
+  },
+  "common": {
+    "share": "Share",
+    "linkCopied": "Link Copied",
+    "questLinkCopied": "Quest link copied to clipboard!"
   }
 }
