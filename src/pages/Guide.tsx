@@ -584,7 +584,7 @@ const Guide = () => {
                   href="https://x.com/Miles082510" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-teal))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
                 >
                   <Twitter className="h-5 w-5" />
                   @Miles082510
