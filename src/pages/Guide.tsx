@@ -179,20 +179,20 @@ const Guide = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90 font-semibold"
-                onClick={() => setActiveTab("users")}
-              >
-                <Users className="h-5 w-5 mr-2" />
-                {t('hero.userButton')}
-              </Button>
-              <Button 
-                size="lg" 
                 variant="outline" 
                 className="bg-white/10 text-white hover:bg-white/20 border-white/30 font-semibold"
                 onClick={() => setActiveTab("sponsors")}
               >
                 <Target className="h-5 w-5 mr-2" />
                 {t('hero.sponsorButton')}
+              </Button>
+              <Button 
+                size="lg" 
+                className="bg-white text-[hsl(var(--vibrant-blue))] hover:bg-white/90 font-semibold"
+                onClick={() => setActiveTab("users")}
+              >
+                <Users className="h-5 w-5 mr-2" />
+                {t('hero.userButton')}
               </Button>
             </div>
           </div>

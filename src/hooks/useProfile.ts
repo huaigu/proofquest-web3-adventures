@@ -120,6 +120,34 @@ export const formatEthAmount = (weiAmount: string): string => {
   }
 };
 
+// Format amount for Total Earned display (with MON unit, 2 significant digits)
+export const formatTotalEarned = (weiAmount: string): string => {
+  const monAmount = parseFloat(weiAmount) / Math.pow(10, 18);
+  
+  if (monAmount === 0) {
+    return '0 MON';
+  }
+  
+  // For numbers >= 1, show 2 decimal places
+  if (monAmount >= 1) {
+    return `${monAmount.toFixed(2)} MON`;
+  }
+  
+  // For numbers < 1, find the first significant digit and show 2 significant figures
+  if (monAmount >= 0.01) {
+    return `${monAmount.toFixed(2)} MON`;
+  } else if (monAmount >= 0.001) {
+    return `${monAmount.toFixed(3)} MON`;
+  } else if (monAmount >= 0.0001) {
+    return `${monAmount.toFixed(4)} MON`;
+  } else if (monAmount >= 0.00001) {
+    return `${monAmount.toFixed(5)} MON`;
+  } else {
+    // For very small numbers, use scientific notation or show as 0
+    return monAmount < 0.000001 ? '0 MON' : `${monAmount.toExponential(1)} MON`;
+  }
+};
+
 export const formatUserAddress = (address: string): string => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };

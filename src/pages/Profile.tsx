@@ -28,7 +28,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAccount } from "wagmi";
-import { useProfile, formatEthAmount, formatUserAddress, formatDate, formatTimeAgo, getActivityIcon } from "@/hooks/useProfile";
+import { useProfile, formatEthAmount, formatTotalEarned, formatUserAddress, formatDate, formatTimeAgo, getActivityIcon } from "@/hooks/useProfile";
 import { useTranslation } from 'react-i18next';
 
 const Profile = () => {
@@ -145,7 +145,7 @@ const Profile = () => {
             <div className="bg-gradient-to-br from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-blue))] rounded-xl p-4 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xl font-bold">{profile?.totalEarned ? formatEthAmount(profile.totalEarned) : '0 MON'}</div>
+                  <div className="text-xl font-bold">{profile?.totalEarned ? formatTotalEarned(profile.totalEarned) : '0 MON'}</div>
                   <div className="text-xs text-white/80">{t('stats.totalEarned')}</div>
                 </div>
                 <DollarSign className="h-5 w-5 text-white/60" />
