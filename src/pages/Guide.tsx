@@ -570,7 +570,7 @@ const Guide = () => {
               <p className="text-muted-foreground mb-6">
                 {t('contact.subtitle')}
               </p>
-              <div className="flex justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
                   href="https://x.com/coder_chao" 
                   target="_blank" 
@@ -578,7 +578,16 @@ const Guide = () => {
                   className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-blue))] to-[hsl(var(--vibrant-purple))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
                 >
                   <Twitter className="h-5 w-5" />
-                  {t('contact.followButton')}
+                  @coder_chao
+                </a>
+                <a 
+                  href="https://x.com/Miles082510" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[hsl(var(--vibrant-green))] to-[hsl(var(--vibrant-teal))] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium"
+                >
+                  <Twitter className="h-5 w-5" />
+                  @Miles082510
                 </a>
               </div>
             </CardContent>
